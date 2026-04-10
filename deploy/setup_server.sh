@@ -5,7 +5,7 @@ set -euo pipefail
 
 PROJECT_DIR="/data/projects/shaked-wg-agent"
 REPO="https://github.com/WaldNimrod/shaked-wg-agent.git"
-LOG_FILE="/var/log/shaked-wg-agent.log"
+LOG_FILE="/data/projects/shaked-wg-agent/run.log"
 
 echo "[1/6] Clone or update repo..."
 if [ -d "$PROJECT_DIR/.git" ]; then
