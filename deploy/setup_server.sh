@@ -22,7 +22,7 @@ python3 -m venv .venv
 
 echo "[3/6] Create .env from SFA credentials..."
 # Copy relevant upress vars from SFA .env (already on server)
-SFA_ENV="/data/projects/SmallFarmsAgents/.env"
+SFA_ENV="/data/projects/smallfarmsagents/.env"
 if [ -f "$SFA_ENV" ]; then
   grep -E "^UPRESS_SFTP_HOST|^UPRESS_SFTP_PORT|^UPRESS_SFTP_USER|^UPRESS_SFTP_PASS|^UPRESS_PUBLIC_BASE|^UPRESS_WP_REST_BASE|^UPRESS_WP_APP_USER|^UPRESS_WP_APP_PASS" "$SFA_ENV" > "$PROJECT_DIR/.env"
   echo "UPRESS_UPLOAD_PATH=wp-content/uploads/shaked-wg" >> "$PROJECT_DIR/.env"
