@@ -3,9 +3,14 @@ from __future__ import annotations
 
 import sys
 from datetime import UTC, datetime
+from pathlib import Path
 
+from dotenv import load_dotenv
 from rich.console import Console
 from rich.table import Table
+
+# Load .env from project root (two levels up from this file)
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 console = Console()
 
@@ -24,6 +29,11 @@ def cmd_run() -> None:
     console.print(f"   Updated         : {run['updated_results']}")
     console.print(f"   Stale removed   : {run['stale_removed']}")
     console.print(f"   Duration        : {run['duration_seconds']}s")
+    url = run.get("report_url")
+    if url and not str(url).startswith("ERROR"):
+        console.print(f"   [bold green]🌐 Report URL    : {url}[/bold green]")
+    elif url:
+        console.print(f"   [yellow]⚠️  Upload error  : {url}[/yellow]")
     if run.get("errors"):
         console.print("[yellow]⚠️  Errors:[/yellow]")
         for err in run["errors"]:

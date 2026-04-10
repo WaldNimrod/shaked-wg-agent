@@ -1,12 +1,14 @@
 """Run orchestrator — drives a full scan cycle and updates data files."""
 from __future__ import annotations
 
+import tempfile
 import uuid
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from shaked_wg_agent.config import ProjectConfig, Source, load_config
-from shaked_wg_agent.persistence import append_run, mark_stale_listings, upsert_listing
+from shaked_wg_agent.persistence import append_run, load_listings, load_runs, mark_stale_listings, upsert_listing
 from shaked_wg_agent.scorer import score_listing
 from shaked_wg_agent.scrapers.base import BaseScraper
 
@@ -26,6 +28,36 @@ def _build_scraper(source: Source) -> BaseScraper:
     if cls is None:
         raise ValueError(f"No scraper registered for source id '{source.id}'")
     return cls(source_id=source.id, search_url=source.search_url)
+
+
+def _publish(cfg: ProjectConfig) -> str | None:
+    """Generate HTML report and upload to upress. Returns public URL or None."""
+    import os
+
+    # Only publish if credentials are present
+    if not os.environ.get("UPRESS_SFTP_HOST"):
+        return None
+
+    try:
+        from shaked_wg_agent.publisher.ftps_upload import MissingCredentialsError, upload_report
+        from shaked_wg_agent.publisher.html_report import generate_report
+
+        listings = load_listings()
+        runs = load_runs()
+        html = generate_report(
+            listings=listings,
+            runs=runs,
+            profile_name=cfg.agent.profile_name,
+            project_end=cfg.agent.project_end,
+        )
+        tmp = Path(tempfile.mkdtemp()) / "index.html"
+        tmp.write_text(html, encoding="utf-8")
+        public_url = upload_report(tmp)
+        return public_url
+    except MissingCredentialsError:
+        return None
+    except Exception as exc:
+        return f"ERROR: {exc}"
 
 
 def run_scan(cfg: ProjectConfig | None = None) -> dict[str, Any]:
@@ -70,8 +102,10 @@ def run_scan(cfg: ProjectConfig | None = None) -> dict[str, Any]:
                 scraper.close()
 
     stale_removed = mark_stale_listings(active_ids, cfg.agent.retention_days)
-
     duration = round((datetime.now(UTC) - started_at).total_seconds())
+
+    # Publish HTML report to upress (if credentials available)
+    report_url = _publish(cfg)
 
     run_record: dict[str, Any] = {
         "run_id": run_id,
@@ -84,6 +118,7 @@ def run_scan(cfg: ProjectConfig | None = None) -> dict[str, Any]:
         "stale_removed": stale_removed,
         "duration_seconds": duration,
         "errors": errors,
+        "report_url": report_url,
         "operator_notes": "",
     }
 

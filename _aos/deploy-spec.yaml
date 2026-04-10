@@ -1,10 +1,10 @@
 # Deploy Spec — shaked-wg-agent
 # AOS Module 12 format (pre-release convention)
-# Status: PREPARED — not yet deployed
+# Status: DEPLOYED — 2026-04-10
 
 project_id: shaked-wg-agent
 profile: L0
-deployment_status: not_deployed
+deployment_status: deployed
 
 target:
   server: waldhomeserver
@@ -20,20 +20,27 @@ runtime:
   install: "pip install -e ."
 
 trigger:
-  type: manual  # matches config.json manual_triggers_only: true
-  # Future: cron entry if scheduling is enabled
-  # cron_expression: "0 9,17 * * *"
+  type: scheduled
+  cron_expression: "0 7,13,19 * * *"  # 3x daily: 07:00, 13:00, 19:00
+  cron_user: nimrodw
+  log_file: /var/log/shaked-wg-agent.log
 
 data:
   persistent_path: /data/projects/shaked-wg-agent/data
   backup: false  # personal project, no backup required
 
 service:
-  # No persistent service needed — manual trigger only
-  # If scheduling added: systemd unit template available in AOS Module 12
-  type: none
+  # Cron-based scheduling — no persistent daemon needed
+  type: cron
+
+publish:
+  platform: upress_ftps
+  remote_path: wp-content/uploads/shaked-wg/index.html
+  public_url: https://www.nimrod.bio/wp-content/uploads/shaked-wg/index.html
+  credentials_source: .env (copied from SFA .env on server)
 
 notes: >
-  Personal project. Manual execution only. No server daemon needed.
-  Deploy when Shaked wants to run from server instead of Mac.
+  Personal project for Shaked's Basel WG search.
+  Cron: 3x daily at 07:00, 13:00, 19:00 on waldhomeserver.
+  HTML report auto-published to upress after each scan.
   Project window ends 2026-06-08 — no long-term infrastructure needed.

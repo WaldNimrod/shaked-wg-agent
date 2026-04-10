@@ -1,5 +1,33 @@
 [
   {
+    "run_id": "run-20260410-214720-6d4e",
+    "run_timestamp": "2026-04-10T21:47:20+00:00",
+    "triggered_by": "manual",
+    "sources_scanned": 3,
+    "results_scanned": 21,
+    "new_results": 0,
+    "updated_results": 0,
+    "stale_removed": 0,
+    "duration_seconds": 10,
+    "errors": [],
+    "report_url": "https://www.nimrod.bio/wp-content/uploads/shaked-wg/index.html",
+    "operator_notes": ""
+  },
+  {
+    "run_id": "run-20260410-214619-7c2e",
+    "run_timestamp": "2026-04-10T21:46:19+00:00",
+    "triggered_by": "manual",
+    "sources_scanned": 3,
+    "results_scanned": 21,
+    "new_results": 21,
+    "updated_results": 0,
+    "stale_removed": 0,
+    "duration_seconds": 11,
+    "errors": [],
+    "report_url": "ERROR: 530 Login incorrect.",
+    "operator_notes": ""
+  },
+  {
     "run_id": "run-20260409-001",
     "run_timestamp": "2026-04-09T09:00:00",
     "triggered_by": "manual",
