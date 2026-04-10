@@ -35,9 +35,12 @@ service:
 
 publish:
   platform: upress_ftps
-  remote_path: wp-content/uploads/shaked-wg/index.html
-  public_url: https://www.nimrod.bio/wp-content/uploads/shaked-wg/index.html
-  credentials_source: .env (copied from SFA .env on server)
+  ftp_user: mezoohost@nimrod.bio
+  ftp_root: /  # mezoohost FTP root = WordPress document root
+  upload_path: agents/shaked-wg  # canonical: agents/<project>/
+  remote_file: agents/shaked-wg/index.html
+  public_url: https://www.nimrod.bio/agents/shaked-wg/index.html
+  credentials_source: .env (mezoohost — WordPress root, canonical agents/<project>/ path)
 
 notes: >
   Personal project for Shaked's Basel WG search.

@@ -24,9 +24,11 @@ echo "[3/6] Create .env from SFA credentials..."
 # Copy relevant upress vars from SFA .env (already on server)
 SFA_ENV="/data/projects/smallfarmsagents/.env"
 if [ -f "$SFA_ENV" ]; then
-  grep -E "^UPRESS_SFTP_HOST|^UPRESS_SFTP_PORT|^UPRESS_SFTP_USER|^UPRESS_SFTP_PASS|^UPRESS_WP_REST_BASE|^UPRESS_WP_APP_USER|^UPRESS_WP_APP_PASS" "$SFA_ENV" > "$PROJECT_DIR/.env"
+  # Use mezoohost FTP user — canonical agents/<project>/ path on WordPress root
+  grep -E "^UPRESS_SFTP_HOST|^UPRESS_SFTP_PORT|^UPRESS_WP_REST_BASE|^UPRESS_WP_APP_USER|^UPRESS_WP_APP_PASS" "$SFA_ENV" > "$PROJECT_DIR/.env"
+  grep -E "^UPRESS_SFTP_USER=mezoohost|^UPRESS_SFTP_PASS" "$SFA_ENV" >> "$PROJECT_DIR/.env"
   echo "UPRESS_PUBLIC_BASE=https://www.nimrod.bio" >> "$PROJECT_DIR/.env"
-  echo "UPRESS_UPLOAD_PATH=wp-content/uploads/shaked-wg" >> "$PROJECT_DIR/.env"
+  echo "UPRESS_UPLOAD_PATH=agents/shaked-wg" >> "$PROJECT_DIR/.env"
   echo ".env created from SFA credentials"
 else
   echo "WARNING: SFA .env not found at $SFA_ENV — .env must be created manually"
@@ -53,5 +55,6 @@ echo "   Project: $PROJECT_DIR"
 echo "   Cron: 0 7,13,19 * * *"
 echo "   Log: $LOG_FILE"
 echo "   Test with: $PROJECT_DIR/.venv/bin/python -m shaked_wg_agent run"
-echo "   Live URL: https://www.nimrod.bio/wp-content/uploads/shaked-wg/index.html"
+echo "   Live URL: https://www.nimrod.bio/agents/shaked-wg/index.html
+   Canon  : agents/<project>/ via mezoohost FTP (WordPress root)"
 echo "=============================="
