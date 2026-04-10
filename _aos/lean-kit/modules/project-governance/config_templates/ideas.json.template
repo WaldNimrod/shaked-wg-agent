@@ -1,0 +1,36 @@
+{
+  "version": "1.1.0",
+  "schema": "aos-idea-log",
+  "description": "Project idea pipeline — all ideas, bugs, and improvement requests before GATE_0 entry",
+  "owner": "team_100",
+  "fate_authority": "team_00 + nimrod",
+  "next_id": 1,
+  "last_updated": "[CREATED_DATE]",
+  "status_legend": {
+    "open": "No fate decision yet — requires Team 00 + Nimrod review",
+    "in_execution": "Fate decided AND mandate issued to team; team executing",
+    "decided": "Fully closed — fate executed",
+    "lod200_pending": "Fate decided (new_wp) — LOD200 not yet authored/approved"
+  },
+  "urgency_legend": {
+    "critical": "Blocking active work — respond today",
+    "high": "Decide this sprint / current stage",
+    "medium": "Within current stage timeline",
+    "low": "Backlog"
+  },
+  "fate_legend": {
+    "new_wp": "Becomes its own work package",
+    "append": "Added to existing WP scope",
+    "immediate": "Executed directly (< 1 session)",
+    "cancel": "Not pursuing — reason logged"
+  },
+  "delivery_ref_rule": {
+    "rule": "IRON RULE — delivery_ref must be set before status transitions to decided",
+    "fate_immediate_or_append": "REQUIRED — must reference deliverable or WP gate record",
+    "fate_new_wp": "REQUIRED — must reference LOD200 approval + registry entry",
+    "fate_cancel": "Set to 'N/A_CANCEL'",
+    "status_open": "null",
+    "status_in_execution": "null — awaiting team delivery"
+  },
+  "ideas": []
+}

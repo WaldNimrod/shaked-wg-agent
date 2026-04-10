@@ -13,3 +13,17 @@ Thumbs.db
 
 # Local overrides
 *.local.json
+
+# Python virtual environment
+.venv/
+venv/
+
+# Python build artifacts
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+dist/
+build/

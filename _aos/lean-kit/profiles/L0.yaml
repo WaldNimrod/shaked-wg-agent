@@ -1,0 +1,54 @@
+# L0 — Lean / Manual Profile
+# Minimum viable governance. No engine integration required.
+
+profile: L0
+label: "Lean / Manual"
+version: "3.1.1"
+
+modules:
+  core:
+    - id: project-governance
+      module: 1
+      required: true
+    - id: team-model
+      module: 3
+      required: true
+    - id: document-lifecycle
+      module: 4
+      required: true
+
+  optional:
+    - id: gate-workflow
+      module: 2
+      required: false
+      recommended: true
+      notes: "Recommended for structured projects with multiple WPs"
+    - id: version-identity
+      module: 5
+      required: false
+      recommended: true
+    - id: agent-activation
+      module: 6
+      required: false
+      recommended: true
+    - id: dashboard-observability
+      module: 7
+      required: false
+      recommended: false
+    - id: validation-quality
+      module: 8
+      required: false
+      recommended: true
+    - id: migration-lifecycle
+      module: 9
+      required: false
+      recommended: false
+    - id: standards-conventions
+      module: 11
+      required: false
+      notes: "Per-standard activation (e.g., rtl: true)"
+
+  excluded:
+    - id: automation-cli
+      module: 10
+      reason: "L3 only — future"

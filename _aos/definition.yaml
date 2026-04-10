@@ -1,0 +1,163 @@
+# _aos/definition.yaml — Project Team Definition Snapshot
+#
+# This file is a SNAPSHOT of the relevant teams from the hub's core/definition.yaml.
+# It enables this project to function independently without hub access (Iron Rule #8).
+#
+# Source: core/definition.yaml (hub SSoT)
+# Snapshot date: 2026-04-07
+# Snapshot by: Team 110 (AOS Domain Stabilization)
+#
+# IRON RULE: This is a physical copy (like lean-kit snapshots).
+# Updates propagate via explicit snapshot refresh, not auto-sync.
+#
+# Contains: multi-domain teams + universal project teams.
+# Does NOT contain: L2 engine seed data (gates, phases, routing rules, domains).
+# For full L2 seed: see core/definition.yaml
+
+version: "1.0.0"
+source_ref: "core/definition.yaml"
+snapshot_date: "2026-04-07"
+profile: L0
+
+# ============================================================
+# MULTI-DOMAIN TEAMS (shared across all projects)
+# ============================================================
+
+team_00:
+  id: team_00
+  label: Team 00
+  name: System Designer (Principal)
+  engine: human
+  group: leadership
+  profession: principal
+  role_description: "Human owner. Sets all Iron Rules, holds final approval on gate 5, defines product vision and constraints."
+
+team_90:
+  id: team_90
+  label: Team 90
+  name: Dev Validator
+  engine: codex
+  group: governance
+  profession: dev_validator
+  role_description: "Multi-project validator. Validates both code and governance compliance."
+
+team_100:
+  id: team_100
+  label: Team 100
+  name: Chief System Architect
+  engine: claude-code
+  group: architecture
+  profession: chief_architect
+  role_description: "Program-level architecture and synthesis. GATE_2 owner. Coordinates domain architects and execution teams."
+
+team_170:
+  id: team_170
+  label: Team 170
+  name: Spec & Governance
+  engine: codex
+  group: governance
+  profession: spec_author
+  role_description: "Canonical document maintenance, LOD production, registry sync."
+
+team_190:
+  id: team_190
+  label: Team 190
+  name: Constitutional Validator
+  engine: codex
+  group: governance
+  profession: constitutional_validator
+  role_description: "Cross-engine validation authority. GATE_0 entry + GATE_1/1.2 blocking + L-GATE_V constitutional review."
+
+team_191:
+  id: team_191
+  label: Team 191
+  name: Git & File Governance
+  engine: cursor
+  group: governance
+  profession: git_governance
+  role_description: "Version control, branching, backups, file structure compliance."
+
+# ============================================================
+# UNIVERSAL PROJECT TEAMS (same number = same role everywhere, Iron Rule #9)
+# ============================================================
+
+team_10:
+  id: team_10
+  label: Team 10
+  name: Gateway / Execution Lead
+  engine: cursor
+  group: gateway
+  profession: gateway_orchestrator
+  role_description: "Gateway — execution lead, team activation, gate submissions."
+
+team_20:
+  id: team_20
+  label: Team 20
+  name: Backend Implementation
+  engine: cursor
+  group: implementation
+  profession: backend_engineer
+  role_description: "API, logic, DB, services, runtime — backend execution."
+
+team_30:
+  id: team_30
+  label: Team 30
+  name: Frontend Implementation
+  engine: cursor
+  group: implementation
+  profession: frontend_engineer
+  role_description: "Frontend — components, pages, API integration, client-side logic."
+
+team_40:
+  id: team_40
+  label: Team 40
+  name: UI Assets & Design
+  engine: cursor
+  group: design
+  profession: ui_designer
+  role_description: "Design tokens, CSS, visual consistency, UI assets."
+
+team_50:
+  id: team_50
+  label: Team 50
+  name: QA & Functional Acceptance
+  engine: cursor
+  group: qa
+  profession: qa_engineer
+  role_description: "QA & Functional Acceptance. Every QA run must be a FRESH test with full evidence."
+
+team_60:
+  id: team_60
+  label: Team 60
+  name: DevOps & Platform
+  engine: cursor
+  group: implementation
+  profession: devops_engineer
+  role_description: "Infrastructure, runtimes, CI/CD, platform readiness."
+
+team_70:
+  id: team_70
+  label: Team 70
+  name: Documentation
+  engine: codex
+  group: documentation
+  profession: technical_writer
+  role_description: "Technical writing — AS_MADE_REPORT, specs, knowledge promotion."
+
+team_80:
+  id: team_80
+  label: Team 80
+  name: Research
+  engine: variable
+  group: research
+  profession: researcher
+  role_description: "Deep analysis, competitive research, technology evaluation, feasibility studies."
+
+team_110:
+  id: team_110
+  label: Team 110
+  name: Domain Architect (IDE)
+  engine: codex
+  group: architecture
+  profession: domain_architect
+  role_description: "Produces spec packages (LOD200/LOD400), raises risks and alternatives before recommending."

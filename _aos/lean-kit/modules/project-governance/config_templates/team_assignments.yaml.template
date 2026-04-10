@@ -1,0 +1,83 @@
+# team_assignments.yaml — L0 Team Registry (Schema v1.1)
+# ------------------------------------------------------
+# Declares all agents used in this project.
+# IRON RULE: builder_agent engine MUST differ from validator_agent engine.
+# Enforcement: validate_aos.sh Check 2 (automated) + System Designer at L-GATE_E (manual).
+#
+# SLUG FORMAT: ^[a-z][a-z0-9]*_[a-z]+$
+#   Prefix = project abbreviation (lowercase alphanumeric only, no hyphens)
+#   Suffix = role (reserved: _sd / _arch / _build / _val / _doc / _gate)
+#   Exactly one underscore separating prefix from suffix.
+#
+# ROLE TYPES (6 canonical):
+#   system_designer      — human orchestrator (required)
+#   architecture_agent   — spec author, LOD200/LOD400 (required)
+#   builder_agent        — implementation (required; engine MUST differ from validator)
+#   validator_agent      — cross-engine QA (required; engine MUST differ from builder)
+#   documentation_agent  — technical writing (optional)
+#   gateway_agent        — gate coordination, mandate generation (optional; EXEMPT from cross-engine rule)
+
+project_id: "[project-id]"
+lean_kit_version: "[version]"
+
+teams:
+  - id: "[project-prefix]_sd"
+    role_type: system_designer
+    engine: human
+    name: "[Human Name]"
+    skills:
+      - domain_knowledge
+      - decision_authority
+      - route_and_escalate
+    notes: "Orchestrator only. Never approves content. Never substitutes for validator."
+
+  - id: "[project-prefix]_arch"
+    role_type: architecture_agent
+    engine: "[claude-code|cursor-composer|openai|gemini]"
+    skills:
+      - lod_spec_authoring
+      - iron_rule_knowledge
+      - mandate_issuance
+    notes: "Writes LOD200, LOD400. Reviews at L-GATE_V when required."
+
+  - id: "[project-prefix]_build"
+    role_type: builder_agent
+    engine: "[cursor-composer|openai|gemini|claude-code]"
+    skills:
+      - lod400_execution
+      - lod500_authoring
+    notes: "Implements against LOD400. Engine MUST differ from validator — IRON RULE."
+
+  - id: "[project-prefix]_val"
+    role_type: validator_agent
+    engine: "[different-engine-from-builder]"
+    skills:
+      - independent_review
+      - test_execution
+      - finding_classification
+    notes: "Cross-engine validator at L-GATE_V. IRON RULE: engine != builder."
+
+  # OPTIONAL roles below — include only if project requires them:
+
+  # - id: "[project-prefix]_doc"
+  #   role_type: documentation_agent
+  #   engine: "[any-engine]"
+  #   skills:
+  #     - template_completion
+  #     - governance_indexing
+  #   notes: "Technical writing. Optional on small projects."
+
+  # - id: "[project-prefix]_gate"
+  #   role_type: gateway_agent
+  #   engine: "[any-engine]"
+  #   skills:
+  #     - gate_coordination
+  #     - mandate_generation
+  #   notes: "Gate coordination. EXEMPT from cross-engine rule."
+
+cross_engine_validator: "[project-prefix]_val"
+
+# Iron Rule enforcement:
+# builder_agent engine MUST differ from validator_agent engine.
+# validate_aos.sh Check 2 enforces this programmatically.
+# gateway_agent is EXEMPT (does not build or validate).

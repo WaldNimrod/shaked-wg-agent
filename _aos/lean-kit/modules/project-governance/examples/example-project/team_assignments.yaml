@@ -1,0 +1,42 @@
+# Fictional registry for example-project — builder and validator use different engines.
+# Schema v1.1 — slug format: ^[a-z][a-z0-9]*_[a-z]+$
+
+project_id: ex-tasktracker-l0
+lean_kit_version: "1.0.0-example"
+
+teams:
+  - id: tasktracker_sd
+    role_type: system_designer
+    engine: human
+    name: "Example Orchestrator"
+    skills:
+      - domain_knowledge
+      - decision_authority
+      - route_and_escalate
+    notes: "Orchestrator only. Does not substitute for cross-engine validation."
+
+  - id: tasktracker_arch
+    role_type: architecture_agent
+    engine: claude-code
+    skills:
+      - lod_spec_authoring
+      - iron_rule_knowledge
+    notes: "Authored LOD200/LOD400 for WP001 in this example."
+
+  - id: tasktracker_build
+    role_type: builder_agent
+    engine: cursor-composer
+    skills:
+      - lod400_execution
+      - lod500_authoring
+    notes: "Builder for both WPs; engine differs from validator (IRON RULE)."
+
+  - id: tasktracker_val
+    role_type: validator_agent
+    engine: openai-codex
+    skills:
+      - independent_review
+      - test_execution
+    notes: "Cross-engine validator at L-GATE_V; engine != cursor-composer builder."
+
+cross_engine_validator: tasktracker_val

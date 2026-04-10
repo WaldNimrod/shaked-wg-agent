@@ -1,0 +1,54 @@
+# L2 — AOS v3 / Dashboard Profile
+# Full governance with engine integration and dashboard.
+
+profile: L2
+label: "AOS v3 / Dashboard"
+version: "3.1.1"
+extends: L0
+
+modules:
+  core:
+    - id: project-governance
+      module: 1
+      required: true
+    - id: team-model
+      module: 3
+      required: true
+    - id: document-lifecycle
+      module: 4
+      required: true
+
+  required_additions:
+    - id: gate-workflow
+      module: 2
+      required: true
+    - id: version-identity
+      module: 5
+      required: true
+    - id: agent-activation
+      module: 6
+      required: true
+    - id: dashboard-observability
+      module: 7
+      required: true
+    - id: validation-quality
+      module: 8
+      required: true
+
+  optional:
+    - id: migration-lifecycle
+      module: 9
+      required: false
+      recommended: true
+    - id: standards-conventions
+      module: 11
+      required: false
+      notes: "Per-standard activation"
+
+  excluded:
+    - id: automation-cli
+      module: 10
+      reason: "L3 only — future"
+
+# L2 additional metadata.yaml requirement:
+#   aos_engine_version: required (non-empty)

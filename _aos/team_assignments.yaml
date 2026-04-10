@@ -1,0 +1,54 @@
+project_id: shaked-wg-agent
+lean_kit_version: 3.1.2+3e4164e
+
+teams:
+  - id: shaked_sd
+    role_type: system_designer
+    engine: human
+    name: Nimrod
+    skills:
+      - product
+      - governance
+      - system-design
+    notes: Project owner. Principal authority (Team 00). Approves all gate transitions.
+
+  - id: shaked_arch
+    role_type: architecture_agent
+    engine: claude-code
+    name: Claude Code (Architecture)
+    skills:
+      - planning
+      - spec
+      - code-review
+      - aos-governance
+    notes: >
+      Produces LOD200/LOD400 specs. Reviews architecture at L-GATE_S.
+      Updates roadmap.yaml between gates. Issues implementation mandates.
+
+  - id: shaked_build
+    role_type: builder_agent
+    engine: cursor-composer
+    name: Cursor (Builder)
+    skills:
+      - python
+      - web-scraping
+      - cli
+      - testing
+    notes: >
+      Executes LOD400 specs. Authors LOD500 as-built. Responsible for
+      shaked_wg_agent/ package, scrapers, tests, and Makefile.
+
+  - id: shaked_val
+    role_type: validator_agent
+    engine: openai
+    name: OpenAI (Validator)
+    skills:
+      - functional-testing
+      - code-review
+      - constitutional-validation
+    notes: >
+      Cross-engine validator (Iron Rule #1: engine != cursor-composer).
+      Executes L-GATE_V checks. Independent of builder. Cannot be overridden
+      by builder or architect — only by Team 00 (System Designer).
+
+cross_engine_validator: shaked_val

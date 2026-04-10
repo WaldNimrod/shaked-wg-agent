@@ -1,0 +1,52 @@
+# L3 — Full Automation Profile (future)
+# Extends L2 with CLI automation and pipeline integration.
+
+profile: L3
+label: "Full Automation (future)"
+version: "3.1.1"
+extends: L2
+status: STUB
+
+modules:
+  core:
+    - id: project-governance
+      module: 1
+      required: true
+    - id: team-model
+      module: 3
+      required: true
+    - id: document-lifecycle
+      module: 4
+      required: true
+
+  required_additions:
+    - id: gate-workflow
+      module: 2
+      required: true
+    - id: version-identity
+      module: 5
+      required: true
+    - id: agent-activation
+      module: 6
+      required: true
+    - id: dashboard-observability
+      module: 7
+      required: true
+    - id: validation-quality
+      module: 8
+      required: true
+    - id: migration-lifecycle
+      module: 9
+      required: true
+    - id: automation-cli
+      module: 10
+      required: true
+
+  optional:
+    - id: standards-conventions
+      module: 11
+      required: false
+      notes: "Per-standard activation"
+
+# L3 is not yet active. No projects use L3.
+# Module 10 contents are stubs.

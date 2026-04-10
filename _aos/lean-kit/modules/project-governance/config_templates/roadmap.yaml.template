@@ -1,0 +1,44 @@
+# roadmap.yaml — L0 Work Package State Registry (Schema v1.1)
+# -----------------------------------------------------------
+# This file is the SSOT for WP state in this project.
+# Mirrors AOS DB schema — enables clean L0→L2 migration.
+# One entry per work package.
+#
+# SSOT RULE: roadmap.yaml project.profile is AUTHORITATIVE.
+# dashboard_config.yaml profile = read-only mirror. Divergence → roadmap.yaml wins.
+#
+# ENUM VALUES (canonical):
+#   status:             PLANNED | IN_PROGRESS | COMPLETE | BLOCKED
+#   track:              A | B
+#   current_lean_gate:  L-GATE_E | L-GATE_C | L-GATE_S | L-GATE_B | L-GATE_V | COMPLETE
+#   lod_status:         LOD100 | LOD200 | LOD300 | LOD400 | LOD500
+#   profile:            L0 | L2 | L3
+
+project:
+  id: "[project-id]"
+  name: "[Project Name]"
+  profile: L0                          # L0 | L2 | L3
+  lean_kit_version: "[version+sha]"    # e.g. "3.1.0+abc1234"
+  created: "[YYYY-MM-DD]"
+  owner: "[project-prefix]_sd"         # system_designer team ID
+  active_milestone: "[milestone-id]"   # currently active milestone
+  notes: ""                            # project-level notes
+
+work_packages:
+  - id: "[PROJECT-PREFIX]-P001-WP001"
+    label: "[Brief descriptive label]"
+    status: PLANNED                          # PLANNED | IN_PROGRESS | COMPLETE | BLOCKED
+    track: A                                 # A (4-gate) | B (5-gate)
+    current_lean_gate: L-GATE_E              # current gate position
+    lod_status: LOD100                       # highest LOD document authored
+    assigned_builder: "[project-prefix]_build"      # slug format: ^[a-z][a-z0-9]*_[a-z]+$
+    assigned_validator: "[project-prefix]_val"      # slug format: ^[a-z][a-z0-9]*_[a-z]+$
+    created_at: "[YYYY-MM-DD]"
+    milestone_ref: "[milestone-id]"          # which milestone this WP belongs to
+    spec_ref: "_aos/work_packages/[WP-ID]/LOD400_spec.md"  # MUST be repo-internal
+    gate_history:
+      - gate: L-GATE_E
+        result: PASS
+        date: "[YYYY-MM-DD]"
+        notes: ""
+    notes: ""

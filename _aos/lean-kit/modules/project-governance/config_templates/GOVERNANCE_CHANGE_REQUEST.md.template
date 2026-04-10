@@ -1,0 +1,58 @@
+---
+id: GOVERNANCE_CHANGE_REQUEST_[TOPIC]_v1.0.0
+type: GOVERNANCE_CHANGE_REQUEST
+from: Team [XX] ([role])
+to: Team 100 (Chief System Architect)
+cc: Team 00 (Principal)
+date: [YYYY-MM-DD]
+version: v1.0.0
+urgency: [LOW | MEDIUM | HIGH | CRITICAL]
+target_file: core/governance/team_[XX].md
+project: [project name]
+---
+
+# Governance Change Request: [Brief Title]
+
+## 1. Requesting Team
+
+- **Team ID:** [XX]
+- **Role:** [team role]
+- **Project:** [project name]
+- **Engine:** [engine name]
+
+## 2. Proposed Change
+
+[Describe exactly what should change in the governance contract. Be specific about which sections, which lines, what wording should be added/modified/removed.]
+
+## 3. Rationale
+
+[Why is this change needed? What problem does the current contract cause? What operational scenario requires this update?]
+
+## 4. Precise Prompt for Team 100
+
+[Write the exact instruction Team 100 should follow to make the change. This is the most important section — it must be actionable without further clarification.]
+
+Example:
+> In `core/governance/team_XX.md`, after the "Validation Criteria" section, add:
+> ```
+> ## New Section Title
+> [exact content]
+> ```
+
+## 5. Impact Assessment
+
+- **Affects other teams:** [YES/NO — if yes, list which teams and how]
+- **Requires context refresh broadcast:** [YES/NO]
+- **Backward compatible:** [YES/NO — if no, explain migration path]
+
+## 6. Approval
+
+- [ ] Team 100 reviewed
+- [ ] Team 00 approved
+- [ ] Change executed in `core/governance/`
+- [ ] Propagated to all spokes
+- [ ] Requesting team notified
+
+---
+
+*Governance Change Request | AOS system*

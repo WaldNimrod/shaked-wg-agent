@@ -1,0 +1,39 @@
+project:
+  id: shaked-wg-agent
+  name: Shaked WG Basel Search Agent
+  profile: L0
+  lean_kit_version: 3.1.2+3e4164e
+  created: '2026-04-10'
+  owner: team_00
+  active_milestone: SHAKED-M001
+  notes: >
+    Personal apartment search tool for Shaked (Basel, Switzerland).
+    Manual triggers only. Project window ends 2026-06-08.
+    Searches wgzimmer.ch, wg-gesucht.de, flatfox.ch for vegan-friendly WG rooms
+    accessible by tram lines 2, 3, 8, 16.
+
+work_packages:
+  - id: SHAKED-P001-WP001
+    label: Application core — Python agent skeleton, scraper stubs, CLI
+    status: IN_PROGRESS
+    track: A
+    current_lean_gate: L-GATE_B
+    lod_status: LOD400
+    assigned_builder: shaked_build
+    assigned_validator: shaked_val
+    created_at: '2026-04-10'
+    milestone_ref: SHAKED-M001
+    spec_ref: _aos/work_packages/SHAKED-P001-WP001/LOD400_spec.md
+    gate_history:
+      - gate: L-GATE_E
+        result: PASS
+        date: '2026-04-10'
+        notes: Project scope and data model defined. Config/data files in place.
+      - gate: L-GATE_S
+        result: PASS
+        date: '2026-04-10'
+        notes: Architecture approved. Python package structure, scraper abstractions, scoring model.
+    notes: >
+      Core Python package implemented: config, persistence, scorer, runner, scrapers.
+      46 tests pass. CLI run/status/list commands functional.
+      Next: live scraper integration testing against real sites.

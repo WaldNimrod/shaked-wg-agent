@@ -1,0 +1,105 @@
+---
+id: ONBOARDING_TEAM_[TEAM_ID]
+type: TEAM_ONBOARDING
+team: team_[TEAM_ID]
+project: [PROJECT_ID]
+date: [YYYY-MM-DD]
+version: v1.0.0
+---
+
+# Team [TEAM_ID] — [TEAM_NAME] | Onboarding
+
+## Who You Are
+
+**Team [TEAM_ID] — [TEAM_NAME]**
+- **Engine:** [ENGINE]
+- **Group:** [GROUP]
+- **Role:** [ROLE_DESCRIPTION_SHORT]
+- **Gate Authority:** [GATE_AUTHORITY or "None — submit to Team 50 for QA"]
+- **Project:** [PROJECT_NAME] ([PROFILE])
+
+## Iron Rules
+
+> Source: `_aos/governance/team_[TEAM_ID].md` — read full governance contract for details.
+
+1. [IRON_RULE_1]
+2. [IRON_RULE_2]
+3. [IRON_RULE_3]
+4. Universal team numbering (Iron Rule #9) — same number = same role across all projects
+5. No stale worktrees (Iron Rule #10) — run `git worktree list` before starting
+
+## Project Context
+
+**Project:** [PROJECT_NAME] — [PROJECT_DESCRIPTION]
+**Profile:** [PROFILE] ([PROFILE_DESCRIPTION])
+**Domain:** [DOMAIN]
+**Active Milestone:** [MILESTONE]
+
+[PROJECT_SPECIFIC_CONTEXT — current state, active work, key decisions already made]
+
+## Mandatory Reads (before starting ANY work)
+
+| Document | Path | Why |
+|----------|------|-----|
+| Your governance contract | `_aos/governance/team_[TEAM_ID].md` | Operational rules, trigger protocol, boundaries |
+| Your team definition | `_aos/definition.yaml` → team_[TEAM_ID] | Identity, role, engine |
+| Project context | `_aos/context/PROJECT_CONTEXT.md` | Project background |
+| Directory canon | AOS hub: `methodology/AOS_DIRECTORY_CANON_v1.0.0.md` | Iron Rules #1-10, file structure, terminology |
+| [ROLE_SPECIFIC_READ_1] | [PATH] | [WHY] |
+| [ROLE_SPECIFIC_READ_2] | [PATH] | [WHY] |
+
+## Your Current Task
+
+Read the activation mandate at:
+```
+_COMMUNICATION/team_[TEAM_ID]/[MANDATE_FILENAME]
+```
+
+[TASK_CONTEXT — what to do first, what dependencies to wait for]
+
+## MCP Browser Testing (when UI verification is required)
+
+If your task requires verifying UI in a browser:
+
+1. **Start the server** using Claude Code Preview:
+   ```
+   Use preview_start with name "dashboard" (defined in .claude/launch.json)
+   ```
+   This starts the AOS API + Dashboard on port 8090 with `AOS_V3_TRUST_CLIENT_ACTOR=1`.
+
+2. **Navigate and verify** using Claude in Chrome or Claude Preview:
+   ```
+   Navigate to http://127.0.0.1:8090/dashboard/overview.html
+   Take screenshot or read accessibility tree as evidence
+   ```
+
+3. **If MCP browser is unavailable**, report BLOCKED:
+   ```yaml
+   verdict: BLOCKED
+   reason: "MCP browser tools cannot access localhost:8090"
+   action_required: "Team 00 must configure MCP browser access"
+   ```
+   Do NOT substitute curl/grep for interactive UI testing. If the mandate requires browser verification, it requires a browser.
+
+## Communication Protocol
+
+- **Write deliverables to:** `_COMMUNICATION/team_[TEAM_ID]/`
+- **Report completion to:** Team 00 (Principal) for routing
+- **Questions/blockers:** Create artifact in `_COMMUNICATION/team_[TEAM_ID]/` → Team 00 routes to architecture team
+- **Escalation:** For blocking issues, notify Team 00 immediately with severity assessment
+
+## Trigger Protocol
+
+> Full protocol in `_aos/governance/team_[TEAM_ID].md`
+
+Submit completion via canonical artifact with header:
+```yaml
+from: Team [TEAM_ID] ([TEAM_NAME])
+gate: [CURRENT_GATE]
+work_package: [WP_ID]
+date: [ISO date]
+```
+
+---
+
+*[PROJECT_NAME] | Team [TEAM_ID] Onboarding | [DATE]*
