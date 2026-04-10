@@ -1,0 +1,20 @@
+{
+  "profile_name": "Shaked Basel WG Search",
+  "target_city": "Basel",
+  "move_in_from": "2026-06-01",
+  "budget_min_chf": 200,
+  "budget_max_chf": 1000,
+  "preferred_roommate_age": "young",
+  "diet": "vegan",
+  "tram_lines": ["8", "3", "2", "16"],
+  "language_policy": {
+    "primary_listing_language": "de",
+    "translation_required": false,
+    "preserve_source_text": true
+  },
+  "retention_days": 30,
+  "project_window_days": 60,
+  "project_start": "2026-04-09",
+  "project_end": "2026-06-08",
+  "manual_triggers_only": true
+}

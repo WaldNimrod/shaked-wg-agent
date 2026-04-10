@@ -1,0 +1,38 @@
+[
+  {
+    "run_id": "run-20260409-001",
+    "run_timestamp": "2026-04-09T09:00:00",
+    "triggered_by": "manual",
+    "sources_scanned": 3,
+    "results_scanned": 28,
+    "new_results": 4,
+    "updated_results": 2,
+    "stale_removed": 0,
+    "duration_seconds": 47,
+    "operator_notes": "Erster produktiver Lauf. Gute Ergebnisse bei wg-gesucht und flatfox."
+  },
+  {
+    "run_id": "run-20260408-001",
+    "run_timestamp": "2026-04-08T16:00:00",
+    "triggered_by": "manual",
+    "sources_scanned": 2,
+    "results_scanned": 15,
+    "new_results": 2,
+    "updated_results": 1,
+    "stale_removed": 0,
+    "duration_seconds": 31,
+    "operator_notes": "Neue Angebote bei wgzimmer.ch gefunden."
+  },
+  {
+    "run_id": "run-20260407-001",
+    "run_timestamp": "2026-04-07T14:30:00",
+    "triggered_by": "manual",
+    "sources_scanned": 2,
+    "results_scanned": 22,
+    "new_results": 1,
+    "updated_results": 0,
+    "stale_removed": 0,
+    "duration_seconds": 28,
+    "operator_notes": "Initialer Testlauf. Quellen konfiguriert."
+  }
+]
