@@ -24,9 +24,19 @@ echo "[3/6] Create .env from SFA credentials..."
 # Copy relevant upress vars from SFA .env (already on server)
 SFA_ENV="/data/projects/smallfarmsagents/.env"
 if [ -f "$SFA_ENV" ]; then
-  # Use mezoohost FTP user — canonical agents/<project>/ path on WordPress root
+  # Copy host/port/WP creds from SFA; mezoohost creds are different from SFA's
   grep -E "^UPRESS_SFTP_HOST|^UPRESS_SFTP_PORT|^UPRESS_WP_REST_BASE|^UPRESS_WP_APP_USER|^UPRESS_WP_APP_PASS" "$SFA_ENV" > "$PROJECT_DIR/.env"
-  grep -E "^UPRESS_SFTP_USER=mezoohost|^UPRESS_SFTP_PASS" "$SFA_ENV" >> "$PROJECT_DIR/.env"
+  # mezoohost credentials — different from SFA's HomeServer account
+  MEZOO_PASS=$(grep "^MEZOOHOST_PASS\|^UPRESS_MEZOO_PASS" "$SFA_ENV" 2>/dev/null | head -1 | cut -d= -f2-)
+  if [ -z "$MEZOO_PASS" ]; then
+    # Try to find in famely-neuslettr or other projects on this server
+    MEZOO_ENV=$(find /data/projects -name ".env" 2>/dev/null | xargs grep -l "mezoohost@nimrod" 2>/dev/null | head -1)
+    if [ -n "$MEZOO_ENV" ]; then
+      MEZOO_PASS=$(grep "^UPRESS_SFTP_PASS" "$MEZOO_ENV" | head -1 | cut -d= -f2-)
+    fi
+  fi
+  echo "UPRESS_SFTP_USER=mezoohost@nimrod.bio" >> "$PROJECT_DIR/.env"
+  echo "UPRESS_SFTP_PASS=${MEZOO_PASS:-FILL_IN_MANUALLY}" >> "$PROJECT_DIR/.env"
   echo "UPRESS_PUBLIC_BASE=https://www.nimrod.bio" >> "$PROJECT_DIR/.env"
   echo "UPRESS_UPLOAD_PATH=agents/shaked-wg" >> "$PROJECT_DIR/.env"
   echo ".env created from SFA credentials"
