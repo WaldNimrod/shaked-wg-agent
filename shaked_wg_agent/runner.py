@@ -7,10 +7,56 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+import requests as _requests
+
 from shaked_wg_agent.config import ProjectConfig, Source, load_config
-from shaked_wg_agent.persistence import append_run, load_listings, load_runs, mark_stale_listings, upsert_listing
+from shaked_wg_agent.persistence import append_run, load_listings, load_runs, mark_stale_listings, upsert_listing, save_listings
 from shaked_wg_agent.scorer import score_listing
 from shaked_wg_agent.scrapers.base import BaseScraper
+
+_VERIFY_TIMEOUT = 6  # seconds per URL check
+
+
+def _verify_listings(listings: list[dict]) -> list[dict]:
+    """HTTP-check each stored listing URL and update verification fields.
+
+    For listings with a direct_url: HEAD request to confirm the page is live.
+    If 404 or redirected to a search/home page → mark url_status broken.
+    Updates last_verified_at and verified_active in-place on each listing.
+    """
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    for lst in listings:
+        url = lst.get("direct_url", "")
+        if not url:
+            lst["verified_active"] = False
+            continue
+        try:
+            resp = _requests.head(
+                url,
+                timeout=_VERIFY_TIMEOUT,
+                allow_redirects=True,
+                headers={"User-Agent": "Mozilla/5.0"},
+            )
+            final_url = resp.url
+            # Consider active if HTTP 200 and not redirected to a generic search/home
+            is_active = (
+                resp.status_code == 200
+                and "/search" not in final_url
+                and "/home" not in final_url
+                and final_url.rstrip("/") != "https://flatfox.ch"
+                and final_url.rstrip("/") != "https://www.wgzimmer.ch"
+            )
+            lst["verified_active"] = is_active
+            if is_active:
+                lst["last_verified_at"] = now
+                if lst.get("url_status") == "broken_needs_recovery":
+                    lst["url_status"] = "direct"
+            else:
+                lst["url_status"] = "broken_needs_recovery"
+        except Exception:
+            # Network error — don't change existing status, just note check failed
+            lst.setdefault("verified_active", None)
+    return listings
 
 
 def _build_scraper(source: Source) -> BaseScraper:
@@ -102,6 +148,12 @@ def run_scan(cfg: ProjectConfig | None = None) -> dict[str, Any]:
                 scraper.close()
 
     stale_removed = mark_stale_listings(active_ids, cfg.agent.retention_days)
+
+    # Verify all stored listings are still live (HEAD request per URL)
+    all_listings = load_listings()
+    verified = _verify_listings(all_listings)
+    save_listings(verified)
+
     duration = round((datetime.now(UTC) - started_at).total_seconds())
 
     # Publish HTML report to upress (if credentials available)

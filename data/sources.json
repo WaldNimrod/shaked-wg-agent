@@ -13,9 +13,9 @@
     "label": "wg-gesucht.de",
     "base_url": "https://www.wg-gesucht.de",
     "search_url": "https://www.wg-gesucht.de/wg-zimmer-in-Basel.59.0.1.0.html",
-    "enabled": true,
+    "enabled": false,
     "priority": 2,
-    "notes": "Gute Abdeckung für Basel. Deutsche Texte bevorzugt."
+    "notes": "DISABLED: city ID 59 = Heidelberg (not Basel). Swiss cities require login/CAPTCHA. Not usable without authentication."
   },
   {
     "id": "tutti",
