@@ -105,24 +105,56 @@ def _modal(lst: dict) -> str:
     else:
         verify_line = '<span class="text-muted small">Noch nicht geprüft</span>'
 
-    # Contact section
+    # Contact section — guard broken listings
+    is_broken = (verified_active is False) or (lst.get("url_status") == "broken_needs_recovery")
     contact_href = direct_url or source_search_url
-    contact_btn = (
-        f'<a href="{_html.escape(contact_href)}" target="_blank" rel="noopener" '
-        f'class="btn btn-sm btn-outline-primary">'
-        f'Kontakt über {source} ↗</a>'
-        if contact_href else ""
-    )
+
     copy_btn = (
-        f'<button class="btn btn-sm btn-outline-secondary copy-btn ms-2" '
+        f'<button class="btn btn-sm btn-outline-secondary copy-btn" '
         f'onclick="copySearch(\'{rq_js}\', this)" '
         f'title="Suchbegriff in Zwischenablage kopieren">📋 Suchbegriff kopieren</button>'
     )
-    source_link = (
-        f'<a href="{_html.escape(direct_url)}" target="_blank" rel="noopener" '
-        f'class="btn btn-sm btn-link text-muted">🔗 Original öffnen</a>'
-        if direct_url else ""
+    recovery_search_url = f"https://www.google.com/search?q={_html.escape(recovery_query[:80])}"
+
+    # "Jetzt prüfen" live-check button (flatfox only, active listings)
+    source_raw = lst.get("source", "")
+    pk = lst.get("source_listing_id", "")
+    livecheck_btn = (
+        f'<button id="lc-{lid}" class="btn btn-sm btn-outline-info ms-2" '
+        f'onclick="liveCheck(\'{pk}\', \'lc-{lid}\')" '
+        f'title="Flatfox-API abfragen — prüft ob das Inserat noch aktiv ist">🔄 Jetzt prüfen</button>'
+        if source_raw == "flatfox" and not is_broken else ""
     )
+
+    if is_broken:
+        contact_block = f"""
+              <div class="alert alert-warning mb-2 py-2 px-3">
+                <strong>⚠️ Inserat möglicherweise offline</strong><br>
+                <small class="text-muted">Dieses Inserat wurde zuletzt nicht mehr auf der Plattform gefunden. Kein direkter Kontakt möglich.</small>
+              </div>
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                <a href="{_html.escape(recovery_search_url)}" target="_blank" rel="noopener"
+                   class="btn btn-sm btn-outline-secondary">🔍 Recovery-Suche</a>
+                {copy_btn}
+              </div>"""
+    else:
+        contact_href_esc = _html.escape(contact_href)
+        contact_block = f"""
+              <ol class="small mb-3 ps-3" style="line-height:1.9">
+                <li>Klick auf <strong>„Kontakt über {source} ↗"</strong> — Seite öffnet sich</li>
+                <li>Erstelle ein kostenloses Konto auf {source}.ch (~2 Min)</li>
+                <li>Klick auf <strong>„Anfrage senden"</strong> beim Inserat</li>
+                <li>Schreibe kurz: Name, Situation, Wunsch-Einzugsdatum</li>
+              </ol>
+              <div class="d-flex flex-wrap gap-2 mb-2">
+                <a href="{contact_href_esc}" target="_blank" rel="noopener"
+                   class="btn btn-sm btn-primary">Kontakt über {source} ↗</a>
+                {copy_btn}
+              </div>
+              <div class="d-flex align-items-center gap-2 small">
+                {verify_line}
+                {livecheck_btn}
+              </div>"""
 
     tags_html = " ".join(
         f'<span class="badge bg-light text-dark border me-1">{_html.escape(t)}</span>'
@@ -170,18 +202,8 @@ def _modal(lst: dict) -> str:
           </div>
           <div class="col-12 col-md-5">
             <div class="card border-0 bg-light rounded-3 p-3 mb-3">
-              <h6 class="fw-semibold mb-3">📞 Kontakt aufnehmen</h6>
-              <p class="small text-muted mb-3">
-                Direktlink zur Plattform — kostenloser Account für Kontaktanfrage nötig.
-              </p>
-              <div class="d-flex flex-wrap gap-2">
-                {contact_btn}
-                {copy_btn}
-              </div>
-              <div class="mt-3 small">
-                {verify_line}
-              </div>
-              {("<div class='mt-2'>" + source_link + "</div>") if source_link else ""}
+              <h6 class="fw-semibold mb-2">📞 So kontaktierst du:</h6>
+              {contact_block}
             </div>
             <!-- Status-Editor -->
             <div class="card border-0 bg-light rounded-3 p-3">
@@ -267,6 +289,28 @@ function toggleFav(id){
   if(idx>=0)favs.splice(idx,1);else favs.push(id);
   localStorage.setItem(FAV_KEY,JSON.stringify(favs));
   applyFav(id,favs.includes(id));
+}
+
+// ── Live check (flatfox pin API, client-side) ───────────────
+const _FLATFOX_PIN = 'https://flatfox.ch/api/v1/pin/?west=7.5147&east=7.6559&south=47.5176&north=47.5956&max_count=500';
+function liveCheck(pk,btnId){
+  const btn=document.getElementById(btnId);
+  if(!btn)return;
+  btn.innerHTML='⏳ Prüfe...';btn.disabled=true;
+  fetch(_FLATFOX_PIN)
+    .then(function(r){return r.json();})
+    .then(function(data){
+      const items=Array.isArray(data)?data:(data.results||[]);
+      const active=items.some(function(item){return String(item.pk)===String(pk);});
+      const now=new Date().toLocaleTimeString('de-CH',{hour:'2-digit',minute:'2-digit'});
+      btn.innerHTML=active?'✅ Aktiv ('+now+')':'⚠️ Nicht mehr aktiv';
+      btn.className=active?'btn btn-sm btn-success ms-2':'btn btn-sm btn-warning ms-2';
+      btn.disabled=false;
+    })
+    .catch(function(){
+      btn.innerHTML='⚠️ Prüfung fehlgeschlagen';
+      btn.disabled=false;
+    });
 }
 
 // ── Copy search term ────────────────────────────────────────
@@ -427,6 +471,9 @@ def generate_report(
 ) -> str:
     """Return full HTML string for the listings report page."""
     sorted_listings = sorted(listings, key=lambda x: x.get("relevance_score", 0), reverse=True)
+    # Fix B: separate displayable (score>0) from hidden (score=0 = over-budget/invalid)
+    visible_listings = [lst for lst in sorted_listings if lst.get("relevance_score", 0) > 0]
+    hidden_count = len(sorted_listings) - len(visible_listings)
     last_run = runs[0] if runs else None
     last_scan = last_run["run_timestamp"] if last_run else "—"
     n_new = last_run.get("new_results", 0) if last_run else 0
@@ -442,14 +489,17 @@ def generate_report(
         "warning" if isinstance(days_left, int) and days_left < 21 else "success"
     )
 
-    # Count by tier
-    n_direct = sum(1 for lst in listings if _tier(lst)[0] == "🔗")
-    n_login  = sum(1 for lst in listings if _tier(lst)[0] == "🔐")
-    n_search = sum(1 for lst in listings if _tier(lst)[0] == "🔍")
-    n_broken = sum(1 for lst in listings if _tier(lst)[0] == "⚠️")
+    # Count by tier (visible only)
+    n_direct = sum(1 for lst in visible_listings if _tier(lst)[0] == "🔗")
+    n_login  = sum(1 for lst in visible_listings if _tier(lst)[0] == "🔐")
+    n_search = sum(1 for lst in visible_listings if _tier(lst)[0] == "🔍")
+    n_broken = sum(1 for lst in visible_listings if _tier(lst)[0] == "⚠️")
+    # Data quality stats for Fix F banner
+    n_verified = sum(1 for lst in listings if lst.get("verified_active") is True)
+    n_total_real = len(listings)
 
-    rows    = "".join(_table_row(lst) for lst in sorted_listings)
-    modals  = "".join(_modal(lst)     for lst in sorted_listings)
+    rows    = "".join(_table_row(lst) for lst in visible_listings)
+    modals  = "".join(_modal(lst)     for lst in visible_listings)
 
     # Filter bar: Status options
     status_opts = '<option value="alle">Status: alle</option>' + "".join(
@@ -496,20 +546,25 @@ def generate_report(
       &nbsp;·&nbsp; Letzte Suche: <strong>{last_scan}</strong>
       &nbsp;·&nbsp; {n_new} neu seit letztem Lauf
     </div>
+    <div class="version-bar mt-1">
+      Datenqualität: <strong>Echtdaten (flatfox API)</strong>
+      &nbsp;·&nbsp; {n_verified} von {n_total_real} aktiv geprüft
+      &nbsp;·&nbsp; Keine Testdaten
+    </div>
   </div>
 
   <!-- Stats row -->
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
       <div class="card stat-card text-center p-3">
-        <div class="fs-2 fw-bold" style="color:#d97706">{len(listings)}</div>
-        <div class="text-muted small">Inserate total</div>
+        <div class="fs-2 fw-bold" style="color:#d97706">{len(visible_listings)}</div>
+        <div class="text-muted small">Inserate im Budget</div>
       </div>
     </div>
     <div class="col-6 col-md-3">
       <div class="card stat-card text-center p-3">
         <div class="fs-2 fw-bold text-success">
-          {sorted_listings[0].get('relevance_score', 0) if sorted_listings else '—'}
+          {visible_listings[0].get('relevance_score', 0) if visible_listings else '—'}
         </div>
         <div class="text-muted small">Höchster Score</div>
       </div>
@@ -523,7 +578,7 @@ def generate_report(
     <div class="col-6 col-md-3">
       <div class="card stat-card text-center p-3">
         <div class="fs-2 fw-bold text-success">
-          {sum(1 for lst in listings if 'vegan' in lst.get('vegan_signal','').lower())}
+          {sum(1 for lst in visible_listings if 'vegan' in lst.get('vegan_signal','').lower())}
         </div>
         <div class="text-muted small">Vegan-freundlich</div>
       </div>
@@ -588,7 +643,8 @@ def generate_report(
     </div>
   </div>
 
-  <p class="text-muted small mt-3 text-center">
+  {f'<p class="text-muted small mt-2 text-center">+ {hidden_count} weitere Inserate ausgeblendet (Außerhalb Budget / Score 0)</p>' if hidden_count else ''}
+  <p class="text-muted small mt-2 text-center">
     3× täglich aktualisiert (07:00 / 13:00 / 19:00) · {profile_name} · v{__version__}
   </p>
 </div>
