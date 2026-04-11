@@ -19,6 +19,8 @@ echo "[2/6] Create virtual environment..."
 cd "$PROJECT_DIR"
 python3 -m venv .venv
 .venv/bin/pip install -q -e .
+# Install Playwright Chromium for wgzimmer scraper (falls back gracefully if blocked)
+.venv/bin/playwright install chromium --with-deps 2>/dev/null || echo "  (playwright install skipped — will use fallback)"
 
 echo "[3/6] Create .env from SFA credentials..."
 # Copy relevant upress vars from SFA .env (already on server)

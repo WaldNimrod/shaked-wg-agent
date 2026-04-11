@@ -101,10 +101,10 @@ def _build_scraper(source: Source) -> BaseScraper:
     """Instantiate the correct scraper for a given source."""
     from shaked_wg_agent.scrapers.flatfox import FlatfoxScraper
     from shaked_wg_agent.scrapers.wg_gesucht import WgGesuchtScraper
-    from shaked_wg_agent.scrapers.wgzimmer import WgzimmerScraper
+    from shaked_wg_agent.scrapers.wgzimmer_pw import WgzimmerPlaywrightScraper
 
     mapping = {
-        "wgzimmer": WgzimmerScraper,
+        "wgzimmer": WgzimmerPlaywrightScraper,
         "wg-gesucht": WgGesuchtScraper,
         "flatfox": FlatfoxScraper,
     }

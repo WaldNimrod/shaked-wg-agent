@@ -14,6 +14,7 @@ dependencies = [
     "lxml>=5.0",
     "rich>=13.0",
     "python-dotenv>=1.0",
+    "playwright>=1.40",
 ]
 
 [project.optional-dependencies]
