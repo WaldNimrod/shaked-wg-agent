@@ -17,15 +17,52 @@ from shaked_wg_agent.scrapers.base import BaseScraper
 _VERIFY_TIMEOUT = 6  # seconds per URL check
 
 
-def _verify_listings(listings: list[dict]) -> list[dict]:
-    """HTTP-check each stored listing URL and update verification fields.
+def _verify_flatfox_via_api(listings: list[dict]) -> None:
+    """Verify flatfox listings using the pin API (not blocked by Cloudflare).
 
-    For listings with a direct_url: HEAD request to confirm the page is live.
-    If 404 or redirected to a search/home page → mark url_status broken.
-    Updates last_verified_at and verified_active in-place on each listing.
+    Fetches the current set of active PKs from the bbox search and marks
+    each stored flatfox listing as verified_active=True/False accordingly.
     """
+    from shaked_wg_agent.scrapers.flatfox import _PIN_URL, _BBOX
+
+    flatfox = [l for l in listings if l.get("source") == "flatfox" and l.get("source_listing_id")]
+    if not flatfox:
+        return
+
+    try:
+        resp = _requests.get(_PIN_URL, params=_BBOX, timeout=20)
+        resp.raise_for_status()
+        active_pks = {str(item["pk"]) for item in resp.json() if "pk" in item}
+    except Exception:
+        return  # API unreachable — leave existing state unchanged
+
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    for lst in flatfox:
+        pk = str(lst["source_listing_id"])
+        if pk in active_pks:
+            lst["verified_active"] = True
+            lst["last_verified_at"] = now
+            if lst.get("url_status") == "broken_needs_recovery":
+                lst["url_status"] = "direct"
+        else:
+            lst["verified_active"] = False
+            lst["url_status"] = "broken_needs_recovery"
+
+
+def _verify_listings(listings: list[dict]) -> list[dict]:
+    """Verify stored listings are still live.
+
+    Strategy by source:
+    - flatfox: re-check via pin API (Cloudflare blocks HEAD from server IPs)
+    - others: HEAD request per URL (definitive 404 → broken, 200 → active, else → unchanged)
+    """
+    # flatfox: API-based presence check (reliable, CF-bypass)
+    _verify_flatfox_via_api(listings)
+
     now = datetime.now(UTC).isoformat(timespec="seconds")
     for lst in listings:
+        if lst.get("source") == "flatfox":
+            continue  # already handled above
         url = lst.get("direct_url", "")
         if not url:
             lst["verified_active"] = False
@@ -38,7 +75,6 @@ def _verify_listings(listings: list[dict]) -> list[dict]:
                 headers={"User-Agent": "Mozilla/5.0"},
             )
             final_url = resp.url
-            # Definitive 404 → mark broken. 200 → active. Other codes → don't change.
             if resp.status_code == 404:
                 lst["verified_active"] = False
                 lst["url_status"] = "broken_needs_recovery"
@@ -46,7 +82,7 @@ def _verify_listings(listings: list[dict]) -> list[dict]:
                 is_active = (
                     "/search" not in final_url
                     and "/home" not in final_url
-                    and final_url.rstrip("/") not in ("https://flatfox.ch", "https://www.wgzimmer.ch")
+                    and final_url.rstrip("/") not in ("https://www.wgzimmer.ch",)
                 )
                 lst["verified_active"] = is_active
                 if is_active:
@@ -55,10 +91,9 @@ def _verify_listings(listings: list[dict]) -> list[dict]:
                         lst["url_status"] = "direct"
                 else:
                     lst["url_status"] = "broken_needs_recovery"
-            # else: 3xx, 5xx, etc. — leave existing verified_active unchanged
+            # 403, 5xx, 3xx → leave unchanged
         except Exception:
-            # Network error (timeout, DNS, etc.) — preserve existing state, do NOT downgrade
-            pass
+            pass  # network error → preserve existing state
     return listings
 
 
