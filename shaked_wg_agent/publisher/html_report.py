@@ -41,7 +41,7 @@ def _tier(lst: dict) -> tuple:
 
 def _badge(status: str) -> str:
     cls, label = _STATUS_BADGE.get(status, ("secondary", status))
-    return f'<span class="badge bg-{cls} text-nowrap">{label}</span>'
+    return f'<span class="badge bg-{cls} text-nowrap" data-status-badge>{label}</span>'
 
 
 def _score_bar(score: int) -> str:
@@ -129,8 +129,14 @@ def _modal(lst: dict) -> str:
         for t in tags
     )
 
+    # Status options for the select
+    status_options = "".join(
+        f'<option value="{k}">{v[1]}</option>'
+        for k, v in _STATUS_BADGE.items()
+    )
+
     return f"""
-<div class="modal fade" id="modal-{lid}" tabindex="-1" aria-labelledby="modal-label-{lid}" aria-hidden="true">
+<div class="modal fade" id="modal-{lid}" tabindex="-1" aria-labelledby="modal-label-{lid}" aria-hidden="true" data-listing-id="{lid}">
   <div class="modal-dialog modal-fullscreen-md-down modal-xl modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff">
@@ -163,7 +169,7 @@ def _modal(lst: dict) -> str:
             {"<p class='mb-0'>" + tags_html + "</p>" if tags else ""}
           </div>
           <div class="col-12 col-md-5">
-            <div class="card border-0 bg-light rounded-3 p-3">
+            <div class="card border-0 bg-light rounded-3 p-3 mb-3">
               <h6 class="fw-semibold mb-3">📞 Kontakt aufnehmen</h6>
               <p class="small text-muted mb-3">
                 Direktlink zur Plattform — kostenloser Account für Kontaktanfrage nötig.
@@ -176,6 +182,31 @@ def _modal(lst: dict) -> str:
                 {verify_line}
               </div>
               {("<div class='mt-2'>" + source_link + "</div>") if source_link else ""}
+            </div>
+            <!-- Status-Editor -->
+            <div class="card border-0 bg-light rounded-3 p-3">
+              <h6 class="fw-semibold mb-2">✏️ Eigener Status</h6>
+              <div class="pin-section mb-2">
+                <div class="input-group input-group-sm" style="max-width:220px">
+                  <input type="password" class="form-control pin-input" placeholder="PIN eingeben"
+                         id="pin-{lid}" autocomplete="off">
+                  <button class="btn btn-outline-secondary" type="button"
+                          onclick="checkPin('{lid}')">Entsperren</button>
+                </div>
+                <div id="pin-err-{lid}" class="text-danger small mt-1" style="display:none">Falscher PIN</div>
+              </div>
+              <div id="status-editor-{lid}" style="display:none">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <select class="form-select form-select-sm" id="status-sel-{lid}" style="width:auto">
+                    {status_options}
+                  </select>
+                  <button class="btn btn-sm btn-primary" onclick="saveStatus('{lid}')">Speichern</button>
+                  <span id="status-saved-{lid}" class="text-success small" style="display:none">✓ Gespeichert</span>
+                </div>
+              </div>
+              <p class="text-muted" style="font-size:.72rem;margin-top:.5rem;margin-bottom:0">
+                Statusänderungen werden lokal gespeichert (nur dieser Browser).
+              </p>
             </div>
           </div>
         </div>
@@ -191,17 +222,25 @@ def _table_row(lst: dict) -> str:
     price = lst.get("price_chf")
     tram = ", ".join(f"T{t}" for t in lst.get("tram_match_lines", []))
     tier_icon, tier_label, tier_cls, tier_tip = _tier(lst)
+    status = lst.get("status", "neu")
+    score = lst.get("relevance_score", 0)
+    district = lst.get("district", "")
 
     return (
-        f'<tr data-bs-toggle="modal" data-bs-target="#modal-{lid}" style="cursor:pointer">'
+        f'<tr data-bs-toggle="modal" data-bs-target="#modal-{lid}" style="cursor:pointer"'
+        f' data-status="{_html.escape(status)}"'
+        f' data-price="{price or 0}"'
+        f' data-tier="{tier_icon}"'
+        f' data-score="{score}"'
+        f' data-district="{_html.escape(district)}">'
         f'<td onclick="event.stopPropagation()">'
         f'<button id="fav-{lid}" class="btn p-0 border-0 fav-btn" '
         f'onclick="toggleFav(\'{lid}\')" style="font-size:1.1rem;background:none;line-height:1">☆</button>'
         f'</td>'
-        f'<td>{_score_bar(lst.get("relevance_score", 0))}</td>'
-        f'<td>{_badge(lst.get("status", "neu"))}</td>'
+        f'<td>{_score_bar(score)}</td>'
+        f'<td>{_badge(status)}</td>'
         f'<td class="text-nowrap">{"CHF " + str(price) if price else "—"}</td>'
-        f'<td>{_safe(lst.get("district", ""))}</td>'
+        f'<td>{_safe(district)}</td>'
         f'<td class="text-nowrap">{tram}</td>'
         f'<td>{_vegan_cell(lst.get("vegan_signal", ""))}</td>'
         f'<td>'
@@ -229,7 +268,6 @@ function toggleFav(id){
   localStorage.setItem(FAV_KEY,JSON.stringify(favs));
   applyFav(id,favs.includes(id));
 }
-document.addEventListener('DOMContentLoaded',function(){loadFavs().forEach(id=>applyFav(id,true));});
 
 // ── Copy search term ────────────────────────────────────────
 function copySearch(text,btn){
@@ -238,6 +276,145 @@ function copySearch(text,btn){
     setTimeout(function(){btn.innerHTML=orig;btn.disabled=false;},2000);
   });
 }
+
+// ── Status editing ──────────────────────────────────────────
+const STATUS_KEY = 'shaked-wg-status';
+const CORRECT_PIN = '418141';
+const STATUS_MAP = {
+  favorit:     ['success','⭐ favorit'],
+  interessant: ['warning','interessant'],
+  kontaktiert: ['primary','kontaktiert'],
+  neu:         ['secondary','neu'],
+  abgesagt:    ['danger','abgesagt']
+};
+
+function loadStatuses(){try{return JSON.parse(localStorage.getItem(STATUS_KEY)||'{}');}catch{return{};}}
+
+function checkPin(lid){
+  const input=document.getElementById('pin-'+lid);
+  const err=document.getElementById('pin-err-'+lid);
+  if(input.value===CORRECT_PIN){
+    document.getElementById('status-editor-'+lid).style.display='';
+    input.parentElement.parentElement.style.display='none';
+    // Pre-fill select with current stored status
+    const statuses=loadStatuses();
+    const sel=document.getElementById('status-sel-'+lid);
+    if(sel&&statuses[lid])sel.value=statuses[lid];
+  } else {
+    err.style.display='';
+    input.value='';
+    setTimeout(function(){err.style.display='none';},2000);
+  }
+}
+
+function saveStatus(lid){
+  const sel=document.getElementById('status-sel-'+lid);
+  if(!sel)return;
+  const st=sel.value;
+  const statuses=loadStatuses();
+  statuses[lid]=st;
+  localStorage.setItem(STATUS_KEY,JSON.stringify(statuses));
+  _applyStatus(lid,st);
+  const saved=document.getElementById('status-saved-'+lid);
+  if(saved){saved.style.display='';setTimeout(function(){saved.style.display='none';},2000);}
+}
+
+function _applyStatus(lid,st){
+  const info=STATUS_MAP[st]||['secondary',st];
+  // Update row badge + data-status
+  const row=document.querySelector('tr[data-bs-target="#modal-'+lid+'"]');
+  if(row){
+    row.dataset.status=st;
+    const badge=row.querySelector('td:nth-child(3) [data-status-badge]');
+    if(badge){badge.className='badge bg-'+info[0]+' text-nowrap';badge.setAttribute('data-status-badge','');badge.textContent=info[1];}
+    if(st==='favorit')row.classList.add('table-warning');else row.classList.remove('table-warning');
+  }
+  // Update modal header badge
+  const modal=document.getElementById('modal-'+lid);
+  if(modal){
+    const hbadge=modal.querySelector('.modal-header [data-status-badge]');
+    if(hbadge){hbadge.className='badge bg-'+info[0]+' text-nowrap';hbadge.textContent=info[1];}
+  }
+  // Re-apply filter since status changed
+  filterTable();
+}
+
+function applyStoredStatuses(){
+  const statuses=loadStatuses();
+  Object.entries(statuses).forEach(function([lid,st]){_applyStatus(lid,st);});
+}
+
+// ── Filtering ───────────────────────────────────────────────
+const FILTERS={status:'alle',price:'alle',tier:'alle'};
+
+function filterTable(){
+  const rows=document.querySelectorAll('#listings-tbody tr');
+  let visible=0;
+  rows.forEach(function(row){
+    const st=row.dataset.status||'neu';
+    const pr=parseInt(row.dataset.price||'0');
+    const ti=row.dataset.tier||'';
+    let show=true;
+    if(FILTERS.status!=='alle'&&st!==FILTERS.status)show=false;
+    if(FILTERS.price!=='alle'){
+      const maxP=parseInt(FILTERS.price);
+      if(pr<=0||pr>maxP)show=false;
+    }
+    if(FILTERS.tier!=='alle'&&ti!==FILTERS.tier)show=false;
+    row.style.display=show?'':'none';
+    if(show)visible++;
+  });
+  const cnt=document.getElementById('row-count');
+  if(cnt)cnt.textContent='Zeige '+visible+' von '+rows.length+' Inseraten';
+}
+
+function setFilter(key,val){FILTERS[key]=val;filterTable();}
+function clearFilters(){
+  FILTERS.status='alle';FILTERS.price='alle';FILTERS.tier='alle';
+  document.querySelectorAll('.filter-sel').forEach(function(s){s.value='alle';});
+  filterTable();
+}
+
+// ── Sorting ─────────────────────────────────────────────────
+let sortCol='score', sortDir=-1;
+
+function sortTable(col){
+  if(sortCol===col)sortDir=-sortDir;
+  else{sortCol=col;sortDir=(col==='district'||col==='status')?1:-1;}
+  const tbody=document.getElementById('listings-tbody');
+  const rows=Array.from(tbody.querySelectorAll('tr'));
+  rows.sort(function(a,b){
+    if(col==='score'){return sortDir*(parseInt(a.dataset.score||'0')-parseInt(b.dataset.score||'0'));}
+    if(col==='price'){
+      const av=parseInt(a.dataset.price)||9999,bv=parseInt(b.dataset.price)||9999;
+      return sortDir*(av-bv);
+    }
+    if(col==='district'){return sortDir*(a.dataset.district||'').localeCompare(b.dataset.district||'','de');}
+    if(col==='status'){return sortDir*(a.dataset.status||'').localeCompare(b.dataset.status||'','de');}
+    return 0;
+  });
+  rows.forEach(function(r){tbody.appendChild(r);});
+  document.querySelectorAll('th[data-sortcol]').forEach(function(th){
+    const ind=th.querySelector('.sort-ind');
+    if(ind)ind.textContent=th.dataset.sortcol===col?(sortDir===1?' ↑':' ↓'):' ↕';
+  });
+}
+
+// ── Init ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',function(){
+  loadFavs().forEach(function(id){applyFav(id,true);});
+  applyStoredStatuses();
+  filterTable();
+  // Allow Enter key in PIN fields
+  document.querySelectorAll('.pin-input').forEach(function(inp){
+    inp.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){
+        const lid=inp.id.replace('pin-','');
+        checkPin(lid);
+      }
+    });
+  });
+});
 </script>
 """
 
@@ -266,13 +443,19 @@ def generate_report(
     )
 
     # Count by tier
-    n_direct = sum(1 for l in listings if _tier(l)[0] == "🔗")
-    n_login  = sum(1 for l in listings if _tier(l)[0] == "🔐")
-    n_search = sum(1 for l in listings if _tier(l)[0] == "🔍")
-    n_broken = sum(1 for l in listings if _tier(l)[0] == "⚠️")
+    n_direct = sum(1 for lst in listings if _tier(lst)[0] == "🔗")
+    n_login  = sum(1 for lst in listings if _tier(lst)[0] == "🔐")
+    n_search = sum(1 for lst in listings if _tier(lst)[0] == "🔍")
+    n_broken = sum(1 for lst in listings if _tier(lst)[0] == "⚠️")
 
     rows    = "".join(_table_row(lst) for lst in sorted_listings)
     modals  = "".join(_modal(lst)     for lst in sorted_listings)
+
+    # Filter bar: Status options
+    status_opts = '<option value="alle">Status: alle</option>' + "".join(
+        f'<option value="{k}">{v[1]}</option>'
+        for k, v in _STATUS_BADGE.items()
+    )
 
     return f"""<!DOCTYPE html>
 <html lang="de">
@@ -295,6 +478,11 @@ def generate_report(
     tr[data-bs-toggle]:hover td {{ background:rgba(245,158,11,.06); }}
     .modal-header {{ border-bottom:none; }}
     .fav-btn:focus {{ outline:none; box-shadow:none; }}
+    th[data-sortcol] {{ cursor:pointer; user-select:none; white-space:nowrap; }}
+    th[data-sortcol]:hover {{ background:rgba(245,158,11,.1); }}
+    .filter-bar {{ background:#fff; border-radius:.75rem;
+                   box-shadow:0 2px 8px rgba(0,0,0,.07);
+                   padding:.75rem 1rem; margin-bottom:.75rem; }}
   </style>
 </head>
 <body>
@@ -335,7 +523,7 @@ def generate_report(
     <div class="col-6 col-md-3">
       <div class="card stat-card text-center p-3">
         <div class="fs-2 fw-bold text-success">
-          {sum(1 for l in listings if 'vegan' in l.get('vegan_signal','').lower())}
+          {sum(1 for lst in listings if 'vegan' in lst.get('vegan_signal','').lower())}
         </div>
         <div class="text-muted small">Vegan-freundlich</div>
       </div>
@@ -352,6 +540,31 @@ def generate_report(
     <span class="ms-auto text-muted">Klick auf Zeile → Details &nbsp;|&nbsp; ☆ = Favorit</span>
   </div>
 
+  <!-- Filter bar -->
+  <div class="filter-bar d-flex flex-wrap gap-2 align-items-center">
+    <select class="form-select form-select-sm filter-sel" style="width:auto"
+            onchange="setFilter('status', this.value)">
+      {status_opts}
+    </select>
+    <select class="form-select form-select-sm filter-sel" style="width:auto"
+            onchange="setFilter('price', this.value)">
+      <option value="alle">Preis: alle</option>
+      <option value="600">≤ 600 CHF</option>
+      <option value="800">≤ 800 CHF</option>
+      <option value="1000">≤ 1000 CHF</option>
+    </select>
+    <select class="form-select form-select-sm filter-sel" style="width:auto"
+            onchange="setFilter('tier', this.value)">
+      <option value="alle">Tier: alle</option>
+      <option value="🔗">🔗 Direktlink</option>
+      <option value="🔐">🔐 Login nötig</option>
+      <option value="🔍">🔍 Suche nötig</option>
+      <option value="⚠️">⚠️ Offline?</option>
+    </select>
+    <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">✕ Filter löschen</button>
+    <span id="row-count" class="ms-auto text-muted small"></span>
+  </div>
+
   <!-- Listings table -->
   <div class="card stat-card">
     <div class="table-responsive">
@@ -359,16 +572,16 @@ def generate_report(
         <thead class="table-light">
           <tr>
             <th style="width:32px"></th>
-            <th style="width:120px">Score</th>
-            <th>Status</th>
-            <th>Preis</th>
-            <th>Quartier</th>
+            <th data-sortcol="score" style="width:120px" onclick="sortTable('score')">Score<span class="sort-ind"> ↓</span></th>
+            <th data-sortcol="status" onclick="sortTable('status')">Status<span class="sort-ind"> ↕</span></th>
+            <th data-sortcol="price" onclick="sortTable('price')">Preis<span class="sort-ind"> ↕</span></th>
+            <th data-sortcol="district" onclick="sortTable('district')">Quartier<span class="sort-ind"> ↕</span></th>
             <th>Tram</th>
             <th>Vegan</th>
             <th>Inserat</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="listings-tbody">
 {rows}
         </tbody>
       </table>

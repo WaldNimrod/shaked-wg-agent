@@ -5,6 +5,7 @@ import pytest
 
 from shaked_wg_agent.config import AgentConfig, LanguagePolicy
 from shaked_wg_agent.scorer import (
+    _available_score,
     _budget_ok,
     _freshness_score,
     _roommate_score,
@@ -199,3 +200,35 @@ def test_score_listing_no_vegan(perfect_listing: dict, base_config: AgentConfig)
 def test_score_listing_capped_at_100(perfect_listing: dict, base_config: AgentConfig) -> None:
     # Even in best case, score should not exceed 100
     assert score_listing(perfect_listing, base_config) <= 100
+
+
+# ---------------------------------------------------------------------------
+# Available-from score
+# ---------------------------------------------------------------------------
+
+def test_available_score_by_aug() -> None:
+    assert _available_score("2026-08-01", "2026-06-01") == 10
+
+
+def test_available_score_by_oct() -> None:
+    assert _available_score("2026-10-15", "2026-06-01") == 5
+
+
+def test_available_score_too_late() -> None:
+    assert _available_score("2027-01-01", "2026-06-01") == 0
+
+
+def test_available_score_none() -> None:
+    assert _available_score(None, "2026-06-01") == 5  # neutral
+
+
+def test_available_score_already_available() -> None:
+    assert _available_score("2026-04-01", "2026-06-01") == 10
+
+
+def test_available_score_boundary_aug31() -> None:
+    assert _available_score("2026-08-31", "2026-06-01") == 10
+
+
+def test_available_score_boundary_sep1() -> None:
+    assert _available_score("2026-09-01", "2026-06-01") == 5

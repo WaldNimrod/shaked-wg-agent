@@ -46,6 +46,10 @@ def upsert_listing(listing: dict[str, Any]) -> tuple[str, dict[str, Any]]:
             changed = any(existing.get(k) != listing.get(k) for k in listing if k != "last_seen_at")
             listing["first_seen_at"] = existing.get("first_seen_at", now)
             listing["last_seen_at"] = now
+            # Preserve user-editable fields — scraper must not reset manual edits
+            for user_field in ("status", "note", "tags"):
+                if user_field in existing:
+                    listing[user_field] = existing[user_field]
             listings[i] = listing
             save_listings(listings)
             return ("updated" if changed else "unchanged"), listing

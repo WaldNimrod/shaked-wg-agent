@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import re
 import time
-from typing import Any
 
 from shaked_wg_agent.scrapers.base import BaseScraper, ScrapedListing
 
@@ -37,8 +36,6 @@ _MAX_ROOMS_APARTMENT = 2.0
 _BATCH_SIZE = 50
 
 _TRAM_PATTERN = re.compile(r"\bTram\s*(\d+)\b", re.IGNORECASE)
-_PHONE_PATTERN = re.compile(r"(?:\+41|0)[0-9\s\-/.]{8,14}[0-9]")
-_EMAIL_PATTERN = re.compile(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}")
 _VEGAN_KEYWORDS = ["vegan", "pflanzlich", "vegetarisch", "tierfreie"]
 
 _ZIP_DISTRICT: dict[str, str] = {
@@ -48,6 +45,21 @@ _ZIP_DISTRICT: dict[str, str] = {
     "4055": "St. Alban",  "4056": "Matthäus",
     "4057": "Kleinbasel", "4058": "Kleinhüningen",
     "4059": "Allschwil-Grenze",
+}
+
+# Tram lines serving each Basel zip — used when description has no tram mentions.
+# Based on Basel BVB tram network (lines relevant for Shaked: T2, T3, T8, T16).
+_ZIP_TRAM: dict[str, list[str]] = {
+    "4001": ["3", "8", "10", "11"],  # Innenstadt / Marktplatz
+    "4002": ["3", "8", "10"],
+    "4051": ["3", "8", "11"],        # Altstadt / Barfüsserplatz
+    "4052": ["14", "16"],            # Gundeli
+    "4053": ["3", "6"],              # Bachletten
+    "4054": ["14", "16"],            # Iselin
+    "4055": ["3", "10"],             # St. Alban
+    "4056": ["14", "16"],            # Matthäus / Am Ring
+    "4057": ["2", "3"],              # Kleinbasel / Claraplatz
+    "4058": ["2", "14"],             # Kleinhüningen
 }
 
 
@@ -158,12 +170,10 @@ class FlatfoxScraper(BaseScraper):
 
             full_text = f"{title} {description} {street}"
             tram_lines = list({m.group(1) for m in _TRAM_PATTERN.finditer(full_text)})
+            # If no tram mentioned in text, infer from zip code (flatfox API has no tram field)
+            if not tram_lines:
+                tram_lines = _ZIP_TRAM.get(zipcode, [])
             vegan = self._detect_vegan(full_text)
-
-            # Extract contact info from description text
-            phones = _PHONE_PATTERN.findall(description)
-            emails = _EMAIL_PATTERN.findall(description)
-            contact_extracted = ", ".join(phones[:2] + emails[:2]) if (phones or emails) else ""
 
             summary_parts = [
                 f"{object_type}" if object_type else "",
