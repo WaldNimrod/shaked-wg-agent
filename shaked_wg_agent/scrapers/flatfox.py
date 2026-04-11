@@ -124,14 +124,14 @@ class FlatfoxScraper(BaseScraper):
             pk = str(lst["pk"])
             api_url = lst.get("url", "")  # e.g. /en/flat/slug/pk/
             if api_url:
-                # Convert to German version for Shaked
-                direct_url = _BASE_URL + api_url.replace("/en/flat/", "/de/flat/")
+                # German URL: /en/flat/ → /de/wohnung/ (flatfox DE path for apartments)
+                direct_url = _BASE_URL + api_url.replace("/en/flat/", "/de/wohnung/")
             else:
                 slug = lst.get("slug", "")
                 direct_url = (
-                    f"{_BASE_URL}/de/flat/{slug}/{pk}/"
+                    f"{_BASE_URL}/de/wohnung/{slug}/{pk}/"
                     if slug
-                    else f"{_BASE_URL}/de/flat/{pk}/"
+                    else f"{_BASE_URL}/en/flat/{pk}/"  # fallback: English PK-only
                 )
 
             # ── extract fields ─────────────────────────────────────────────

@@ -38,24 +38,27 @@ def _verify_listings(listings: list[dict]) -> list[dict]:
                 headers={"User-Agent": "Mozilla/5.0"},
             )
             final_url = resp.url
-            # Consider active if HTTP 200 and not redirected to a generic search/home
-            is_active = (
-                resp.status_code == 200
-                and "/search" not in final_url
-                and "/home" not in final_url
-                and final_url.rstrip("/") != "https://flatfox.ch"
-                and final_url.rstrip("/") != "https://www.wgzimmer.ch"
-            )
-            lst["verified_active"] = is_active
-            if is_active:
-                lst["last_verified_at"] = now
-                if lst.get("url_status") == "broken_needs_recovery":
-                    lst["url_status"] = "direct"
-            else:
+            # Definitive 404 → mark broken. 200 → active. Other codes → don't change.
+            if resp.status_code == 404:
+                lst["verified_active"] = False
                 lst["url_status"] = "broken_needs_recovery"
+            elif resp.status_code == 200:
+                is_active = (
+                    "/search" not in final_url
+                    and "/home" not in final_url
+                    and final_url.rstrip("/") not in ("https://flatfox.ch", "https://www.wgzimmer.ch")
+                )
+                lst["verified_active"] = is_active
+                if is_active:
+                    lst["last_verified_at"] = now
+                    if lst.get("url_status") == "broken_needs_recovery":
+                        lst["url_status"] = "direct"
+                else:
+                    lst["url_status"] = "broken_needs_recovery"
+            # else: 3xx, 5xx, etc. — leave existing verified_active unchanged
         except Exception:
-            # Network error — don't change existing status, just note check failed
-            lst.setdefault("verified_active", None)
+            # Network error (timeout, DNS, etc.) — preserve existing state, do NOT downgrade
+            pass
     return listings
 
 

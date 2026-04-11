@@ -1,5 +1,19 @@
 [
   {
+    "run_id": "run-20260411-161902-2991",
+    "run_timestamp": "2026-04-11T16:19:02+00:00",
+    "triggered_by": "manual",
+    "sources_scanned": 2,
+    "results_scanned": 57,
+    "new_results": 5,
+    "updated_results": 1,
+    "stale_removed": 0,
+    "duration_seconds": 52,
+    "errors": [],
+    "report_url": "https://www.nimrod.bio/agents/shaked-wg/index.html",
+    "operator_notes": ""
+  },
+  {
     "run_id": "run-20260411-011652-581c",
     "run_timestamp": "2026-04-11T01:16:52+00:00",
     "triggered_by": "manual",
