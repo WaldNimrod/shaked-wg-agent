@@ -12,8 +12,8 @@
 
 ## Current State
 
-- **Active milestone:** SHAKED-M001
-- **Active WP:** SHAKED-P001-WP001 at L-GATE_B
+- **Active milestone:** S001
+- **Active WP:** S001-P001-WP001 at L-GATE_B
 - **Roadmap:** `_aos/roadmap.yaml`
 
 ## Responsibilities
@@ -29,7 +29,7 @@
 - [ ] `ruff check shaked_wg_agent/ tests/` — 0 errors
 - [ ] `python -m shaked_wg_agent status` — runs without error
 - [ ] `python -m shaked_wg_agent list` — displays listing table
-- [ ] LOD500 as-built document written to `_aos/work_packages/SHAKED-P001-WP001/`
+- [ ] LOD500 as-built document written to `_aos/work_packages/S001-P001-WP001/`
 
 ## Boundaries
 

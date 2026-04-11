@@ -1,0 +1,161 @@
+# L2.5 — Managed Agent Pipeline Profile
+# Complex WPs requiring full research-deepened LOD chain + managed agent execution.
+
+profile: L2.5
+label: "Managed Agent Pipeline"
+version: "1.1.0"
+canonicalized: "2026-04-11"
+updated: "2026-04-11"
+update_reason: >
+  Cross-engine validation model update — Option C + One-Shot External Report Pattern.
+  Team 00 approved resolution of 4 constitutional blockers (Team 190 BLOCKED verdict,
+  2026-04-11). Cross-model within loop stated as known limitation. Two external
+  one-shot checkpoints (EXT-CP1, EXT-CP2) defined with canonical trigger conditions.
+extends: L2
+
+description: >
+  L2.5 is the AOS profile for complex work packages that require managed agent
+  execution with research-deepened LOD transitions, two human gates,
+  cross-model validation within the pipeline loop, and one-shot external checkpoints
+  at LOD100 and LOD400. It sits between L2 (structured, manual activation)
+  and L3 (future autonomous CLI). Profile is declared at LOD100 by Team 00 and
+  is immutable once set.
+
+modules:
+  inherits_all_from: L2
+
+  required_additions:
+    - id: managed-pipeline
+      module: 12
+      required: true
+      notes: "Core L2.5 module. Read MODULE.md and ORCHESTRATOR_RUNBOOK.md before any pipeline run."
+
+# L2.5 distinguishing characteristics:
+characteristics:
+  lod_track: TRACK_B           # Always. No Track A in L2.5.
+  research_rounds: [R1, R2, R3]  # Mandatory before each LOD production step.
+  human_gates: 2               # Phase 3 (LOD300 + Mockup) and Phase 5 (UX Final).
+  human_gate_authority: team_00  # Non-delegatable.
+  cross_engine_validation:
+    # KNOWN LIMITATION: within-pipeline validation uses Sonnet (builder) → Opus (validator).
+    # Both are Anthropic Claude models. This is cross-model, not cross-vendor.
+    # Acknowledged and accepted per Team 00 decision (2026-04-11).
+    # True cross-vendor validation occurs at the two external checkpoints below.
+    mode: CROSS_MODEL
+    within_loop:
+      builder: claude-sonnet-4-6
+      validator: claude-opus
+      known_limitation: "Same vendor (Anthropic). Cross-model only, not cross-vendor."
+    external_checkpoints:
+      pattern: ONE_SHOT_EXTERNAL_REPORT
+      description: >
+        At 2 critical checkpoints, a one-shot report is requested from Team 190
+        (OpenAI Codex — different vendor). Report is ingested as pipeline context.
+        Pipeline continues internally after ingestion. No iterative external loop.
+      re_routing: PROHIBITED        # External report verdict does NOT re-route the pipeline.
+      report_disposition: INGEST_AS_CONTEXT
+      checkpoints:
+        - id: EXT-CP1
+          phase: LOD100_PRE_PIPELINE
+          label: "LOD100 External Validation (pre-pipeline entry)"
+          trigger: ALWAYS           # Mandatory for all L2.5 WPs, regardless of risk level.
+          validator: team_190       # OpenAI Codex — external vendor
+          timing: "Before Phase 1 (L25-PH1) begins. Report ingested at session start."
+        - id: EXT-CP2
+          phase: LOD400_PRE_IMPLEMENTATION
+          label: "LOD400 External Validation (pre-implementation)"
+          trigger_high_risk: MANDATORY   # WPs with risk_classification: HIGH from LOD200
+          trigger_medium_risk: ADVISORY  # WPs with risk_classification: MEDIUM from LOD200
+          trigger_low_risk: SKIP
+          validator: team_190       # OpenAI Codex — external vendor
+          timing: "After LOD400 PASS from constitutional validator, before Phase 4B (work plan)."
+          blocked_semantics:
+            HIGH: HARD_STOP           # BLOCKED + HIGH → Phase 4B suspended. Requires explicit Team 00 authorization.
+            MEDIUM: TEAM_00_DECIDES   # BLOCKED + MEDIUM → surface to Team 00; Team 00 decides proceed or stop.
+            LOW: N_A                  # EXT-CP2 not triggered for LOW risk.
+  fcp_circuit_breaker:
+    fcp3_threshold: 3          # ≥3 FCP-3 cycles → escalate to Team 00
+    fcp4_threshold: 1          # Any FCP-4 → immediate escalation
+  orchestrator: team_100       # Claude Code reads ORCHESTRATOR_RUNBOOK.md
+
+# Gate sequence:
+gate_sequence:
+  - id: EXT-CP1
+    label: "LOD100 External Validation (one-shot, Team 190 / Codex)"
+    type: external_one_shot
+    trigger: ALWAYS
+    validator: team_190
+  - id: L25-PH1
+    label: "LOD100 Validation (Entry)"
+    type: automated
+  - id: L25-PH2A
+    label: "LOD200 Production + Constitutional Validation"
+    type: automated
+    research_round: R1
+  - id: L25-PH2B
+    label: "LOD300 Production + Mockup + Constitutional Validation"
+    type: automated
+    research_round: R2
+  - id: L25-PH3
+    label: "Human Gate — LOD300 + Mockup"
+    type: human_gate
+    authority: team_00
+  - id: L25-PH4A
+    label: "LOD400 Production + Architecture Validation (8-check) + Constitutional"
+    type: automated
+    research_round: R3
+  - id: EXT-CP2
+    label: "LOD400 External Validation (one-shot, Team 190 / Codex) — conditional"
+    type: external_one_shot
+    trigger_high_risk: MANDATORY
+    trigger_medium_risk: ADVISORY
+    trigger_low_risk: SKIP
+    validator: team_190
+  - id: L25-PH4B
+    label: "Work Plan + Mandates"
+    type: automated
+  - id: L25-PH4C
+    label: "Implementation"
+    type: automated
+  - id: L25-PH4D
+    label: "QA"
+    type: automated
+    engine_constraint: cross_engine_from_builders
+  - id: L25-PH4E
+    label: "Technical Validation"
+    type: automated
+    engine_constraint: cross_engine_from_qa
+  - id: L25-PH5
+    label: "Human Gate — UX Final"
+    type: human_gate
+    authority: team_00
+  - id: L25-PH6
+    label: "Documentation + AS_MADE_LOCK + Closure"
+    type: automated
+
+# When to use L2.5 vs L2:
+selection_criteria:
+  use_l25_when:
+    - "WP touches ≥2 teams with integration contracts between them"
+    - "State machine has ≥5 states (LOD300 non-trivial)"
+    - "Implementation risk is MEDIUM or HIGH"
+    - "New data model or API surface being introduced"
+    - "Team 00 deems explicit LOD300 required before implementation begins"
+  use_l2_when:
+    - "Bounded single-team change"
+    - "Well-understood pattern (no new architecture)"
+    - "Low complexity, Track A viable"
+
+# Proven by canary WP:
+canary:
+  wp_id: SBXF-P001-WP-L25-001
+  label: "L2.5 Run Viewer — Pipeline Status HTML Page"
+  date: "2026-04-11"
+  result: SUCCESSFUL
+  fcp_summary: "FCP-1×3, FCP-2×1, FCP-3×0, FCP-4×0"
+  human_gates: "2 — both APPROVED first pass"
+  notes: >
+    First end-to-end L2.5 run. Pipeline validated across all 11 sub-phases.
+    Cross-model rule enforced within loop (sonnet builders, opus validators).
+    EXT-CP1 pre-dates this profile update — applied out-of-band for BOUNDARY-VIZ.
+    AS_MADE_LOCK applied. Process canonicalized.

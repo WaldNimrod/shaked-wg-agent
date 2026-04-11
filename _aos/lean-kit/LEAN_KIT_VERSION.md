@@ -1,8 +1,8 @@
 # Lean Kit Version
 
-**version:** 3.1.2
-**date:** 2026-04-08
-**status:** RELEASED — AOS v3.1.2 Dashboard v2
+**version:** 3.1.3
+**date:** 2026-04-11
+**status:** RELEASED — L2.5 Managed Pipeline Canonicalized
 
 ## Contents status
 
@@ -23,6 +23,7 @@
 | 3.1.0 | 2026-04-05 | AOS v3.1.0 RELEASED. Hub-and-Spoke governance deployed across 4 projects. Schema v1.1, validate_aos.sh (9 checks), 6 role types, VERSION_POLICY. |
 | 3.1.1 | 2026-04-05 | Modular restructure: 11 modules (4 categories), profile system (L0/L2/L3), MODULE_INDEX.md. Gate model now OPTIONAL. Standards category (Module 11) with RTL/BiDi. Full migration, no shims. |
 | 3.1.2 | 2026-04-08 | Dashboard v2: 9 HTML pages, 10 JS modules, CSS design system. FastAPI backend (21+ endpoints). SEC-001 fail-closed actor model. PERF-002 batch resolver. Full pipeline state UI (7 states). Config CRUD. ValidationCycleUI shared component. Project type (AOS Project/Spoke). Onboarding template with MCP section. |
+| 3.1.3 | 2026-04-11 | L2.5 Managed Agent Pipeline canonicalized. Module 12 status: EXPERIMENTAL → CANONICAL. Profile L2.5.yaml added. L25_QUICK_REFERENCE.md added. Canary WP SBXF-P001-WP-L25-001 completed successfully (11 phases, AS_MADE_LOCK applied). |
 
 ## Snapshot model
 

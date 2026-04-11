@@ -408,8 +408,8 @@ function filterTable(){
     row.style.display=show?'':'none';
     if(show)visible++;
   });
-  const cnt=document.getElementById('row-count');
-  if(cnt)cnt.textContent='Zeige '+visible+' von '+rows.length+' Inseraten';
+  const cnt=document.getElementById('row-count-verified');
+  if(cnt)cnt.textContent='Zeige '+visible+' von '+rows.length+' verifizierten Inseraten';
 }
 
 function setFilter(key,val){FILTERS[key]=val;filterTable();}
@@ -422,10 +422,12 @@ function clearFilters(){
 // ── Sorting ─────────────────────────────────────────────────
 let sortCol='score', sortDir=-1;
 
-function sortTable(col){
+function sortTable(col, tbodyId){
+  tbodyId = tbodyId || 'listings-tbody';
   if(sortCol===col)sortDir=-sortDir;
   else{sortCol=col;sortDir=(col==='district'||col==='status')?1:-1;}
-  const tbody=document.getElementById('listings-tbody');
+  const tbody=document.getElementById(tbodyId);
+  if(!tbody)return;
   const rows=Array.from(tbody.querySelectorAll('tr'));
   rows.sort(function(a,b){
     if(col==='score'){return sortDir*(parseInt(a.dataset.score||'0')-parseInt(b.dataset.score||'0'));}
@@ -474,6 +476,13 @@ def generate_report(
     # Fix B: separate displayable (score>0) from hidden (score=0 = over-budget/invalid)
     visible_listings = [lst for lst in sorted_listings if lst.get("relevance_score", 0) > 0]
     hidden_count = len(sorted_listings) - len(visible_listings)
+    # Split verified vs unverified for dual-table display
+    # Verified = active + direct URL + score>0
+    verified_listings   = [lst for lst in visible_listings
+                           if lst.get("verified_active") is True
+                           and lst.get("url_status") == "direct"]
+    unverified_listings = [lst for lst in visible_listings
+                           if lst not in verified_listings]
     last_run = runs[0] if runs else None
     last_scan = last_run["run_timestamp"] if last_run else "—"
     n_new = last_run.get("new_results", 0) if last_run else 0
@@ -498,8 +507,9 @@ def generate_report(
     n_verified = sum(1 for lst in listings if lst.get("verified_active") is True)
     n_total_real = len(listings)
 
-    rows    = "".join(_table_row(lst) for lst in visible_listings)
-    modals  = "".join(_modal(lst)     for lst in visible_listings)
+    rows_verified   = "".join(_table_row(lst) for lst in verified_listings)
+    rows_unverified = "".join(_table_row(lst) for lst in unverified_listings)
+    modals  = "".join(_modal(lst) for lst in visible_listings)
 
     # Filter bar: Status options
     status_opts = '<option value="alle">Status: alle</option>' + "".join(
@@ -550,6 +560,8 @@ def generate_report(
       Datenqualität: <strong>Echtdaten (flatfox API)</strong>
       &nbsp;·&nbsp; {n_verified} von {n_total_real} aktiv geprüft
       &nbsp;·&nbsp; Keine Testdaten
+      &nbsp;·&nbsp; <a href="proof.html" target="_blank" rel="noopener"
+          style="color:#fff;text-decoration:underline;font-weight:600">🔍 Datennachweise</a>
     </div>
   </div>
 
@@ -617,31 +629,69 @@ def generate_report(
       <option value="⚠️">⚠️ Offline?</option>
     </select>
     <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">✕ Filter löschen</button>
-    <span id="row-count" class="ms-auto text-muted small"></span>
   </div>
 
-  <!-- Listings table -->
-  <div class="card stat-card">
+  <!-- ✅ Verified listings table -->
+  <div class="d-flex align-items-center gap-2 mb-2 mt-3">
+    <span class="badge bg-success fs-6 px-3 py-2">✅ Verifizierte Inserate</span>
+    <span class="text-muted small">{len(verified_listings)} Inserate — aktiv geprüft, Direktlink, im Budget</span>
+  </div>
+  <div class="card stat-card mb-2">
     <div class="table-responsive">
       <table class="table table-hover mb-0">
         <thead class="table-light">
           <tr>
             <th style="width:32px"></th>
-            <th data-sortcol="score" style="width:120px" onclick="sortTable('score')">Score<span class="sort-ind"> ↓</span></th>
-            <th data-sortcol="status" onclick="sortTable('status')">Status<span class="sort-ind"> ↕</span></th>
-            <th data-sortcol="price" onclick="sortTable('price')">Preis<span class="sort-ind"> ↕</span></th>
-            <th data-sortcol="district" onclick="sortTable('district')">Quartier<span class="sort-ind"> ↕</span></th>
+            <th data-sortcol="score" style="width:120px" onclick="sortTable('score','listings-tbody')">Score<span class="sort-ind"> ↓</span></th>
+            <th data-sortcol="status" onclick="sortTable('status','listings-tbody')">Status<span class="sort-ind"> ↕</span></th>
+            <th data-sortcol="price" onclick="sortTable('price','listings-tbody')">Preis<span class="sort-ind"> ↕</span></th>
+            <th data-sortcol="district" onclick="sortTable('district','listings-tbody')">Quartier<span class="sort-ind"> ↕</span></th>
             <th>Tram</th>
             <th>Vegan</th>
             <th>Inserat</th>
           </tr>
         </thead>
         <tbody id="listings-tbody">
-{rows}
+{rows_verified}
         </tbody>
       </table>
     </div>
   </div>
+  <p id="row-count-verified" class="text-muted small mb-3"></p>
+
+  <!-- ⚠️ Unverified listings table -->
+  {f'''
+  <div class="d-flex align-items-center gap-2 mb-2 mt-4">
+    <span class="badge bg-warning text-dark fs-6 px-3 py-2">⚠️ Nicht verifizierte Inserate</span>
+    <span class="text-muted small">{len(unverified_listings)} Inserate — Daten nicht 100% bestätigt</span>
+  </div>
+  <div class="alert alert-warning border-warning mb-2 py-2 px-3 small">
+    <strong>Hinweis:</strong> Diese Inserate sind im Budget, konnten jedoch nicht vollständig verifiziert werden
+    (z.B. Verifikation ausstehend, URL-Status unklar oder <code>verified_active</code> nicht gesetzt).
+    Direkt auf der Quellseite prüfen, bevor du Kontakt aufnimmst.
+  </div>
+  <div class="card stat-card mb-2" style="border:2px solid #f59e0b">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead style="background:#fef9c3">
+          <tr>
+            <th style="width:32px"></th>
+            <th>Score</th>
+            <th>Status</th>
+            <th>Preis</th>
+            <th>Quartier</th>
+            <th>Tram</th>
+            <th>Vegan</th>
+            <th>Inserat</th>
+          </tr>
+        </thead>
+        <tbody id="listings-tbody-unverified">
+{rows_unverified}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  ''' if unverified_listings else ''}
 
   {f'<p class="text-muted small mt-2 text-center">+ {hidden_count} weitere Inserate ausgeblendet (Außerhalb Budget / Score 0)</p>' if hidden_count else ''}
   <p class="text-muted small mt-2 text-center">

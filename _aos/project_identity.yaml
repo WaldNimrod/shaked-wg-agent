@@ -1,0 +1,43 @@
+# _aos/project_identity.yaml — Cross-Project Boundary Declaration
+# ================================================================
+# SSoT for project identity and boundary enforcement.
+# Read by: validate_aos.sh (Check 12), .cursorrules, CLAUDE.md, activation prompts.
+# Managed by: Team 00 + Team 100.
+#
+# AOS lean-kit v3.1.3 — added 2026-04-11 during canonization (S001-P002-WP001)
+
+project_id: "shaked-wg-agent"
+display_name: "Shaked WG Basel Search Agent"
+domain: "apartment-search"
+profile: "L0"                    # L0 | L2 | L2.5 | L3
+
+# Hub-spoke topology
+is_hub: false
+managed_projects: []             # spokes do not manage other projects
+
+# Boundary enforcement
+boundaries:
+  # Directories this project's agents may write to (relative to repo root)
+  allowed_write_roots:
+    - shaked_wg_agent/
+    - data/
+    - tests/
+    - scripts/
+    - deploy/
+    - _aos/
+    - _COMMUNICATION/
+    - docs/
+
+  # Patterns that must NEVER appear in tracked files (other project names, domains, imports)
+  forbidden_patterns:
+    - "agents-os/"
+    - "../agents-os"
+    - "smallfarmsagents"
+    - "tiktrack"
+    - "TikTrack"
+
+  # Instruction for agents encountering cross-project work
+  cross_project_routing: >
+    This is a spoke project. Any work that touches agents-os/, hub governance,
+    or other spoke projects must be escalated to Team 00 (Nimrod) for routing.
+    Do not write to hub or sibling project directories directly.

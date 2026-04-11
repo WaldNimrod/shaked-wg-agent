@@ -2,28 +2,71 @@ project:
   id: shaked-wg-agent
   name: Shaked WG Basel Search Agent
   profile: L0
-  lean_kit_version: 3.1.2+3e4164e
+  lean_kit_version: 3.1.3+3e4164e
   created: '2026-04-10'
   owner: team_00
-  active_milestone: SHAKED-M001
+  active_milestone: S002
   notes: >
     Personal apartment search tool for Shaked (Basel, Switzerland).
     Manual triggers only. Project window ends 2026-06-08.
     Searches wgzimmer.ch, wg-gesucht.de, flatfox.ch for vegan-friendly WG rooms
     accessible by tram lines 2, 3, 8, 16.
+    Future: SaaS evolution S002–S004 (multi-city, multi-tenant, billing, permissions).
+
+milestones:
+  - id: S001
+    label: Personal Agent — Basel, June 2026
+    profile: L0
+    status: COMPLETE
+    completed_at: '2026-04-11'
+    target_date: '2026-06-08'
+    notes: >
+      Working deployed agent. 3x daily cron. Publishing to nimrod.bio.
+      Both WPs (S001-P001-WP001, S001-P002-WP001) L-GATE_V PASS 2026-04-11.
+      Canonization complete. validate_aos.sh 12/12 PASS.
+
+  - id: S002
+    label: Platform Foundation — City-agnostic, API surface, notifications
+    profile: L2
+    status: PLANNED
+    target_date: '2026-09-30'
+    notes: >
+      City-agnostic config schema. FastAPI REST layer. Email/Telegram alerts.
+      Requires L2 profile transition (AOS engine + Dashboard deployment).
+
+  - id: S003
+    label: SaaS Infrastructure — Multi-tenancy, billing, permissions
+    profile: L2.5
+    status: PLANNED
+    target_date: '2026-12-31'
+    notes: >
+      True multi-tenant architecture. Billing provider integration (Stripe/LemonSqueezy).
+      RBAC + API key lifecycle. Complex WPs → L2.5 (mandatory Track B + R1/R2/R3).
+
+  - id: S004
+    label: SaaS Product Launch — Self-serve, white-label, analytics
+    profile: L2.5
+    status: PLANNED
+    target_date: '2027-03-31'
+    notes: >
+      Customer self-serve onboarding. Web dashboard. Agency/partner white-label.
+      Usage analytics. Full SaaS offering.
 
 work_packages:
-  - id: SHAKED-P001-WP001
+
+  # ── S001: Personal Agent ──────────────────────────────────────────────────
+
+  - id: S001-P001-WP001
     label: Application core — Python agent skeleton, scraper stubs, CLI
-    status: IN_PROGRESS
+    status: COMPLETE
     track: A
-    current_lean_gate: L-GATE_B
-    lod_status: LOD400
+    current_lean_gate: L-GATE_V
+    lod_status: LOD500
     assigned_builder: shaked_build
     assigned_validator: shaked_val
     created_at: '2026-04-10'
-    milestone_ref: SHAKED-M001
-    spec_ref: _aos/work_packages/SHAKED-P001-WP001/LOD400_spec.md
+    milestone_ref: S001
+    spec_ref: _aos/work_packages/S001-P001-WP001/LOD400_spec.md
     gate_history:
       - gate: L-GATE_E
         result: PASS
@@ -33,7 +76,307 @@ work_packages:
         result: PASS
         date: '2026-04-10'
         notes: Architecture approved. Python package structure, scraper abstractions, scoring model.
+      - gate: L-GATE_B
+        result: PASS
+        date: '2026-04-10'
+        notes: Implementation complete; tests and ruff per LOD400 (baseline L-GATE_B).
+      - gate: L-GATE_V
+        result: PASS
+        date: '2026-04-11'
+        notes: >
+          Constitutional validation by shaked_val (OpenAI). 53 tests, validate_aos 12/12,
+          LOD500 v0.2.2 addendum filed. 1 MAJOR doc-drift finding (resolved via addendum), 1 MINOR activation drift.
     notes: >
       Core Python package implemented: config, persistence, scorer, runner, scrapers.
-      46 tests pass. CLI run/status/list commands functional.
-      Next: live scraper integration testing against real sites.
+      Playwright wgzimmer scraper (v0.3.0). HTML report + FTPS publish. 59 live listings.
+      v0.2.2 deployed: dual-table UI, verified/unverified split, live validation button.
+      L-GATE_V PASS recorded 2026-04-11.
+
+  - id: S001-P002-WP001
+    label: AOS canonization — governance gaps, SaaS roadmap register
+    status: COMPLETE
+    track: A
+    current_lean_gate: L-GATE_V
+    lod_status: LOD500
+    assigned_builder: shaked_arch
+    assigned_validator: shaked_val
+    created_at: '2026-04-11'
+    milestone_ref: S001
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    gate_history:
+      - gate: L-GATE_E
+        result: PASS
+        date: '2026-04-11'
+        notes: Canonization plan approved by Team 00 (Nimrod).
+      - gate: L-GATE_S
+        result: PASS
+        date: '2026-04-11'
+        notes: >
+          Architecture review: gap list confirmed (project_identity.yaml missing,
+          lean-kit v3.1.2→v3.1.3, WP ID migration, pyproject.toml version mismatch).
+          SaaS roadmap S002–S004 structure approved.
+      - gate: L-GATE_B
+        result: PASS
+        date: '2026-04-11'
+        notes: >
+          Canonization deliverables merged: project_identity, lean-kit v3.1.3 snapshot,
+          ideas.json, hub registry fields, SaaS WP register, validate_aos Check 12 synced.
+      - gate: L-GATE_V
+        result: PASS
+        date: '2026-04-11'
+        notes: >
+          Constitutional review (Team 190). Migration audit sign-off.
+          Team 100 architecture review APPROVED. Hub phrasing + ruff + ID hygiene applied during audit.
+    notes: >
+      Domain validation complete 2026-04-11. Artifacts: _COMMUNICATION/team_100/S001-P002-WP001/ARCH_REVIEW_2026-04-11.md,
+      _COMMUNICATION/team_190/MIGRATION_AUDIT_SIGN_OFF_2026-04-11.md.
+
+  # ── S002: Platform Foundation (PLANNED) ───────────────────────────────────
+
+  - id: S002-P001-WP001
+    label: City-agnostic config schema + scraper interface
+    status: PLANNED
+    track: A
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S002
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: >
+      Refactor data/config.json and data/sources.json into city-agnostic schemas.
+      BaseScraper interface updated to accept city_config. Profile loader for any city.
+
+  - id: S002-P001-WP002
+    label: Add Zurich + Bern search profiles
+    status: PLANNED
+    track: A
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S002
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Depends on S002-P001-WP001. Implements Zurich and Bern flatfox scrapers + profiles.
+
+  - id: S002-P002-WP001
+    label: REST API layer — /search, /listings, /runs endpoints
+    status: PLANNED
+    track: B
+    profile: L2.5
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S002
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    team_00_decision: "L2.5 / Track B — confirmed 2026-04-12"
+    notes: >
+      FastAPI wrapper over existing runner/persistence layer.
+      Profile L2.5 / Track B confirmed by Team 00 (2026-04-12).
+      Requires LOD300 (state machine, API contract, auth model) + EXT-CP1.
+      Trigger: L2 profile transition must complete before this WP enters L-GATE_S.
+
+  - id: S002-P002-WP002
+    label: API key auth (single-user, no multi-tenancy yet)
+    status: PLANNED
+    track: A
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S002
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Depends on S002-P002-WP001. Simple static API key header validation.
+
+  - id: S002-P003-WP001
+    label: Email/Telegram notification digest
+    status: PLANNED
+    track: A
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S002
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Daily digest email + optional Telegram bot push. Configurable per profile.
+
+  # ── S003: SaaS Infrastructure (PLANNED) ───────────────────────────────────
+
+  - id: S003-P001-WP001
+    label: Multi-tenant data model — tenants, profiles, users, results
+    status: PLANNED
+    track: B
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S003
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: >
+      Profile: L2.5 MANDATORY. New database schema (SQLite → PostgreSQL).
+      LOD300 required: entity model, isolation strategy, migration plan.
+      Human gate (Team 00) at LOD300 mockup + UX final.
+
+  - id: S003-P001-WP002
+    label: Tenant isolation + auth middleware
+    status: PLANNED
+    track: B
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S003
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: >
+      Profile: L2.5. Depends on S003-P001-WP001.
+      Security-critical: JWT/session auth, row-level isolation, audit logging.
+
+  - id: S003-P002-WP001
+    label: Billing provider integration (provider TBD — pending specification)
+    status: DEFERRED
+    track: B
+    profile: L2.5
+    current_lean_gate: null
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S003
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    team_00_decision: >
+      DEFERRED 2026-04-12. Provider selection (Stripe vs LemonSqueezy) requires
+      dedicated research session: availability in Israel, costs, capabilities,
+      system integration requirements. Full specification before implementation.
+      Do not enter L-GATE_E until billing spec WP is COMPLETE.
+    notes: >
+      Profile: L2.5 MANDATORY. External API + webhook state machine.
+      LOD300 required: subscription lifecycle, webhook handling, failure modes.
+      EXT-CP1 (Team 190) required before pipeline entry.
+      BLOCKED on billing specification work (separate research WP, TBD).
+
+  - id: S003-P002-WP002
+    label: Subscription tiers — Free / Pro / Agency
+    status: DEFERRED
+    track: A
+    current_lean_gate: null
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S003
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Config-based feature gating. Depends on S003-P002-WP001. DEFERRED with billing block.
+
+  - id: S003-P002-WP003
+    label: Usage metering + quota enforcement
+    status: DEFERRED
+    track: A
+    current_lean_gate: null
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S003
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Per-tenant scan count, result limits per tier, overage handling. DEFERRED with billing block.
+
+  - id: S003-P003-WP001
+    label: RBAC — admin / agent / viewer roles
+    status: PLANNED
+    track: B
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S003
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Profile L2.5. Cross-service auth contract. Permission matrix in LOD300.
+
+  - id: S003-P003-WP002
+    label: API key lifecycle — issue, rotate, revoke
+    status: PLANNED
+    track: A
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S003
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Per-tenant API keys with scope, expiry, revocation. Depends on S003-P003-WP001.
+
+  # ── S004: SaaS Product Launch (PLANNED) ───────────────────────────────────
+
+  - id: S004-P001-WP001
+    label: Self-serve onboarding — signup → profile wizard → first scan
+    status: PLANNED
+    track: B
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S004
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Profile L2.5. Full UX flow. LOD300 mockup gate mandatory.
+
+  - id: S004-P001-WP002
+    label: Web dashboard — search results, alerts history, billing
+    status: PLANNED
+    track: B
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S004
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Profile L2.5. React/Next.js frontend. Replaces static HTML report.
+
+  - id: S004-P002-WP001
+    label: Agency/partner configuration — custom branding, city bundles
+    status: PLANNED
+    track: A
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S004
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: White-label config per tenant. City bundle packages.
+
+  - id: S004-P002-WP002
+    label: Reseller API + webhook contracts
+    status: PLANNED
+    track: B
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S004
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Profile L2.5. Public API contract + webhook event registry.
+
+  - id: S004-P003-WP001
+    label: Usage analytics + customer health dashboard
+    status: PLANNED
+    track: A
+    current_lean_gate: L-GATE_E
+    lod_status: null
+    assigned_builder: TBD
+    assigned_validator: TBD
+    created_at: '2026-04-11'
+    milestone_ref: S004
+    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    notes: Scan frequency, result quality, engagement metrics per tenant.

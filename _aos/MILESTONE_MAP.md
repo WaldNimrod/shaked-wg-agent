@@ -2,9 +2,10 @@
 
 | ID | Name | Status | Target | Notes |
 |----|------|--------|--------|-------|
-| SHAKED-M001 | MVP — Core Agent | IN_PROGRESS | 2026-04-30 | Python package, CLI, scrapers, AOS structure |
-| SHAKED-M002 | Live Integration | PENDING | 2026-05-15 | Real scraping runs against live sites |
-| SHAKED-M003 | Project Close | PENDING | 2026-06-08 | Final run, archive, project window ends |
+| S001 | Personal Agent — Basel | IN_PROGRESS | 2026-06-08 | Python package, CLI, scrapers, AOS structure |
+| S002 | Platform Foundation | PLANNED | 2026-09-30 | City-agnostic config, API, alerts |
+| S003 | SaaS Infrastructure | PLANNED | 2026-12-31 | Multi-tenancy, billing, permissions |
+| S004 | SaaS Product Launch | PLANNED | 2027-03-31 | Self-serve, dashboard, white-label |
 
 ## Track A Gate Model
 

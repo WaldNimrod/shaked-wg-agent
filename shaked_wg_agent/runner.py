@@ -10,7 +10,14 @@ from typing import Any
 import requests as _requests
 
 from shaked_wg_agent.config import ProjectConfig, Source, load_config
-from shaked_wg_agent.persistence import append_run, load_listings, load_runs, mark_stale_listings, upsert_listing, save_listings
+from shaked_wg_agent.persistence import (
+    append_run,
+    load_listings,
+    load_runs,
+    mark_stale_listings,
+    save_listings,
+    upsert_listing,
+)
 from shaked_wg_agent.scorer import score_listing
 from shaked_wg_agent.scrapers.base import BaseScraper
 
@@ -23,9 +30,13 @@ def _verify_flatfox_via_api(listings: list[dict]) -> None:
     Fetches the current set of active PKs from the bbox search and marks
     each stored flatfox listing as verified_active=True/False accordingly.
     """
-    from shaked_wg_agent.scrapers.flatfox import _PIN_URL, _BBOX
+    from shaked_wg_agent.scrapers.flatfox import _BBOX, _PIN_URL
 
-    flatfox = [l for l in listings if l.get("source") == "flatfox" and l.get("source_listing_id")]
+    flatfox = [
+        row
+        for row in listings
+        if row.get("source") == "flatfox" and row.get("source_listing_id")
+    ]
     if not flatfox:
         return
 

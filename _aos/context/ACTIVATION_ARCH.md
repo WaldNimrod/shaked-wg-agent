@@ -12,8 +12,8 @@
 
 ## Current State
 
-- **Active milestone:** SHAKED-M001
-- **Active WP:** SHAKED-P001-WP001 at L-GATE_B
+- **Active milestone:** S001
+- **Active WP:** S001-P001-WP001 at L-GATE_B (pending L-GATE_V), S001-P002-WP001 at L-GATE_B
 - **Roadmap:** `_aos/roadmap.yaml`
 - **Context:** `_aos/context/PROJECT_CONTEXT.md`
 
@@ -45,3 +45,12 @@
 ```bash
 bash _aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh .
 ```
+
+## Domain Validation Prompts (S001-P002-WP001)
+
+For external domain review of the AOS canonization migration:
+
+| Team | Activation file |
+|------|----------------|
+| Team 100 (Architecture) | `_aos/context/ACTIVATION_TEAM100_S001-P002-WP001.md` |
+| Team 190 (Validator) | `_aos/context/ACTIVATION_TEAM190_S001-P001-WP001_S001-P002-WP001.md` |

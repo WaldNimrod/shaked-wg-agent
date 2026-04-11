@@ -40,10 +40,10 @@ shaked_wg_agent/
 
 ## Current State
 
-- **Active milestone:** SHAKED-M001
-- **Active WP:** SHAKED-P001-WP001 at L-GATE_B
+- **Active milestone:** S001
+- **Active WP:** S001-P001-WP001 at L-GATE_B
 - **Profile:** L0
-- **Tests:** 46 passing
+- **Tests:** 53 passing
 - **CLI:** `python -m shaked_wg_agent [run|status|list]`
 
 ## Key Paths
@@ -58,3 +58,5 @@ shaked_wg_agent/
 | `tests/` | Unit tests (pytest) |
 | `_aos/` | AOS governance artifacts |
 | `_COMMUNICATION/` | Inter-team communication artifacts |
+| `_aos/context/ACTIVATION_TEAM100_S001-P002-WP001.md` | Domain validation prompt — Team 100 |
+| `_aos/context/ACTIVATION_TEAM190_S001-P001-WP001_S001-P002-WP001.md` | Domain validation prompt — Team 190 |

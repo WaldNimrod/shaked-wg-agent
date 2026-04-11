@@ -1,5 +1,5 @@
 #!/bin/bash
-# validate_aos.sh — Universal _aos/ Validation (10 Checks)
+# validate_aos.sh — Universal _aos/ Validation (12 Checks)
 # =========================================================
 # L-GATE_B exit criterion: MUST return exit code 0 (no FAIL; SKIP is allowed).
 #
@@ -410,10 +410,83 @@ check_11() {
     fi
 }
 
+# Check 12: Cross-Project Boundary — project_identity.yaml + contamination scan
+check_12() {
+    _require_active_modules 12 01 || return 0
+    local id_file="$AOS_DIR/project_identity.yaml"
+
+    # 12a: project_identity.yaml must exist
+    if [ ! -f "$id_file" ]; then
+        log_fail 12 "project_identity.yaml missing from _aos/ (cross-project boundary declaration required)"
+        return
+    fi
+
+    # 12b: Parse and extract forbidden_patterns
+    local patterns
+    patterns=$(python3 -c "
+import yaml, sys
+try:
+    with open('$id_file') as f:
+        d = yaml.safe_load(f)
+    b = d.get('boundaries', {})
+    fp = b.get('forbidden_patterns', [])
+    pid = d.get('project_id', '')
+    if not pid:
+        print('ERROR:project_id missing', file=sys.stderr)
+        sys.exit(1)
+    if not fp:
+        print('WARN:no forbidden_patterns')
+    else:
+        for p in fp:
+            print(p)
+except Exception as e:
+    print(f'ERROR:{e}', file=sys.stderr)
+    sys.exit(1)
+" 2>&1)
+
+    if echo "$patterns" | grep -q "^ERROR:"; then
+        log_fail 12 "project_identity.yaml parse error: $(echo "$patterns" | grep '^ERROR:' | head -1)"
+        return
+    fi
+
+    if echo "$patterns" | grep -q "^WARN:no forbidden_patterns"; then
+        log_pass 12 "project_identity.yaml present (no forbidden_patterns to scan)"
+        return
+    fi
+
+    # 12c: Scan tracked source files for forbidden patterns
+    local violations=0
+    local violation_details=""
+    while IFS= read -r pattern; do
+        [ -z "$pattern" ] && continue
+        # Search in common source dirs, skip _aos/ itself and .git/
+        local matches
+        matches=$(grep -rl --include="*.py" --include="*.js" --include="*.ts" --include="*.md" \
+            --exclude-dir=".git" --exclude-dir="_aos" --exclude-dir="node_modules" \
+            --exclude-dir=".claude" --exclude="CHANGELOG.md" --exclude="*.template" \
+            "$pattern" "$PROJECT_ROOT" 2>/dev/null | head -5)
+        if [ -n "$matches" ]; then
+            ((violations++)) || true
+            local first_match
+            first_match=$(echo "$matches" | head -1)
+            violation_details="${violation_details}  pattern='$pattern' found in: $first_match"$'\n'
+        fi
+    done <<< "$patterns"
+
+    if [ "$violations" -gt 0 ]; then
+        log_fail 12 "Cross-project contamination: $violations forbidden pattern(s) found in tracked files"
+        echo "$violation_details" | head -10
+    else
+        local pid
+        pid=$(python3 -c "import yaml; print(yaml.safe_load(open('$id_file'))['project_id'])" 2>/dev/null)
+        log_pass 12 "Cross-project boundary OK (project=$pid, 0 forbidden patterns found)"
+    fi
+}
+
 # ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 11 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
+echo "validate_aos.sh — running up to 12 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
 echo "================================================="
 
 check_1
@@ -427,6 +500,7 @@ check_8
 check_9
 check_10
 check_11
+check_12
 
 echo ""
 echo "================================================="

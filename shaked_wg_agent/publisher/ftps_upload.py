@@ -6,6 +6,7 @@ Pattern copied from SmallFarmsAgents/organic_market_agent/publisher/ftps_upload.
 """
 from __future__ import annotations
 
+import contextlib
 import ftplib
 import os
 import time
@@ -69,10 +70,8 @@ def _ensure_remote_dir(ftp: ReusedSessionFTP_TLS, path: str) -> None:
     current = ""
     for part in parts:
         current = f"{current}/{part}" if current else part
-        try:
-            ftp.mkd(current)
-        except ftplib.error_perm:
-            pass  # already exists
+        with contextlib.suppress(ftplib.error_perm):
+            ftp.mkd(current)  # error_perm: already exists
 
 
 def _upload_file(ftp: ReusedSessionFTP_TLS, local_path: Path, remote_path: str) -> None:
@@ -110,9 +109,7 @@ def upload_report(html_path: Path) -> str:
         _ensure_remote_dir(ftp, upload_path)
         _upload_file(ftp, html_path, remote_file)
     finally:
-        try:
+        with contextlib.suppress(Exception):
             ftp.quit()
-        except Exception:
-            pass
 
     return public_url
