@@ -28,11 +28,13 @@ milestones:
   - id: S002
     label: Platform Foundation — City-agnostic, API surface, notifications
     profile: L2
-    status: PLANNED
+    status: COMPLETE
+    completed_at: '2026-04-12'
     target_date: '2026-09-30'
     notes: >
-      City-agnostic config schema. FastAPI REST layer. Email/Telegram alerts.
-      Requires L2 profile transition (AOS engine + Dashboard deployment).
+      All 5 WPs L-GATE_V PASS 2026-04-12 (Team 190/OpenAI). LOD500 LOCKED.
+      Three-entity data model, FastAPI REST API, API key auth, multi-channel notifications.
+      81 tests, ruff clean, validate_aos.sh 12/12 PASS. Developer docs: docs/DEVELOPER_GUIDE.md.
 
   - id: S003
     label: SaaS Infrastructure — Multi-tenancy, billing, permissions
@@ -135,76 +137,175 @@ work_packages:
 
   - id: S002-P001-WP001
     label: City-agnostic config schema + scraper interface
-    status: PLANNED
+    status: COMPLETE
     track: A
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
+    current_lean_gate: COMPLETE
+    lod_status: LOD500_LOCKED
+    assigned_builder: shaked_build
+    assigned_validator: shaked_val
     created_at: '2026-04-11'
     milestone_ref: S002
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    spec_ref: _aos/work_packages/S002-P001-WP001/LOD400_S002-P001-WP001.md
+    gate_history:
+      - gate: L-GATE_E
+        result: PASS
+        date: '2026-04-12'
+      - gate: L-GATE_S
+        result: PASS
+        date: '2026-04-12'
+        notes: LOD400 v1.1.0 validated by Team 190 (PASS WITH FINDINGS).
+      - gate: L-GATE_B
+        result: PASS
+        date: '2026-04-12'
+        notes: Implementation complete. 81 tests pass, ruff clean, validate_aos 12/12.
+      - gate: L-GATE_V
+        result: PASS
+        date: '2026-04-12'
+        validator: team_190
+        validator_engine: openai
+        builder_engine: cursor-composer
+        fidelity: FULL_MATCH
     notes: >
-      Refactor data/config.json and data/sources.json into city-agnostic schemas.
-      BaseScraper interface updated to accept city_config. Profile loader for any city.
+      Three-entity config model (AgentMeta, CityDefinition, SearchProfile, SourceDefinition).
+      load_config(profile_id), CLI --profile, scraper/scorer/runner updated.
+      L-GATE_V PASS 2026-04-12.
 
   - id: S002-P001-WP002
-    label: Add Zurich + Bern search profiles
-    status: PLANNED
+    label: Zurich + Bern city definitions + source registry + default profile
+    status: COMPLETE
     track: A
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
+    current_lean_gate: COMPLETE
+    lod_status: LOD500_LOCKED
+    assigned_builder: shaked_build
+    assigned_validator: shaked_val
     created_at: '2026-04-11'
     milestone_ref: S002
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Depends on S002-P001-WP001. Implements Zurich and Bern flatfox scrapers + profiles.
+    spec_ref: _aos/work_packages/S002-P001-WP002/LOD400_S002-P001-WP002.md
+    gate_history:
+      - gate: L-GATE_E
+        result: PASS
+        date: '2026-04-12'
+      - gate: L-GATE_S
+        result: PASS
+        date: '2026-04-12'
+        notes: LOD400 v1.1.0 validated by Team 190 (PASS WITH FINDINGS).
+      - gate: L-GATE_B
+        result: PASS
+        date: '2026-04-12'
+      - gate: L-GATE_V
+        result: PASS
+        date: '2026-04-12'
+        validator: team_190
+        validator_engine: openai
+        builder_engine: cursor-composer
+        fidelity: FULL_MATCH
+    notes: >
+      City definitions (Basel/Zurich/Bern), source registry with city_params,
+      default profile, agent.json, legacy migration (.bak backups).
+      L-GATE_V PASS 2026-04-12.
 
   - id: S002-P002-WP001
     label: REST API layer — /search, /listings, /runs endpoints
-    status: PLANNED
+    status: COMPLETE
     track: B
     profile: L2.5
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
+    current_lean_gate: COMPLETE
+    lod_status: LOD500_LOCKED
+    assigned_builder: shaked_build
+    assigned_validator: shaked_val
     created_at: '2026-04-11'
     milestone_ref: S002
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+    spec_ref: _aos/work_packages/S002-P002-WP001/LOD400_S002-P002-WP001.md
     team_00_decision: "L2.5 / Track B — confirmed 2026-04-12"
+    gate_history:
+      - gate: L-GATE_E
+        result: PASS
+        date: '2026-04-12'
+      - gate: L-GATE_S
+        result: PASS
+        date: '2026-04-12'
+        notes: LOD400 v1.1.1 validated by Team 190 (PASS WITH FINDINGS).
+      - gate: L-GATE_B
+        result: PASS
+        date: '2026-04-12'
+      - gate: L-GATE_V
+        result: PASS
+        date: '2026-04-12'
+        validator: team_190
+        validator_engine: openai
+        builder_engine: cursor-composer
+        fidelity: FULL_MATCH
     notes: >
-      FastAPI wrapper over existing runner/persistence layer.
-      Profile L2.5 / Track B confirmed by Team 00 (2026-04-12).
-      Requires LOD300 (state machine, API contract, auth model) + EXT-CP1.
-      Trigger: L2 profile transition must complete before this WP enters L-GATE_S.
+      FastAPI REST API: POST /search, GET /listings, /runs, /health.
+      CORS, X-Request-ID, Pydantic schemas, profile_id resolution.
+      L-GATE_V PASS 2026-04-12.
 
   - id: S002-P002-WP002
-    label: API key auth (single-user, no multi-tenancy yet)
-    status: PLANNED
+    label: API key auth (single-user)
+    status: COMPLETE
     track: A
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
+    current_lean_gate: COMPLETE
+    lod_status: LOD500_LOCKED
+    assigned_builder: shaked_build
+    assigned_validator: shaked_val
     created_at: '2026-04-11'
     milestone_ref: S002
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Depends on S002-P002-WP001. Simple static API key header validation.
+    spec_ref: _aos/work_packages/S002-P002-WP002/LOD400_S002-P002-WP002.md
+    gate_history:
+      - gate: L-GATE_E
+        result: PASS
+        date: '2026-04-12'
+      - gate: L-GATE_S
+        result: PASS
+        date: '2026-04-12'
+        notes: LOD400 v1.1.2 validated by Team 190 (PASS WITH FINDINGS).
+      - gate: L-GATE_B
+        result: PASS
+        date: '2026-04-12'
+      - gate: L-GATE_V
+        result: PASS
+        date: '2026-04-12'
+        validator: team_190
+        validator_engine: openai
+        builder_engine: cursor-composer
+        fidelity: FULL_MATCH
+    notes: >
+      verify_api_key FastAPI dependency, hmac.compare_digest, router-level auth.
+      L-GATE_V PASS 2026-04-12.
 
   - id: S002-P003-WP001
-    label: Email/Telegram notification digest
-    status: PLANNED
+    label: Multi-channel notification digest
+    status: COMPLETE
     track: A
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
+    current_lean_gate: COMPLETE
+    lod_status: LOD500_LOCKED
+    assigned_builder: shaked_build
+    assigned_validator: shaked_val
     created_at: '2026-04-11'
     milestone_ref: S002
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Daily digest email + optional Telegram bot push. Configurable per profile.
+    spec_ref: _aos/work_packages/S002-P003-WP001/LOD400_S002-P003-WP001.md
+    gate_history:
+      - gate: L-GATE_E
+        result: PASS
+        date: '2026-04-12'
+      - gate: L-GATE_S
+        result: PASS
+        date: '2026-04-12'
+        notes: LOD400 v1.1.0 validated by Team 190 (PASS WITH FINDINGS).
+      - gate: L-GATE_B
+        result: PASS
+        date: '2026-04-12'
+      - gate: L-GATE_V
+        result: PASS
+        date: '2026-04-12'
+        validator: team_190
+        validator_engine: openai
+        builder_engine: cursor-composer
+        fidelity: FULL_MATCH
+    notes: >
+      5-channel notifier (email, telegram, discord, ntfy, webhook).
+      Digest builder, orchestrator, runner integration.
+      L-GATE_V PASS 2026-04-12.
 
   # ── S003: SaaS Infrastructure (PLANNED) ───────────────────────────────────
 
