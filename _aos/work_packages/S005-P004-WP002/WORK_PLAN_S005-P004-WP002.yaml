@@ -1,0 +1,49 @@
+# WORK_PLAN_S005-P004-WP002.yaml
+# Work Package: Dynamic Scraper Registry
+# Sprint: S005-P004
+# Authoring team: team_110 (shaked_arch / Claude Code)
+# Execution order: 2 of 3 (AFTER WP001 — consumes renamed fields)
+
+work_package_id: S005-P004-WP002
+title: "Dynamic Scraper Registry"
+lod400_ref: "_aos/work_packages/S005-P004-WP002/LOD400_S005-P004-WP002.md"
+lod400_version: v1.1.0
+execution_order: 2
+dependencies:
+  - S005-P004-WP001  # Field renames must be complete
+
+phases:
+  - phase: 1
+    team_id: team_20
+    role: builder
+    engine: Cursor Composer
+    scope: >
+      Implement all 5 components from LOD400 §2.1–§2.5:
+      SourceDefinition.connector_class, ResolvedSource.connector_class,
+      dynamic _resolve_class + _build_scraper replacement,
+      flatfox verification extraction, sources.json FQN update + tutti removal.
+    inputs:
+      - "_aos/work_packages/S005-P004-WP002/LOD400_S005-P004-WP002.md"
+      - "shaked_wg_agent/config.py"
+      - "shaked_wg_agent/runner.py"
+      - "shaked_wg_agent/scrapers/base.py"
+      - "shaked_wg_agent/scrapers/flatfox.py"
+      - "data/sources.json"
+    outputs:
+      - "shaked_wg_agent/config.py"
+      - "shaked_wg_agent/runner.py"
+      - "shaked_wg_agent/scrapers/flatfox.py"
+      - "data/sources.json"
+
+validation_gate:
+  description: "Per-WP validation after implementation"
+  checks:
+    - "pytest tests/ -v — all tests pass (AC-17)"
+    - "grep -n 'mapping\\s*=' shaked_wg_agent/runner.py — zero hits (AC-11)"
+    - "grep -n '_verify_flatfox_via_api' shaked_wg_agent/runner.py — zero hits (AC-12)"
+    - "Verify all sources.json entries have FQN scraper_class (AC-15)"
+    - "Verify tutti entry removed from sources.json (AC-15)"
+    - "Verify _resolve_class resolves all active scrapers (AC-16)"
+    - "Verify AC-01 through AC-17 per LOD400 spec"
+  pass_criteria: "ALL checks pass → proceed to WP003"
+  fail_action: "HALT — fix before proceeding"

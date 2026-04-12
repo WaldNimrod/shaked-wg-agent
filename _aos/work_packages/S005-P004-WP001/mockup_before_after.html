@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>S005-P004 — UI Mockups: Before / After + IL Full-Page</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <style>
+    body { background: #f8f9fa; }
+    .mockup-section { margin-bottom: 2.5rem; }
+    .before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .before { border: 2px solid #dc3545; border-radius: .75rem; padding: 1rem; background: #fff; }
+    .after  { border: 2px solid #198754; border-radius: .75rem; padding: 1rem; background: #fff; }
+    .label-tag { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; padding: .25rem .5rem; border-radius: .25rem; color: #fff; display: inline-block; margin-bottom: .5rem; }
+    .label-before { background: #dc3545; }
+    .label-after  { background: #198754; }
+    .label-il { background: #2196f3; }
+    .change-highlight { background: #fff3cd; padding: 0 .2rem; border-radius: 2px; }
+    .hero-mock { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 1.25rem 1.5rem; border-radius: .875rem; }
+    .hero-mock-il { background: linear-gradient(135deg, #2196f3, #1565c0); color: #fff; padding: 1.25rem 1.5rem; border-radius: .875rem; }
+    .stat-card-mock { border: none; border-radius: .75rem; box-shadow: 0 2px 8px rgba(0,0,0,.07); background: #fff; text-align: center; padding: 1rem; }
+    table { font-size: .875rem; }
+    .filter-bar-mock { background: #fff; border-radius: .75rem; box-shadow: 0 2px 8px rgba(0,0,0,.07); padding: .75rem 1rem; }
+    .wp-tag { font-size: .65rem; background: #6c757d; color: #fff; padding: .15rem .4rem; border-radius: .2rem; vertical-align: middle; }
+    h2 small { font-weight: 400; color: #6c757d; }
+    .modal-header-mock { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; padding: 1rem 1.25rem; border-radius: .75rem .75rem 0 0; }
+    .modal-header-mock-il { background: linear-gradient(135deg, #2196f3, #1565c0); color: #fff; padding: 1rem 1.25rem; border-radius: .75rem .75rem 0 0; }
+    .section-divider { border-top: 3px solid #2196f3; margin: 3rem 0 2rem; padding-top: 1.5rem; }
+    .full-page-frame { border: 3px solid #2196f3; border-radius: 1rem; overflow: hidden; background: #fff; }
+    .full-page-frame-ch { border: 3px solid #198754; border-radius: 1rem; overflow: hidden; background: #fff; }
+  </style>
+</head>
+<body>
+<div class="container py-4">
+
+  <h1 class="mb-1">S005-P004 — Visual UI Mockups</h1>
+  <p class="text-muted mb-2">Each profile activates a <strong>complete locale</strong>: 100% one language, one direction, one currency. No mixing.</p>
+  <p class="text-muted mb-4">
+    <span class="badge bg-success">CH Profile</span> = German + LTR + CHF &nbsp;&nbsp;
+    <span class="badge bg-primary">IL Profile</span> = Hebrew + RTL + NIS &nbsp;&nbsp;
+    <span class="change-highlight">Yellow</span> = changed element vs. current codebase
+  </p>
+
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+  <!-- PART A: Before/After for Swiss profile (WP001 field changes)     -->
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+
+  <h2 class="mt-5 mb-3">Part A — Swiss Profile: Before → After <small>WP001 field changes</small></h2>
+
+  <!-- 1. Table Row -->
+  <h3 class="h5 mt-4 mb-3">A1. Table Row — Price Column</h3>
+  <div class="before-after mockup-section">
+    <div class="before">
+      <span class="label-tag label-before">BEFORE</span>
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr><th>Score</th><th>Status</th><th>Preis</th><th>Quartier</th><th>Tram</th><th>Vegan</th><th>Inserat</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><div class="d-flex align-items-center gap-1"><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-success" style="width:87%"></div></div><small class="fw-semibold">87</small></div></td>
+              <td><span class="badge bg-secondary">neu</span></td>
+              <td class="text-nowrap">CHF 780</td>
+              <td>Gundeldingen</td>
+              <td>T3, T16</td>
+              <td><span class="text-success fw-semibold">vegan WG</span></td>
+              <td>Schönes Zimmer in veganer 3er-WG</td></tr>
+          <tr><td><div class="d-flex align-items-center gap-1"><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-warning" style="width:72%"></div></div><small class="fw-semibold">72</small></div></td>
+              <td><span class="badge bg-warning">interessant</span></td>
+              <td class="text-nowrap">CHF 650</td>
+              <td>St. Johann</td>
+              <td>T8</td>
+              <td>?</td>
+              <td>WG-Zimmer Nähe Uni Basel</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="after">
+      <span class="label-tag label-after">AFTER — CH Profile</span>
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr><th>Score</th><th>Status</th><th>Preis</th><th>Quartier</th><th><span class="change-highlight">Transit</span></th><th>Vegan</th><th>Inserat</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><div class="d-flex align-items-center gap-1"><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-success" style="width:87%"></div></div><small class="fw-semibold">87</small></div></td>
+              <td><span class="badge bg-secondary">neu</span></td>
+              <td class="text-nowrap"><span class="change-highlight">CHF</span> 780</td>
+              <td>Gundeldingen</td>
+              <td><span class="change-highlight">3, 16</span></td>
+              <td><span class="text-success fw-semibold">vegan WG</span></td>
+              <td>Schönes Zimmer in veganer 3er-WG</td></tr>
+          <tr><td><div class="d-flex align-items-center gap-1"><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-warning" style="width:72%"></div></div><small class="fw-semibold">72</small></div></td>
+              <td><span class="badge bg-warning">interessant</span></td>
+              <td class="text-nowrap"><span class="change-highlight">CHF</span> 650</td>
+              <td>St. Johann</td>
+              <td><span class="change-highlight">8</span></td>
+              <td>?</td>
+              <td>WG-Zimmer Nähe Uni Basel</td></tr>
+        </tbody>
+      </table>
+      <p class="text-muted small mt-2 mb-0">Currency from <code>listing["currency"]</code>. Transit column drops "T" prefix. All rows are CHF — single market.</p>
+    </div>
+  </div>
+
+  <!-- 2. CLI Status -->
+  <h3 class="h5 mt-4 mb-3">A2. CLI Status Output</h3>
+  <div class="before-after mockup-section">
+    <div class="before">
+      <span class="label-tag label-before">BEFORE</span>
+      <pre class="bg-dark text-light p-3 rounded" style="font-size:.82rem">
+<span style="color:#67e8f9">Shaked WG Basel — Status</span>
+  Profile   : <span style="color:#67e8f9">Shaked Basel Search</span>
+  Budget    : <strong style="color:#fbbf24">CHF 400–950</strong>
+  Move-in   : 2026-06-01
+  Diet      : vegan
+  <strong style="color:#fbbf24">Tram lines</strong>: 2, 3, 8, 16
+
+  Listings  : 42 total
+  Top pick  : <span style="color:#4ade80">Schönes Zimmer in veganer 3er-WG</span> (score 87)
+  Last run  : 2026-04-12T13:00:05 — 3 new, 59 scanned</pre>
+    </div>
+    <div class="after">
+      <span class="label-tag label-after">AFTER — CH Profile</span>
+      <pre class="bg-dark text-light p-3 rounded" style="font-size:.82rem">
+<span style="color:#67e8f9">Shaked WG Basel — Status</span>
+  Profile   : <span style="color:#67e8f9">Shaked Basel Search</span>
+  Budget    : <strong style="color:#fbbf24"><span style="background:#665500;padding:0 3px">CHF</span> 400–950</strong>
+  Move-in   : 2026-06-01
+  Diet      : vegan
+  <strong style="color:#fbbf24"><span style="background:#665500;padding:0 3px">Transit lines</span></strong>: 2, 3, 8, 16
+
+  Listings  : 42 total
+  Top pick  : <span style="color:#4ade80">Schönes Zimmer in veganer 3er-WG</span> (score 87)
+  Last run  : 2026-04-12T13:00:05 — 3 new, 59 scanned</pre>
+      <p class="text-muted small mt-2 mb-0">"CHF" from <code>city.currency</code>. "Tram lines" → "Transit lines".</p>
+    </div>
+  </div>
+
+  <!-- 3. Notification Digest -->
+  <h3 class="h5 mt-4 mb-3">A3. Notification Digest — Email/Telegram</h3>
+  <div class="before-after mockup-section">
+    <div class="before">
+      <span class="label-tag label-before">BEFORE</span>
+      <div class="card p-3" style="max-width:400px;font-size:.85rem">
+        <strong>3 neue WG-Inserate</strong>
+        <hr class="my-2">
+        <div class="mb-2">
+          <strong>Schönes Zimmer in 3er-WG</strong><br>
+          Gundeldingen · <strong>CHF 780</strong> · Score 87
+        </div>
+        <div class="mb-2">
+          <strong>WG-Zimmer Nähe Uni</strong><br>
+          St. Johann · <strong>CHF 650</strong> · Score 72
+        </div>
+      </div>
+    </div>
+    <div class="after">
+      <span class="label-tag label-after">AFTER — CH Profile</span>
+      <div class="card p-3" style="max-width:400px;font-size:.85rem">
+        <strong>3 neue WG-Inserate</strong>
+        <hr class="my-2">
+        <div class="mb-2">
+          <strong>Schönes Zimmer in 3er-WG</strong><br>
+          Gundeldingen · <strong><span class="change-highlight">CHF</span> 780</strong> · Score 87
+        </div>
+        <div class="mb-2">
+          <strong>WG-Zimmer Nähe Uni</strong><br>
+          St. Johann · <strong><span class="change-highlight">CHF</span> 650</strong> · Score 72
+        </div>
+      </div>
+      <p class="text-muted small mt-2 mb-0">Currency from data. All rows same market (CHF). No mixed currencies in one digest.</p>
+    </div>
+  </div>
+
+
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+  <!-- PART B: Full-Page Israeli View (WP001+WP003+WP004 combined)     -->
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider">
+    <h2 class="mb-3">Part B — Israeli Profile: Full-Page View <small>WP001 + WP003 + WP004</small></h2>
+    <p class="text-muted mb-4">
+      When IL profile is active, the <strong>entire interface</strong> is Hebrew + RTL.
+      No German, no LTR, no mixed rows. Follows
+      <strong>AOS Module 11 (RTL_BIDI_STANDARD_v1.0.0)</strong>:
+      <code>&lt;html lang="he" dir="rtl"&gt;</code>, bootstrap.rtl.min.css,
+      CSS logical properties, <code>dir="ltr"</code> for price tokens.
+    </p>
+  </div>
+
+  <!-- Full-page IL report mockup -->
+  <div class="full-page-frame" dir="rtl">
+    <div style="background:#e3f2fd;padding:.5rem 1rem;font-size:.7rem;text-align:center;color:#1565c0;font-weight:600">
+      IL PROFILE — FULL PAGE PREVIEW (100% Hebrew + RTL per AOS Module 11)
+    </div>
+
+    <div style="padding:1.5rem">
+      <!-- Hero Banner -->
+      <div class="hero-mock-il mb-3" dir="rtl" style="text-align:right">
+        <h1 class="h3 mb-1" style="font-family:system-ui">חיפוש דירת שותפים — פרדס חנה</h1>
+        <div style="font-size:.78rem;opacity:.85;margin-top:.5rem">
+          v0.4.0 · בנייה 12/04/2026 · חיפוש אחרון: <strong>12/04/2026 13:00:05</strong> · 3 חדשים מאז הרצה אחרונה
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="row g-3 mb-4" dir="rtl">
+        <div class="col-3"><div class="stat-card-mock"><div class="fs-2 fw-bold" style="color:#1565c0">12</div><div class="text-muted small">מודעות בתקציב</div></div></div>
+        <div class="col-3"><div class="stat-card-mock"><div class="fs-2 fw-bold text-success">78</div><div class="text-muted small">ניקוד גבוה ביותר</div></div></div>
+        <div class="col-3"><div class="stat-card-mock"><div class="fs-2 fw-bold text-warning">57</div><div class="text-muted small">ימים שנותרו</div></div></div>
+        <div class="col-3"><div class="stat-card-mock"><div class="fs-2 fw-bold text-success">3</div><div class="text-muted small">ידידותי לטבעונים</div></div></div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar-mock d-flex flex-wrap gap-2 align-items-center mb-3 justify-content-end" dir="rtl">
+        <select class="form-select form-select-sm" style="width:auto" dir="rtl">
+          <option>סטטוס: הכול</option>
+          <option>מועדף</option>
+          <option>מעניין</option>
+          <option>חדש</option>
+        </select>
+        <select class="form-select form-select-sm" style="width:auto" dir="rtl">
+          <option>מחיר: הכול</option>
+          <option dir="ltr">≤ ₪ 2,500</option>
+          <option dir="ltr">≤ ₪ 3,500</option>
+          <option dir="ltr">≤ ₪ 5,000</option>
+        </select>
+        <select class="form-select form-select-sm" style="width:auto" dir="rtl">
+          <option>דרגה: הכול</option>
+        </select>
+        <button class="btn btn-sm btn-outline-secondary">✕ נקה מסננים</button>
+      </div>
+
+      <!-- Listings Table — 100% Hebrew -->
+      <table class="table table-hover mb-4" dir="rtl" style="text-align:right">
+        <thead class="table-light">
+          <tr><th>ניקוד</th><th>סטטוס</th><th>מחיר</th><th>שכונה</th><th>תחב״צ</th><th>טבעוני</th><th>מודעה</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="d-flex align-items-center gap-1"><small class="fw-semibold">78</small><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-success" style="width:78%"></div></div></div></td>
+            <td><span class="badge bg-secondary">חדש</span></td>
+            <td class="text-nowrap" dir="ltr" style="text-align:right"><span dir="ltr">₪ 3,200</span></td>
+            <td>מרכז פרדס חנה</td>
+            <td>—</td>
+            <td><span class="text-success fw-semibold">טבעוני</span></td>
+            <td>דירת 3 חד׳ עם מרפסת, ליד מרכז</td>
+          </tr>
+          <tr>
+            <td><div class="d-flex align-items-center gap-1"><small class="fw-semibold">71</small><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-warning" style="width:71%"></div></div></div></td>
+            <td><span class="badge bg-warning">מעניין</span></td>
+            <td class="text-nowrap" dir="ltr" style="text-align:right"><span dir="ltr">₪ 2,800</span></td>
+            <td>כפר יונה</td>
+            <td>—</td>
+            <td>?</td>
+            <td>חדר בדירת שותפים שקטה</td>
+          </tr>
+          <tr>
+            <td><div class="d-flex align-items-center gap-1"><small class="fw-semibold">65</small><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-info" style="width:65%"></div></div></div></td>
+            <td><span class="badge bg-success">⭐ מועדף</span></td>
+            <td class="text-nowrap" dir="ltr" style="text-align:right"><span dir="ltr">₪ 3,500</span></td>
+            <td>פרדס חנה דרום</td>
+            <td>—</td>
+            <td><span class="text-success fw-semibold">צמחוני</span></td>
+            <td>דירה חדשה, 2 שותפים</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Modal Preview — Hebrew -->
+      <div class="modal-header-mock-il" dir="rtl" style="text-align:right">
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1 justify-content-end" style="flex-direction:row-reverse">
+          <span class="fw-bold fs-5">דירת 3 חד׳ עם מרפסת, ליד מרכז</span>
+          <span class="badge bg-secondary">חדש</span>
+          <span class="badge bg-success text-white">קישור ישיר</span>
+        </div>
+        <div class="d-flex gap-3 flex-wrap small opacity-90 justify-content-end" style="flex-direction:row-reverse">
+          <span>📍 מרכז פרדס חנה</span>
+          <span>💰 <strong dir="ltr">₪ 3,200</strong>/חודש</span>
+          <span>🗓 מ-01/07/2026</span>
+          <span>📊 ניקוד: <strong>78</strong></span>
+        </div>
+      </div>
+      <div class="card border-0 bg-light rounded-0 rounded-bottom p-3" dir="rtl" style="text-align:right">
+        <h6 class="fw-semibold mb-2">📞 כך תיצור קשר:</h6>
+        <ol class="small mb-3 pe-3" style="line-height:1.9">
+          <li>לחץ על <strong>„צור קשר דרך yad2 ↗"</strong></li>
+          <li>צור חשבון חינם ב-yad2.co.il (~2 דק׳)</li>
+          <li>לחץ על <strong>„שלח פנייה"</strong></li>
+          <li>כתוב בקצרה: שם, מצב, תאריך כניסה רצוי</li>
+        </ol>
+        <div class="d-flex flex-wrap gap-2 mb-2 justify-content-end">
+          <a href="#" class="btn btn-sm btn-primary">צור קשר דרך yad2 ↗</a>
+          <button class="btn btn-sm btn-outline-secondary">📋 העתק מילת חיפוש</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="text-muted small mt-3 mb-0">
+    <strong>RTL implementation notes (per AOS Module 11):</strong>
+    <code>&lt;html lang="he" dir="rtl"&gt;</code>,
+    <code>bootstrap.rtl.min.css</code>,
+    CSS logical properties (<code>margin-inline-start</code> not <code>margin-left</code>),
+    price tokens in <code>dir="ltr"</code> spans (₪ stays left of number),
+    <code>&lt;bdi&gt;</code> for unknown-direction inline content,
+    <code>Intl.NumberFormat('he-IL')</code> for currency formatting.
+  </p>
+
+
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+  <!-- PART C: Full-Page Swiss View (reference — after all WPs)        -->
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+
+  <div class="section-divider" style="border-color:#198754">
+    <h2 class="mb-3">Part C — Swiss Profile: Full-Page View (After All WPs) <small>Reference</small></h2>
+    <p class="text-muted mb-4">
+      CH profile: 100% German + LTR + CHF. Shown for comparison.
+    </p>
+  </div>
+
+  <div class="full-page-frame-ch" dir="ltr">
+    <div style="background:#e8f5e9;padding:.5rem 1rem;font-size:.7rem;text-align:center;color:#2e7d32;font-weight:600">
+      CH PROFILE — FULL PAGE PREVIEW (100% German + LTR)
+    </div>
+
+    <div style="padding:1.5rem">
+      <!-- Hero Banner -->
+      <div class="hero-mock mb-3">
+        <h1 class="h3 mb-1">Shaked's WG-Suche — Basel</h1>
+        <div style="font-size:.78rem;opacity:.85;margin-top:.5rem">
+          v0.4.0 · Build 2026-04-12 · Letzte Suche: <strong>2026-04-12T13:00:05</strong> · 3 neu seit letztem Lauf
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-3"><div class="stat-card-mock"><div class="fs-2 fw-bold" style="color:#d97706">42</div><div class="text-muted small">Inserate im Budget</div></div></div>
+        <div class="col-3"><div class="stat-card-mock"><div class="fs-2 fw-bold text-success">87</div><div class="text-muted small">Höchster Score</div></div></div>
+        <div class="col-3"><div class="stat-card-mock"><div class="fs-2 fw-bold text-warning">57</div><div class="text-muted small">Tage verbleibend</div></div></div>
+        <div class="col-3"><div class="stat-card-mock"><div class="fs-2 fw-bold text-success">8</div><div class="text-muted small">Vegan-freundlich</div></div></div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar-mock d-flex flex-wrap gap-2 align-items-center mb-3">
+        <select class="form-select form-select-sm" style="width:auto">
+          <option>Status: alle</option>
+          <option>favorit</option>
+          <option>interessant</option>
+          <option>neu</option>
+        </select>
+        <select class="form-select form-select-sm" style="width:auto">
+          <option>Preis: alle</option>
+          <option>≤ CHF 600</option>
+          <option>≤ CHF 800</option>
+          <option>≤ CHF 1000</option>
+        </select>
+        <select class="form-select form-select-sm" style="width:auto">
+          <option>Tier: alle</option>
+        </select>
+        <button class="btn btn-sm btn-outline-secondary">✕ Filter löschen</button>
+      </div>
+
+      <!-- Listings Table — 100% German -->
+      <table class="table table-hover mb-4">
+        <thead class="table-light">
+          <tr><th>Score</th><th>Status</th><th>Preis</th><th>Quartier</th><th>Transit</th><th>Vegan</th><th>Inserat</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="d-flex align-items-center gap-1"><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-success" style="width:87%"></div></div><small class="fw-semibold">87</small></div></td>
+            <td><span class="badge bg-secondary">neu</span></td>
+            <td class="text-nowrap">CHF 780</td>
+            <td>Gundeldingen</td>
+            <td>3, 16</td>
+            <td><span class="text-success fw-semibold">vegan WG</span></td>
+            <td>Schönes Zimmer in veganer 3er-WG</td>
+          </tr>
+          <tr>
+            <td><div class="d-flex align-items-center gap-1"><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-warning" style="width:72%"></div></div><small class="fw-semibold">72</small></div></td>
+            <td><span class="badge bg-warning">interessant</span></td>
+            <td class="text-nowrap">CHF 650</td>
+            <td>St. Johann</td>
+            <td>8</td>
+            <td>?</td>
+            <td>WG-Zimmer Nähe Uni Basel</td>
+          </tr>
+          <tr>
+            <td><div class="d-flex align-items-center gap-1"><div class="progress flex-grow-1" style="height:6px"><div class="progress-bar bg-info" style="width:63%"></div></div><small class="fw-semibold">63</small></div></td>
+            <td><span class="badge bg-success">⭐ favorit</span></td>
+            <td class="text-nowrap">CHF 850</td>
+            <td>Matthäus</td>
+            <td>2, 3</td>
+            <td><span class="text-success fw-semibold">pflanzlich</span></td>
+            <td>Helles Zimmer in ruhiger Lage</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Modal Preview — German -->
+      <div class="modal-header-mock">
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+          <span class="badge bg-success text-white">Direktlink</span>
+          <span class="badge bg-secondary">neu</span>
+          <span class="fw-bold fs-5">Schönes Zimmer in veganer 3er-WG</span>
+        </div>
+        <div class="d-flex gap-3 flex-wrap small opacity-90">
+          <span>📍 Gundeldingen</span>
+          <span>💰 <strong>CHF 780</strong>/Mt.</span>
+          <span>🗓 ab 2026-07-01</span>
+          <span>🚃 3, 16</span>
+          <span>📊 Score: <strong>87</strong></span>
+        </div>
+      </div>
+      <div class="card border-0 bg-light rounded-0 rounded-bottom p-3">
+        <h6 class="fw-semibold mb-2">📞 So kontaktierst du:</h6>
+        <ol class="small mb-3 ps-3" style="line-height:1.9">
+          <li>Klick auf <strong>„Kontakt über flatfox ↗"</strong> — Seite öffnet sich</li>
+          <li>Erstelle ein kostenloses Konto auf flatfox.ch (~2 Min)</li>
+          <li>Klick auf <strong>„Anfrage senden"</strong> beim Inserat</li>
+          <li>Schreibe kurz: Name, Situation, Wunsch-Einzugsdatum</li>
+        </ol>
+        <div class="d-flex flex-wrap gap-2 mb-2">
+          <a href="#" class="btn btn-sm btn-primary">Kontakt über flatfox ↗</a>
+          <button class="btn btn-sm btn-outline-secondary">📋 Suchbegriff kopieren</button>
+        </div>
+        <span class="text-success small">✓ Geprüft aktiv (vor 2h)</span>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+  <!-- WP Scope Legend                                                  -->
+  <!-- ═════════════════════════════════════════════════════════════════ -->
+
+  <h2 class="mt-5 mb-3">WP Scope Legend</h2>
+  <div class="card p-3 mb-5">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>WP</th><th>What changes</th><th>Locale rule</th></tr></thead>
+      <tbody>
+        <tr><td><span class="wp-tag">WP001</span> Data Fields</td>
+            <td><code>price_chf</code> → <code>price</code> + <code>currency</code>, "Tram" → "Transit", all display reads currency from data</td>
+            <td>Provides data plumbing for per-market currency. No mixed currencies in one table.</td></tr>
+        <tr><td><span class="wp-tag">WP002</span> Registry</td>
+            <td>Hardcoded scraper mapping → FQN dynamic registry. No visible UI change.</td>
+            <td>N/A — backend only</td></tr>
+        <tr><td><span class="wp-tag">WP003</span> Locale</td>
+            <td>Locale dataclass with <code>direction</code>, <code>html_lang</code>, keywords, labels. <code>get_locale(country)</code> accessor.</td>
+            <td>Defines complete locale per country. WP004 consumes <code>direction</code>/<code>html_lang</code> for RTL rendering.</td></tr>
+        <tr><td><span class="wp-tag">WP004</span> HTML i18n <span class="badge bg-danger">BLOCKED</span></td>
+            <td>~50 German strings → Hebrew, <code>&lt;html dir="rtl"&gt;</code>, bootstrap.rtl.min.css, Module 11 compliance</td>
+            <td>100% locale rule: IL = all Hebrew + RTL. CH = all German + LTR. No mixing. Must follow AOS Module 11.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</body>
+</html>
