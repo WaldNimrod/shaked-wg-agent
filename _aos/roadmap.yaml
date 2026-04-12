@@ -244,7 +244,7 @@ work_packages:
     status: DEFERRED
     track: B
     profile: L2.5
-    current_lean_gate: null
+    current_lean_gate: L-GATE_E
     lod_status: null
     assigned_builder: TBD
     assigned_validator: TBD
@@ -266,7 +266,7 @@ work_packages:
     label: Subscription tiers — Free / Pro / Agency
     status: DEFERRED
     track: A
-    current_lean_gate: null
+    current_lean_gate: L-GATE_E
     lod_status: null
     assigned_builder: TBD
     assigned_validator: TBD
@@ -279,7 +279,7 @@ work_packages:
     label: Usage metering + quota enforcement
     status: DEFERRED
     track: A
-    current_lean_gate: null
+    current_lean_gate: L-GATE_E
     lod_status: null
     assigned_builder: TBD
     assigned_validator: TBD

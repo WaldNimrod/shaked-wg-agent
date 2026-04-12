@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profildetail Default — Config Schema Mockup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">WP001 — Config Schema</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="profile_list.html">Suchprofile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="agent_settings.html">Agent-Einstellungen</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="profile_list.html">Suchprofile</a></li>
+                <li class="breadcrumb-item active">Default</li>
+            </ol>
+        </nav>
+        <h1 class="mb-4">Suchprofil: Default <span class="badge bg-primary fs-6 align-middle">SearchProfile</span></h1>
+        <p class="text-muted mb-4"><code>data/profiles/default.json</code></p>
+
+        <!-- Suchprofil — User Preferences -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white"><strong>Suchprofil (Benutzereinstellungen)</strong></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">profile_id</dt>
+                    <dd class="col-sm-8"><code>default</code></dd>
+                    <dt class="col-sm-4">profile_name</dt>
+                    <dd class="col-sm-8">Shaked Basel WG Search</dd>
+                    <dt class="col-sm-4">city_id</dt>
+                    <dd class="col-sm-8"><code>basel</code> &rarr; Basel</dd>
+                    <dt class="col-sm-4">move_in_from</dt>
+                    <dd class="col-sm-8">2026-06-01</dd>
+                    <dt class="col-sm-4">Budget (min &ndash; max)</dt>
+                    <dd class="col-sm-8">CHF 200 &ndash; 1000</dd>
+                    <dt class="col-sm-4">preferred_roommate_age</dt>
+                    <dd class="col-sm-8">young (18&ndash;30)</dd>
+                    <dt class="col-sm-4">rental_duration</dt>
+                    <dd class="col-sm-8">permanent (&gt;11 Monate)</dd>
+                    <dt class="col-sm-4">diet</dt>
+                    <dd class="col-sm-8">vegan</dd>
+                    <dt class="col-sm-4">smoking_policy</dt>
+                    <dd class="col-sm-8">non_smoking</dd>
+                    <dt class="col-sm-4">retention_days</dt>
+                    <dd class="col-sm-8">30 Tage</dd>
+                </dl>
+            </div>
+        </div>
+
+        <!-- Public Transport Lines -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white"><strong>&Ouml;V-Linien (Suchprofil)</strong></div>
+            <div class="card-body">
+                <span class="badge bg-primary me-1">Tram 2</span>
+                <span class="badge bg-primary me-1">Tram 3</span>
+                <span class="badge bg-primary me-1">Tram 8</span>
+                <span class="badge bg-primary me-1">Tram 16</span>
+            </div>
+        </div>
+
+        <!-- Custom Tags -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white"><strong>Benutzerdefinierte Tags (max. 3)</strong></div>
+            <div class="card-body">
+                <p class="text-muted mb-0"><em>Keine Tags definiert</em></p>
+            </div>
+        </div>
+
+        <!-- Enabled Sources -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white"><strong>Aktivierte Quellen (Suchprofil)</strong></div>
+            <div class="card-body">
+                <p class="text-muted mb-2">Auswahl aus den verf&uuml;gbaren Quellen der Zielstadt (Basel):</p>
+                <span class="badge bg-success me-1">wgzimmer</span>
+                <span class="badge bg-success me-1">flatfox</span>
+                <span class="badge bg-secondary me-1">tutti (nicht aktiviert)</span>
+            </div>
+        </div>
+
+        <hr class="my-4">
+
+        <!-- Zielstadt (read-only) -->
+        <h2 class="mb-3">Zielstadt: Basel <span class="badge bg-secondary fs-6 align-middle">CityDefinition (read-only)</span></h2>
+        <p class="text-muted mb-4"><code>data/cities/basel.json</code> &mdash; Gemeinsame Stadtdefinition, nicht profilspezifisch.</p>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Geographischer Bereich (Bounding Box)</strong></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">west</dt>
+                    <dd class="col-sm-8">7.5147</dd>
+                    <dt class="col-sm-4">east</dt>
+                    <dd class="col-sm-8">7.6559</dd>
+                    <dt class="col-sm-4">south</dt>
+                    <dd class="col-sm-8">47.5176</dd>
+                    <dt class="col-sm-4">north</dt>
+                    <dd class="col-sm-8">47.5956</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>PLZ-Filter (zip_filter)</strong></div>
+            <div class="card-body">
+                <span class="badge bg-secondary me-1">4001</span>
+                <span class="badge bg-secondary me-1">4002</span>
+                <span class="badge bg-secondary me-1">4003</span>
+                <span class="badge bg-secondary me-1">4004</span>
+                <span class="badge bg-secondary me-1">4005</span>
+                <span class="badge bg-secondary me-1">4007</span>
+                <span class="badge bg-secondary me-1">4008</span>
+                <span class="badge bg-secondary me-1">4009</span>
+                <span class="badge bg-secondary me-1">4010</span>
+                <span class="badge bg-secondary me-1">4051</span>
+                <span class="badge bg-secondary me-1">4052</span>
+                <span class="badge bg-secondary me-1">4053</span>
+                <span class="badge bg-secondary me-1">4054</span>
+                <span class="badge bg-secondary me-1">4055</span>
+                <span class="badge bg-secondary me-1">4056</span>
+                <span class="badge bg-secondary me-1">4057</span>
+                <span class="badge bg-secondary me-1">4058</span>
+                <span class="badge bg-secondary me-1">4059</span>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Verf&uuml;gbare Quellen (Stadt)</strong></div>
+            <div class="card-body">
+                <span class="badge bg-info me-1">wgzimmer</span>
+                <span class="badge bg-info me-1">flatfox</span>
+                <span class="badge bg-info me-1">tutti</span>
+            </div>
+        </div>
+
+        <a href="profile_list.html" class="btn btn-outline-secondary">&larr; Zur&uuml;ck zu Suchprofile</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fehlermeldungen — Shaked WG Agent API</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Shaked WG Agent API</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="index.html">Startseite</a>
+                <a class="nav-link" href="health_endpoint.html">Health</a>
+                <a class="nav-link" href="search_endpoint.html">Search</a>
+                <a class="nav-link" href="listings_endpoint.html">Listings</a>
+                <a class="nav-link" href="runs_endpoint.html">Runs</a>
+                <a class="nav-link active" href="error_responses.html">Fehler</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">API Dokumentation</a></li>
+                <li class="breadcrumb-item active">Fehlermeldungen</li>
+            </ol>
+        </nav>
+
+        <h1 class="mb-4">Fehlermeldungen</h1>
+        <p class="lead">Alle Fehler-Responses folgen einem einheitlichen Envelope-Format. Nachfolgend sind alle m&ouml;glichen Fehlercodes mit Beispielen aufgef&uuml;hrt.</p>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>&Uuml;bersicht Fehlercodes</strong></div>
+            <div class="card-body">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr><th>HTTP-Status</th><th>Code</th><th>Beschreibung</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span class="badge bg-warning text-dark">400</span></td><td><code>BAD_REQUEST</code></td><td>Ung&uuml;ltige Abfrageparameter</td></tr>
+                        <tr><td><span class="badge bg-danger">401</span></td><td><code>UNAUTHORIZED</code></td><td>Fehlender oder ung&uuml;ltiger API-Schl&uuml;ssel</td></tr>
+                        <tr><td><span class="badge bg-secondary">404</span></td><td><code>NOT_FOUND</code></td><td>Ressource nicht gefunden</td></tr>
+                        <tr><td><span class="badge bg-warning text-dark">422</span></td><td><code>VALIDATION_ERROR</code></td><td>Validierungsfehler im Request-Body</td></tr>
+                        <tr><td><span class="badge bg-dark">500</span></td><td><code>INTERNAL_ERROR</code></td><td>Interner Serverfehler</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 400 BAD_REQUEST -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="badge bg-warning text-dark me-2">400</span>
+                <strong>BAD_REQUEST</strong> &mdash; Ung&uuml;ltige Abfrageparameter
+            </div>
+            <div class="card-body">
+                <p>Wird zur&uuml;ckgegeben, wenn Query-Parameter ung&uuml;ltige Werte oder Typen enthalten.</p>
+<pre><code>{
+  "error": {
+    "code": "BAD_REQUEST",
+    "message": "Ung&uuml;ltige Abfrageparameter",
+    "details": {
+      "limit": "Wert muss zwischen 1 und 200 liegen"
+    }
+  },
+  "meta": {
+    "timestamp": "2026-04-12T14:45:00+00:00",
+    "request_id": "req-err-400a"
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- 401 UNAUTHORIZED -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="badge bg-danger me-2">401</span>
+                <strong>UNAUTHORIZED</strong> &mdash; Fehlender oder ung&uuml;ltiger API-Schl&uuml;ssel
+            </div>
+            <div class="card-body">
+                <p>Wird zur&uuml;ckgegeben, wenn der <code>X-API-Key</code> Header fehlt oder einen ung&uuml;ltigen Wert enth&auml;lt.</p>
+<pre><code>{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Fehlender oder ung&uuml;ltiger API-Schl&uuml;ssel",
+    "details": null
+  },
+  "meta": {
+    "timestamp": "2026-04-12T14:45:01+00:00",
+    "request_id": "req-err-401a"
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- 404 NOT_FOUND -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="badge bg-secondary me-2">404</span>
+                <strong>NOT_FOUND</strong> &mdash; Ressource nicht gefunden
+            </div>
+            <div class="card-body">
+                <p>Wird zur&uuml;ckgegeben, wenn die angeforderte Ressource (Listing, Run) nicht existiert.</p>
+<pre><code>{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Ressource nicht gefunden",
+    "details": {
+      "resource": "listing",
+      "id": "flatfox-99999999"
+    }
+  },
+  "meta": {
+    "timestamp": "2026-04-12T14:45:02+00:00",
+    "request_id": "req-err-404a"
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- 422 VALIDATION_ERROR -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="badge bg-warning text-dark me-2">422</span>
+                <strong>VALIDATION_ERROR</strong> &mdash; Validierungsfehler im Request-Body
+            </div>
+            <div class="card-body">
+                <p>Wird zur&uuml;ckgegeben, wenn der JSON-Body fehlende oder ung&uuml;ltige Felder enth&auml;lt.</p>
+<pre><code>{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Validierungsfehler im Request-Body",
+    "details": {
+      "city_id": "Pflichtfeld fehlt"
+    }
+  },
+  "meta": {
+    "timestamp": "2026-04-12T14:45:03+00:00",
+    "request_id": "req-err-422a"
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <!-- 500 INTERNAL_ERROR -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <span class="badge bg-dark me-2">500</span>
+                <strong>INTERNAL_ERROR</strong> &mdash; Interner Serverfehler
+            </div>
+            <div class="card-body">
+                <p>Wird zur&uuml;ckgegeben, wenn ein unerwarteter Fehler auf dem Server auftritt. Bitte den Vorfall mit der <code>request_id</code> melden.</p>
+<pre><code>{
+  "error": {
+    "code": "INTERNAL_ERROR",
+    "message": "Interner Serverfehler",
+    "details": null
+  },
+  "meta": {
+    "timestamp": "2026-04-12T14:45:04+00:00",
+    "request_id": "req-err-500a"
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Allgemeines Fehler-Envelope-Format</strong></div>
+            <div class="card-body">
+                <p>Jede Fehler-Response folgt diesem Schema:</p>
+<pre><code>{
+  "error": {
+    "code": "string    — Maschinenlesbarer Fehlercode",
+    "message": "string — Menschenlesbare Fehlerbeschreibung",
+    "details": "object | null — Zus&auml;tzliche Fehlerdetails"
+  },
+  "meta": {
+    "timestamp": "string — ISO 8601 Zeitstempel",
+    "request_id": "string — Eindeutige Request-ID"
+  }
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

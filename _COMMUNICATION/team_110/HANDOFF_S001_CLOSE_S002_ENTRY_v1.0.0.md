@@ -48,7 +48,7 @@ Both S001 WPs closed at L-GATE_V PASS:
 **Governance state:**
 - lean-kit v3.1.3+3e4164e (physical copy in `_aos/lean-kit/`)
 - `_aos/project_identity.yaml` present and correct
-- Hub registered: `agents-os/_aos/projects.yaml`, `active_milestone: S002`
+- Hub registered: hub `_aos/projects.yaml`, `active_milestone: S002`
 - roadmap.yaml: S001 COMPLETE, S002+ PLANNED/DEFERRED
 
 ---
@@ -66,7 +66,7 @@ Both S001 WPs closed at L-GATE_V PASS:
 - You do NOT author specs — `shaked_arch` (Claude Code) authors LOD400 before you begin
 - You do NOT run L-GATE_V — `shaked_val` (OpenAI) runs it; it is immutable
 - You write to: `shaked_wg_agent/`, `data/`, `tests/`, `scripts/`, `deploy/`, `_aos/work_packages/[WP]/LOD500_asbuilt.md`
-- You do NOT write to: `agents-os/`, `_aos/roadmap.yaml` (arch/sd owns that), other projects
+- You do NOT write to: hub repo, `_aos/roadmap.yaml` (arch/sd owns that), other projects
 
 ---
 

@@ -23,10 +23,10 @@ Commands executed in this session (fresh):
 
 | # | Criterion | Verdict | Evidence |
 |---|-----------|---------|----------|
-| 1 | `validate_aos.sh` returns 12/12 PASS | **FAIL** | Result: **11 PASS / 1 FAIL**. Check 12: forbidden patterns in tracked file `_COMMUNICATION/team_190/ACTIVATION_TEAM_190_INDEPENDENT_REVALIDATION_v1.0.0.md` — matches `agents-os/`, `../agents-os`, `TikTrack` (same strings as `project_identity.yaml` forbids). |
+| 1 | `validate_aos.sh` returns 12/12 PASS | **FAIL** | Result: **11 PASS / 1 FAIL**. Check 12: forbidden patterns in tracked file `_COMMUNICATION/team_190/ACTIVATION_TEAM_190_INDEPENDENT_REVALIDATION_v1.0.0.md` — matches 3 strings from `project_identity.yaml` `forbidden_patterns` list (hub path variants + sibling project name). |
 | 2 | All 53 tests pass; ruff clean | **FAIL** | **Tests:** `53 passed` (`python3 -m pytest`). **Ruff:** `5 errors` in `scripts/generate_proof.py` — F401 (`html` unused), F401 (`ReusedSessionFTP_TLS` unused), I001 ×2 (import blocks), SIM105 (try/except/pass). Not clean. |
 | 3 | `project_identity.yaml` present; valid `forbidden_patterns` | **PASS** | File exists; `project_id`, `allowed_write_roots`, `forbidden_patterns`, `cross_project_routing` populated; patterns are specific (path/import style, not empty). |
-| 4 | `lean_kit_version` consistent (metadata, LEAN_KIT_VERSION, hub) | **PASS** | `_aos/metadata.yaml`: `3.1.3+3e4164e`; `_aos/lean-kit/LEAN_KIT_VERSION.md`: **version** 3.1.3 (matches major line); `agents-os/_aos/projects.yaml` entry: `lean_kit_version: "3.1.3+3e4164e"`; `_aos/roadmap.yaml` project line: `3.1.3+3e4164e`. |
+| 4 | `lean_kit_version` consistent (metadata, LEAN_KIT_VERSION, hub) | **PASS** | `_aos/metadata.yaml`: `3.1.3+3e4164e`; `_aos/lean-kit/LEAN_KIT_VERSION.md`: **version** 3.1.3 (matches major line); hub `_aos/projects.yaml` entry: `lean_kit_version: "3.1.3+3e4164e"`; `_aos/roadmap.yaml` project line: `3.1.3+3e4164e`. |
 | 5 | LOD500 chain complete (baseline + v0.2.2 addendum) | **PASS** | `LOD500_asbuilt.md` (L-GATE_B record) + `LOD500_asbuilt_v022_addendum.md` (delta to 53 tests / v0.2.2) both present under `_aos/work_packages/S001-P001-WP001/`. |
 | 6 | `S001-P002-WP001` `gate_history` correct in `roadmap.yaml` | **PASS** | WP `S001-P002-WP001`: `status: COMPLETE`, `current_lean_gate: L-GATE_V`, `lod_status: LOD500`; `gate_history` lists L-GATE_E → L-GATE_V all `PASS` with dates 2026-04-11. |
 | 7 | Cross-engine rule in `team_assignments.yaml` | **PASS** | `shaked_build` → `engine: cursor-composer`; `shaked_val` → `engine: openai`; `cross_engine_validator: shaked_val`. Builder ≠ validator. |
@@ -36,7 +36,7 @@ Commands executed in this session (fresh):
 
 ## Blockers (must clear for L-GATE_V)
 
-1. **Check 12 (boundary):** Remove, relocate, or rewrite `_COMMUNICATION/team_190/ACTIVATION_TEAM_190_INDEPENDENT_REVALIDATION_v1.0.0.md` so tracked content does not contain literals matched by `forbidden_patterns` (or narrow patterns / exclude `_COMMUNICATION/team_190/` via product decision — today the validator flags them). Re-run `validate_aos.sh` until **12 PASS**.
+1. **Check 12 (boundary):** Remove, relocate, or rewrite `_COMMUNICATION/team_190/ACTIVATION_TEAM_190_INDEPENDENT_REVALIDATION_v1.0.0.md` so tracked content does not contain literals matched by `forbidden_patterns`. Re-run `validate_aos.sh` until **12 PASS**.
 
 2. **Ruff:** Fix `scripts/generate_proof.py` (unused imports, import order, SIM105) until `ruff check .` exits 0 at repo root.
 

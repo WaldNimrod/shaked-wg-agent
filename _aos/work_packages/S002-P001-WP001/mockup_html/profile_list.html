@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suchprofile — Config Schema Mockup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">WP001 — Config Schema</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="profile_list.html">Suchprofile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="agent_settings.html">Agent-Einstellungen</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <h1 class="mb-4">Suchprofile</h1>
+        <p class="text-muted mb-4">Suchprofile definieren die pers&ouml;nlichen Suchkriterien und verweisen auf eine Zielstadt.</p>
+
+        <div class="row g-4 mb-5">
+            <!-- Default Profile -->
+            <div class="col-md-6">
+                <div class="card h-100 border-primary">
+                    <div class="card-header bg-primary text-white">
+                        <strong>SearchProfile</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title mb-0">Default</h5>
+                            <span class="badge bg-success">Aktiv</span>
+                        </div>
+                        <table class="table table-sm table-borderless mb-3">
+                            <tr><td class="text-muted">profile_id</td><td><code>default</code></td></tr>
+                            <tr><td class="text-muted">Zielstadt</td><td>Basel</td></tr>
+                            <tr><td class="text-muted">Budget</td><td>CHF 200 &ndash; 1000</td></tr>
+                            <tr><td class="text-muted">Di&auml;t</td><td>vegan</td></tr>
+                            <tr><td class="text-muted">Tram-Linien</td><td>4 Linien</td></tr>
+                            <tr><td class="text-muted">Quellen</td><td>2 aktiv (wgzimmer, flatfox)</td></tr>
+                        </table>
+                        <a href="profile_detail.html" class="btn btn-outline-primary btn-sm">Profil anzeigen</a>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        <code>data/profiles/default.json</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <h2 class="mb-3 mt-4">Verf&uuml;gbare St&auml;dte <span class="badge bg-secondary fs-6">CityDefinition</span></h2>
+        <p class="text-muted mb-4">Globale Stadtdefinitionen (Geographie, PLZ, verf&uuml;gbare Quellen). Werden von Suchprofilen referenziert.</p>
+
+        <div class="row g-4">
+            <!-- Basel -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Basel</h5>
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr><td class="text-muted">city_id</td><td><code>basel</code></td></tr>
+                            <tr><td class="text-muted">Bounding Box</td><td>7.51&ndash;7.66 / 47.52&ndash;47.60</td></tr>
+                            <tr><td class="text-muted">PLZ</td><td>18 Codes</td></tr>
+                            <tr><td class="text-muted">Quellen</td><td>wgzimmer, flatfox, tutti</td></tr>
+                        </table>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        <code>data/cities/basel.json</code>
+                    </div>
+                </div>
+            </div>
+            <!-- Zurich -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Z&uuml;rich</h5>
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr><td class="text-muted">city_id</td><td><code>zurich</code></td></tr>
+                            <tr><td class="text-muted">Bounding Box</td><td>8.45&ndash;8.63 / 47.32&ndash;47.43</td></tr>
+                            <tr><td class="text-muted">PLZ</td><td>22 Codes</td></tr>
+                            <tr><td class="text-muted">Quellen</td><td>wgzimmer, flatfox, wg-gesucht</td></tr>
+                        </table>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        <code>data/cities/zurich.json</code>
+                    </div>
+                </div>
+            </div>
+            <!-- Bern -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Bern</h5>
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr><td class="text-muted">city_id</td><td><code>bern</code></td></tr>
+                            <tr><td class="text-muted">Bounding Box</td><td>7.38&ndash;7.50 / 46.91&ndash;46.97</td></tr>
+                            <tr><td class="text-muted">PLZ</td><td>14 Codes</td></tr>
+                            <tr><td class="text-muted">Quellen</td><td>wgzimmer, flatfox</td></tr>
+                        </table>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        <code>data/cities/bern.json</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

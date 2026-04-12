@@ -1,5 +1,47 @@
 [
   {
+    "run_id": "run-20260411-184612-2ee9",
+    "run_timestamp": "2026-04-11T18:46:12+00:00",
+    "triggered_by": "manual",
+    "sources_scanned": 2,
+    "results_scanned": 57,
+    "new_results": 0,
+    "updated_results": 0,
+    "stale_removed": 0,
+    "duration_seconds": 25,
+    "errors": [],
+    "report_url": "https://www.nimrod.bio/agents/shaked-wg/index.html",
+    "operator_notes": ""
+  },
+  {
+    "run_id": "run-20260411-182328-83ef",
+    "run_timestamp": "2026-04-11T18:23:28+00:00",
+    "triggered_by": "manual",
+    "sources_scanned": 2,
+    "results_scanned": 57,
+    "new_results": 0,
+    "updated_results": 0,
+    "stale_removed": 0,
+    "duration_seconds": 21,
+    "errors": [],
+    "report_url": "https://www.nimrod.bio/agents/shaked-wg/index.html",
+    "operator_notes": ""
+  },
+  {
+    "run_id": "run-20260411-181525-20e2",
+    "run_timestamp": "2026-04-11T18:15:25+00:00",
+    "triggered_by": "manual",
+    "sources_scanned": 2,
+    "results_scanned": 57,
+    "new_results": 0,
+    "updated_results": 57,
+    "stale_removed": 0,
+    "duration_seconds": 26,
+    "errors": [],
+    "report_url": "https://www.nimrod.bio/agents/shaked-wg/index.html",
+    "operator_notes": ""
+  },
+  {
     "run_id": "run-20260411-171904-342d",
     "run_timestamp": "2026-04-11T17:19:04+00:00",
     "triggered_by": "manual",

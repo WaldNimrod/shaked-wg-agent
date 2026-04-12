@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent-Einstellungen — Config Schema Mockup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">WP001 — Config Schema</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="profile_list.html">Suchprofile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="agent_settings.html">Agent-Einstellungen</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="profile_list.html">Suchprofile</a></li>
+                <li class="breadcrumb-item active">Agent-Einstellungen</li>
+            </ol>
+        </nav>
+        <h1 class="mb-4">Agent-Einstellungen <span class="badge bg-info fs-6 align-middle">AgentMeta</span></h1>
+        <p class="text-muted mb-4"><code>data/agent.json</code></p>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Globale Konfiguration</strong></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">default_profile_id</dt>
+                    <dd class="col-sm-8"><code>default</code></dd>
+                    <dt class="col-sm-4">manual_triggers_only</dt>
+                    <dd class="col-sm-8"><span class="badge bg-warning text-dark">true</span></dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Projektfenster</strong></div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">project_window_days</dt>
+                    <dd class="col-sm-8">60 Tage</dd>
+                    <dt class="col-sm-4">project_start</dt>
+                    <dd class="col-sm-8">2026-04-09</dd>
+                    <dt class="col-sm-4">project_end</dt>
+                    <dd class="col-sm-8">2026-06-08</dd>
+                </dl>
+            </div>
+        </div>
+
+        <a href="profile_list.html" class="btn btn-outline-secondary">&larr; Zur&uuml;ck zu Suchprofile</a>
+    </div>
+</body>
+</html>

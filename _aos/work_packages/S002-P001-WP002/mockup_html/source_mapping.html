@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Globale Quellenregistrierung — City Definitions Mockup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">WP002 — City Definitions</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="city_profiles.html">Stadtdefinitionen</a></li>
+                <li class="nav-item"><a class="nav-link active" href="source_mapping.html">Quellenregistrierung</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Sitemap</a></li>
+                <li class="breadcrumb-item active">Quellenregistrierung</li>
+            </ol>
+        </nav>
+        <h1 class="mb-3">Globale Quellenregistrierung</h1>
+        <p class="text-muted mb-4">Definiert in <code>data/sources.json</code> &mdash; Plattform-zu-Stadt-Zuordnung mit city_params (many-to-many).</p>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>source_id</th>
+                            <th>Platform</th>
+                            <th class="text-center">Basel</th>
+                            <th class="text-center">Z&uuml;rich</th>
+                            <th class="text-center">Bern</th>
+                            <th>Scraper</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>wgzimmer</code></td>
+                            <td><strong>wgzimmer.ch</strong></td>
+                            <td class="text-center">
+                                <span class="text-success fw-bold">&#10003;</span>
+                                <br><small class="text-muted">canton: baselstadt</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-success fw-bold">&#10003;</span>
+                                <br><small class="text-muted">canton: zuerich</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-success fw-bold">&#10003;</span>
+                                <br><small class="text-muted">canton: bern</small>
+                            </td>
+                            <td><code>WgzimmerScraper</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>flatfox</code></td>
+                            <td><strong>flatfox.ch</strong></td>
+                            <td class="text-center">
+                                <span class="text-success fw-bold">&#10003;</span>
+                                <br><small class="text-muted">bbox</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-success fw-bold">&#10003;</span>
+                                <br><small class="text-muted">bbox</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-success fw-bold">&#10003;</span>
+                                <br><small class="text-muted">bbox</small>
+                            </td>
+                            <td><code>FlatfoxScraper</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>wg-gesucht</code></td>
+                            <td><strong>wg-gesucht.de</strong></td>
+                            <td class="text-center">
+                                <span class="text-danger fw-bold">&#10007;</span>
+                                <br><small class="text-muted">disabled</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-danger fw-bold">&#10007;</span>
+                                <br><small class="text-muted">disabled</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-danger fw-bold">&#10007;</span>
+                                <br><small class="text-muted">disabled</small>
+                            </td>
+                            <td><code>WgGesuchtScraper</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>tutti</code></td>
+                            <td><strong>tutti.ch</strong></td>
+                            <td class="text-center">
+                                <span class="text-warning fw-bold">&#9679;</span>
+                                <br><small class="text-muted">disabled (available)</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-muted">&mdash;</span>
+                                <br><small class="text-muted">no city_params</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-muted">&mdash;</span>
+                                <br><small class="text-muted">no city_params</small>
+                            </td>
+                            <td><code>TuttiScraper</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="alert alert-secondary mt-4">
+            <strong>Legende:</strong>
+            <span class="text-success fw-bold">&#10003;</span> = enabled in city_params &nbsp;
+            <span class="text-danger fw-bold">&#10007;</span> = disabled in city_params &nbsp;
+            <span class="text-warning fw-bold">&#9679;</span> = city_params vorhanden, aber disabled &nbsp;
+            <span class="text-muted">&mdash;</span> = keine city_params (Plattform nicht f&uuml;r diese Stadt konfiguriert)
+        </div>
+
+        <div class="mt-4">
+            <a href="city_profiles.html" class="btn btn-outline-secondary">&larr; Zur&uuml;ck zu Stadtdefinitionen</a>
+            <a href="index.html" class="btn btn-outline-secondary ms-2">Sitemap</a>
+        </div>
+    </div>
+</body>
+</html>

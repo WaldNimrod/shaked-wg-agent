@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GET /listings — Shaked WG Agent API</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        pre { background: #1e1e2e; color: #cdd6f4; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; }
+        .method-badge { font-size: 1.1rem; }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Shaked WG Agent API</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="index.html">Startseite</a>
+                <a class="nav-link" href="health_endpoint.html">Health</a>
+                <a class="nav-link" href="search_endpoint.html">Search</a>
+                <a class="nav-link active" href="listings_endpoint.html">Listings</a>
+                <a class="nav-link" href="runs_endpoint.html">Runs</a>
+                <a class="nav-link" href="error_responses.html">Fehler</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">API Dokumentation</a></li>
+                <li class="breadcrumb-item active">Listings</li>
+            </ol>
+        </nav>
+
+        <!-- ========== Section 1: GET /listings ========== -->
+        <div class="d-flex align-items-center mb-4">
+            <span class="badge bg-info method-badge me-3">GET</span>
+            <h1 class="mb-0"><code>/listings</code></h1>
+        </div>
+
+        <p class="lead">Gibt eine paginierte Liste gespeicherter WG-Inserate zur&uuml;ck, mit optionalen Filtern.</p>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Authentifizierung</strong></div>
+            <div class="card-body">
+                <p class="mb-0"><code>X-API-Key</code> Header erforderlich.</p>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Query-Parameter</strong></div>
+            <div class="card-body">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr><th>Parameter</th><th>Typ</th><th>Pflicht</th><th>Default</th><th>Beschreibung</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>profile_id</code></td><td>string</td><td>Ja*</td><td>&mdash;</td><td>Suchprofil-Kennung, z.B. <code>"default"</code></td></tr>
+                        <tr><td><code>city_id</code></td><td>string</td><td>Nein</td><td>&mdash;</td><td><span class="badge bg-warning text-dark">Deprecated</span> Alias &mdash; filtert nach Stadt</td></tr>
+                        <tr><td><code>min_score</code></td><td>integer</td><td>Nein</td><td>0</td><td>Minimaler Relevanz-Score (0&ndash;100)</td></tr>
+                        <tr><td><code>status</code></td><td>string</td><td>Nein</td><td>&mdash;</td><td>Filtert nach Status, z.B. <code>"neu"</code>, <code>"kontaktiert"</code></td></tr>
+                        <tr><td><code>source</code></td><td>string</td><td>Nein</td><td>&mdash;</td><td>Filtert nach Quelle, z.B. <code>"flatfox"</code>, <code>"wgzimmer"</code></td></tr>
+                        <tr><td><code>limit</code></td><td>integer</td><td>Nein</td><td>50</td><td>Maximale Anzahl Ergebnisse (max 200)</td></tr>
+                        <tr><td><code>offset</code></td><td>integer</td><td>Nein</td><td>0</td><td>Offset f&uuml;r Paginierung</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Beispiel-Request</strong></div>
+            <div class="card-body">
+<pre><code>curl "http://localhost:8000/listings?profile_id=default&amp;min_score=50&amp;limit=10" \
+  -H "X-API-Key: dein-api-schluessel"</code></pre>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Response &mdash; 200 OK</strong></div>
+            <div class="card-body">
+<pre><code>{
+  "data": [
+    {
+      "listing_id": "flatfox-85903643",
+      "source": "flatfox",
+      "city_id": "basel",
+      "title": "Helles WG-Zimmer im Gundeli",
+      "price_chf": 650,
+      "district": "Gundeldingen",
+      "transit_match_lines": ["3", "16"],
+      "vegan_signal": "pflanzlich orientiert",
+      "relevance_score": 82,
+      "status": "neu",
+      "direct_url": "https://flatfox.ch/de/wohnung/helles-wg-zimmer/85903643/",
+      "verified_active": true
+    }
+  ],
+  "meta": {
+    "timestamp": "2026-04-12T14:35:00+00:00",
+    "request_id": "req-9d4e5f6a",
+    "total_count": 42,
+    "offset": 0,
+    "limit": 50
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="card mb-5">
+            <div class="card-header"><strong>Statuscodes</strong></div>
+            <div class="card-body">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr><th>Code</th><th>Beschreibung</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span class="badge bg-success">200</span></td><td>Listings erfolgreich abgerufen</td></tr>
+                        <tr><td><span class="badge bg-danger">401</span></td><td>Fehlender oder ung&uuml;ltiger API-Schl&uuml;ssel</td></tr>
+                        <tr><td><span class="badge bg-warning text-dark">422</span></td><td>Ung&uuml;ltige Query-Parameter</td></tr>
+                        <tr><td><span class="badge bg-dark">500</span></td><td>Interner Serverfehler</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <hr class="my-5">
+
+        <!-- ========== Section 2: GET /listings/{listing_id} ========== -->
+        <div class="d-flex align-items-center mb-4">
+            <span class="badge bg-info method-badge me-3">GET</span>
+            <h1 class="mb-0"><code>/listings/{listing_id}</code></h1>
+        </div>
+
+        <p class="lead">Gibt ein einzelnes Inserat anhand seiner ID zur&uuml;ck.</p>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Pfad-Parameter</strong></div>
+            <div class="card-body">
+                <table class="table table-bordered mb-0">
+                    <thead class="table-light">
+                        <tr><th>Parameter</th><th>Typ</th><th>Beschreibung</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>listing_id</code></td><td>string</td><td>Eindeutige Inserat-ID, z.B. <code>"flatfox-85903643"</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Beispiel-Request</strong></div>
+            <div class="card-body">
+<pre><code>curl http://localhost:8000/listings/flatfox-85903643 \
+  -H "X-API-Key: dein-api-schluessel"</code></pre>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header"><strong>Response &mdash; 200 OK</strong></div>
+            <div class="card-body">
+<pre><code>{
+  "data": {
+    "listing_id": "flatfox-85903643",
+    "source": "flatfox",
+    "city_id": "basel",
+    "title": "Helles WG-Zimmer im Gundeli",
+    "price_chf": 650,
+    "district": "Gundeldingen",
+    "transit_match_lines": ["3", "16"],
+    "vegan_signal": "pflanzlich orientiert",
+    "relevance_score": 82,
+    "status": "neu",
+    "direct_url": "https://flatfox.ch/de/wohnung/helles-wg-zimmer/85903643/",
+    "verified_active": true
+  },
+  "meta": {
+    "timestamp": "2026-04-12T14:36:00+00:00",
+    "request_id": "req-b2c3d4e5"
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><strong>Response &mdash; 404 Not Found</strong></div>
+            <div class="card-body">
+<pre><code>{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Listing 'flatfox-99999999' nicht gefunden",
+    "details": null
+  },
+  "meta": {
+    "timestamp": "2026-04-12T14:36:05+00:00",
+    "request_id": "req-c3d4e5f6"
+  }
+}</code></pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
