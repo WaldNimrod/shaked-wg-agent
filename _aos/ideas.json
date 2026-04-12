@@ -4,8 +4,8 @@
   "description": "Project idea pipeline — all ideas, bugs, and improvement requests before WP entry",
   "owner": "team_100",
   "fate_authority": "team_00 + nimrod",
-  "next_id": 1,
-  "last_updated": "2026-04-12T00:00:00Z",
+  "next_id": 6,
+  "last_updated": "2026-04-12T12:00:00Z",
   "status_legend": {
     "open": "No fate decision yet — requires Team 00 + Nimrod review",
     "closed": "Fate decided and actioned. From pipeline perspective: done. Delivery_ref = canonical WP ID or artifact."
@@ -31,5 +31,66 @@
     "medium": "Within current stage timeline",
     "low": "Backlog — S+ or whenever"
   },
-  "ideas": []
+  "ideas": [
+    {
+      "id": "IDEA-001",
+      "title": "Israel market expansion — low business potential risk",
+      "submitted_by": "team_00",
+      "submitted_at": "2026-04-12",
+      "status": "closed",
+      "closed_result": "fulfilled",
+      "urgency": "high",
+      "fate": "new_wp",
+      "fate_rationale": "Acknowledged as S005 milestone-level risk. Proceed with awareness.",
+      "delivery_ref": "S005"
+    },
+    {
+      "id": "IDEA-002",
+      "title": "Expand Israel scope beyond roommates to all rental types",
+      "submitted_by": "team_00",
+      "submitted_at": "2026-04-12",
+      "status": "closed",
+      "closed_result": "fulfilled",
+      "urgency": "high",
+      "fate": "new_wp",
+      "fate_rationale": "All rental types in scope. Roommate scoring retained as competitive advantage.",
+      "delivery_ref": "S005"
+    },
+    {
+      "id": "IDEA-003",
+      "title": "Pardes Hanna region geographic focus (not Tel Aviv)",
+      "submitted_by": "team_00",
+      "submitted_at": "2026-04-12",
+      "status": "closed",
+      "closed_result": "fulfilled",
+      "urgency": "high",
+      "fate": "new_wp",
+      "fate_rationale": "Counter-intuitive: start from local community, not largest city.",
+      "delivery_ref": "S005-P002-WP001"
+    },
+    {
+      "id": "IDEA-004",
+      "title": "Yad2 connector as separate module + immediate POC",
+      "submitted_by": "team_00",
+      "submitted_at": "2026-04-12",
+      "status": "closed",
+      "closed_result": "fulfilled",
+      "urgency": "critical",
+      "fate": "new_wp",
+      "fate_rationale": "Architectural separation mandated. POC urgent — gates all S005 decisions.",
+      "delivery_ref": "S005-P001-WP001"
+    },
+    {
+      "id": "IDEA-005",
+      "title": "Facebook group browser agent evaluation",
+      "submitted_by": "team_00",
+      "submitted_at": "2026-04-12",
+      "status": "closed",
+      "closed_result": "fulfilled",
+      "urgency": "medium",
+      "fate": "new_wp",
+      "fate_rationale": "Evaluate feasibility + costs for FB group monitoring agent.",
+      "delivery_ref": "S005-P003-WP001"
+    }
+  ]
 }

@@ -5,7 +5,7 @@ project:
   lean_kit_version: 3.1.3+3e4164e
   created: '2026-04-10'
   owner: team_00
-  active_milestone: S002
+  active_milestone: S005
   notes: >
     Personal apartment search tool for Shaked (Basel, Switzerland).
     Manual triggers only. Project window ends 2026-06-08.
@@ -53,6 +53,18 @@ milestones:
     notes: >
       Customer self-serve onboarding. Web dashboard. Agency/partner white-label.
       Usage analytics. Full SaaS offering.
+
+  - id: S005
+    label: Israel Market Expansion — Pardes Hanna Region
+    profile: L2
+    status: ACTIVE
+    target_date: '2026-09-30'
+    notes: >
+      Israel market entry. Pardes Hanna region (N-of-Netanya, S-of-Haifa, E-to-Afula,
+      excluding those 3 cities). All rental types. Yad2 critical path.
+      Roommate scoring as differentiator (unique in IL market).
+      Low business potential acknowledged — competitors are cheap/free.
+      Decisions: _COMMUNICATION/team_00/DECISIONS_ISRAEL_STRATEGY_v1.0.0.md
 
 work_packages:
 
@@ -311,30 +323,48 @@ work_packages:
 
   - id: S002-OPS-WP001
     label: S002 v0.3.0 production deployment
-    status: PLANNED
+    status: COMPLETE
     track: A
-    current_lean_gate: L-GATE_E
+    current_lean_gate: COMPLETE
     lod_status: LOD200
     assigned_builder: shaked_build
     assigned_validator: shaked_val
     created_at: '2026-04-12'
+    completed_at: '2026-04-12'
     milestone_ref: S002
     spec_ref: _aos/work_packages/S002-OPS-WP001/LOD200_S002-OPS-WP001.md
+    gate_history:
+      - gate: COMPLETE
+        result: PASS
+        date: '2026-04-12'
+        notes: >
+          Deployed v0.3.0 to waldhomeserver. Merged dev→main (40524dc), git pull on server,
+          pip install, 3 scan runs, report published to nimrod.bio/agents/shaked-wg/index.html.
+          SC-01–SC-03 verified. SC-04 (Shaked notification) pending.
     notes: >
       Push dev→main, deploy to production, run full scan, verify report,
       notify Shaked with S002 change summary. Track A operational WP.
 
   - id: S002-RND-WP001
     label: Israel apartment search — source mapping & entry assessment
-    status: PLANNED
+    status: COMPLETE
     track: A
-    current_lean_gate: L-GATE_E
+    current_lean_gate: COMPLETE
     lod_status: LOD200
     assigned_builder: shaked_arch
     assigned_validator: team_00
     created_at: '2026-04-12'
+    completed_at: '2026-04-12'
     milestone_ref: S002
     spec_ref: _aos/work_packages/S002-RND-WP001/LOD200_S002-RND-WP001.md
+    gate_history:
+      - gate: COMPLETE
+        result: PASS
+        date: '2026-04-12'
+        notes: >
+          Research complete. 11 platforms mapped, 7+ competitors analyzed.
+          5 strategic decisions by Team 00 → S005 milestone created.
+          Findings: _COMMUNICATION/team_00/DECISIONS_ISRAEL_STRATEGY_v1.0.0.md
     notes: >
       Research WP: map Israeli rental platforms, sample data, assess quality,
       identify competitors, recommend adaptations. Entry gate for Israel expansion.
@@ -513,3 +543,71 @@ work_packages:
     milestone_ref: S004
     spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
     notes: Scan frequency, result quality, engagement metrics per tenant.
+
+  # ── S005: Israel Market Expansion (ACTIVE) ─────────────────────────────────
+
+  - id: S005-P001-WP001
+    label: Yad2 POC — scraping feasibility + rate limit research
+    status: PLANNED
+    track: A
+    priority: URGENT
+    current_lean_gate: L-GATE_E
+    lod_status: LOD200
+    assigned_builder: shaked_build
+    assigned_validator: team_00
+    created_at: '2026-04-12'
+    milestone_ref: S005
+    spec_ref: _aos/work_packages/S005-P001-WP001/LOD200_S005-P001-WP001.md
+    notes: >
+      URGENT — gates all downstream Israel work. Team 20 immediate activation.
+      Test scraping methods against Yad2 Cloudflare. Research rate limits.
+      Sample listings. Legal/ToS assessment. POC code + feasibility report.
+
+  - id: S005-P001-WP002
+    label: Yad2 connector architecture + normalizer gateway
+    status: PLANNED
+    track: B
+    current_lean_gate: L-GATE_E
+    lod_status: LOD200
+    assigned_builder: shaked_arch
+    assigned_validator: shaked_val
+    created_at: '2026-04-12'
+    milestone_ref: S005
+    spec_ref: _aos/work_packages/S005-P001-WP002/LOD200_S005-P001-WP002.md
+    depends_on:
+      - S005-P001-WP001
+    notes: >
+      Separate connectors/yad2/ subpackage. Normalizer gateway pattern.
+      LOD300 required for API contract. BLOCKED until Yad2 POC complete.
+
+  - id: S005-P002-WP001
+    label: Pardes Hanna region — geographic definition
+    status: PLANNED
+    track: A
+    current_lean_gate: L-GATE_E
+    lod_status: LOD200
+    assigned_builder: shaked_arch
+    assigned_validator: team_00
+    created_at: '2026-04-12'
+    milestone_ref: S005
+    spec_ref: _aos/work_packages/S005-P002-WP001/LOD200_S005-P002-WP001.md
+    notes: >
+      Regional bounding box (N-of-Netanya, S-of-Haifa, E-to-Afula).
+      Settlement list. Israeli geography (no zip codes). country: IL.
+      Output: data/cities/pardes-hanna-region.json
+
+  - id: S005-P003-WP001
+    label: Facebook group agent — feasibility + cost evaluation
+    status: PLANNED
+    track: A
+    current_lean_gate: L-GATE_E
+    lod_status: LOD200
+    assigned_builder: shaked_arch
+    assigned_validator: team_00
+    created_at: '2026-04-12'
+    milestone_ref: S005
+    spec_ref: _aos/work_packages/S005-P003-WP001/LOD200_S005-P003-WP001.md
+    notes: >
+      Research WP. Browser agent feasibility for FB group scraping.
+      Cost analysis (compute, proxy, anti-detection). Legal/ToS risk.
+      Go/no-go recommendation.
