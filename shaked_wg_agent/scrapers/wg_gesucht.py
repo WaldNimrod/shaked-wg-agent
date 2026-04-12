@@ -73,7 +73,7 @@ class WgGesuchtScraper(BaseScraper):
                 available_from=available_from,
                 location_text=location_text,
                 district=location_text.split(",")[0].strip(),
-                tram_match_lines=tram_lines,
+                transit_match_lines=tram_lines,
                 vegan_signal=vegan,
                 summary=full_text[:200],
                 direct_url=direct_url,

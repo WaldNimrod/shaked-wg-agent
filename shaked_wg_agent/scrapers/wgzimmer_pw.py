@@ -25,8 +25,14 @@ _VEGAN_KEYWORDS = ["vegan", "pflanzlich", "vegetarisch", "tierfreie", "kein flei
 _MAX_WAIT_SECONDS = 15
 _API_URL_FRAGMENT = "img.wgzimmer.ch"
 
-# Basel proper zip codes
-_BASEL_ZIPS = {str(z) for z in range(4001, 4060)}
+# Fallback zip range if city.zip_filter is empty
+_BASEL_ZIPS_FALLBACK = {str(z) for z in range(4001, 4060)}
+
+_WG_CITY_PATH = {
+    "basel": "baselstadt",
+    "zurich": "zuerich",
+    "bern": "bern",
+}
 
 _ZIP_DISTRICT: dict[str, str] = {
     "4001": "Innenstadt", "4002": "Innenstadt",
@@ -52,6 +58,13 @@ _ZIP_TRAM: dict[str, list[str]] = {
 
 class WgzimmerPlaywrightScraper(BaseScraper):
     """wgzimmer.ch scraper using Playwright to bypass reCAPTCHA v3."""
+
+    def _allowed_zips(self) -> set[str]:
+        zf = self.city.zip_filter
+        return set(zf) if zf else _BASEL_ZIPS_FALLBACK
+
+    def _wg_path_segment(self) -> str:
+        return _WG_CITY_PATH.get(self.city.city_id, "baselstadt")
 
     def fetch_listings(self) -> list[ScrapedListing]:
         try:
@@ -140,17 +153,18 @@ class WgzimmerPlaywrightScraper(BaseScraper):
                 or ""
             )
             date_part = str(date_str)[:10] if date_str else ""
+            seg = self._wg_path_segment()
             if date_part:
-                direct_url = f"{_BASE_URL}/wgzimmer/mate/ch/baselstadt/{date_part}-{sid}.html"
+                direct_url = f"{_BASE_URL}/wgzimmer/mate/ch/{seg}/{date_part}-{sid}.html"
             else:
-                direct_url = f"{_BASE_URL}/wgzimmer/mate/ch/baselstadt/{sid}.html"
+                direct_url = f"{_BASE_URL}/wgzimmer/mate/ch/{seg}/{sid}.html"
 
             # ── Zip / location filter ─────────────────────────────────────
             zipcode = str(
                 item.get("zip") or item.get("plz") or item.get("postalCode") or ""
             ).strip()
-            # Keep only Basel proper listings
-            if zipcode and zipcode not in _BASEL_ZIPS:
+            allowed = self._allowed_zips()
+            if zipcode and zipcode not in allowed:
                 return None
             city = str(item.get("city") or item.get("ort") or "Basel")
             street = str(item.get("street") or item.get("strasse") or "")
@@ -237,13 +251,13 @@ class WgzimmerPlaywrightScraper(BaseScraper):
                 available_from=available_from,
                 location_text=location_text,
                 district=district,
-                tram_match_lines=tram_lines,
+                transit_match_lines=tram_lines,
                 roommate_signal=roommate_signal[:200],
                 vegan_signal=vegan,
                 summary=summary[:300],
                 direct_url=direct_url,
                 url_status="direct",
-                recovery_query=f"site:wgzimmer.ch Basel {title[:40]}",
+                recovery_query=f"site:wgzimmer.ch {self.city.city_name} {title[:40]}",
                 posted_date=posted_date,
             )
         except Exception:
@@ -287,15 +301,15 @@ class WgzimmerPlaywrightScraper(BaseScraper):
                         title=title[:100],
                         price_chf=int(price_m.group(1)) if price_m else None,
                         available_from=None,
-                        location_text="Basel",
-                        district="Basel",
-                        tram_match_lines=tram_lines,
+                        location_text=self.city.city_name,
+                        district=self.city.city_name,
+                        transit_match_lines=tram_lines,
                         roommate_signal="",
                         vegan_signal=self._detect_vegan(full_text),
                         summary=full_text[:240],
                         direct_url=direct_url,
                         url_status="direct",
-                        recovery_query=f"site:wgzimmer.ch Basel {title[:40]}",
+                        recovery_query=f"site:wgzimmer.ch {self.city.city_name} {title[:40]}",
                     )
                 )
         except Exception:

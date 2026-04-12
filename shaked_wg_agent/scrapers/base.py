@@ -9,6 +9,8 @@ from typing import Any
 import requests
 from bs4 import BeautifulSoup
 
+from shaked_wg_agent.config import CityDefinition
+
 _DEFAULT_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -34,7 +36,7 @@ class ScrapedListing:
     available_from: str | None
     location_text: str
     district: str
-    tram_match_lines: list[str] = field(default_factory=list)
+    transit_match_lines: list[str] = field(default_factory=list)
     roommate_signal: str = ""
     vegan_signal: str = ""
     summary: str = ""
@@ -58,7 +60,7 @@ class ScrapedListing:
             "available_from": self.available_from,
             "location_text": self.location_text,
             "district": self.district,
-            "tram_match_lines": self.tram_match_lines,
+            "transit_match_lines": self.transit_match_lines,
             "roommate_signal": self.roommate_signal,
             "vegan_signal": self.vegan_signal,
             "summary": self.summary,
@@ -80,9 +82,10 @@ class BaseScraper(ABC):
     The base class provides HTTP helpers with polite delays and retry logic.
     """
 
-    def __init__(self, source_id: str, search_url: str) -> None:
+    def __init__(self, source_id: str, search_url: str, city: CityDefinition) -> None:
         self.source_id = source_id
         self.search_url = search_url
+        self.city = city
         self._session = requests.Session()
         self._session.headers.update(_DEFAULT_HEADERS)
 

@@ -120,7 +120,8 @@ def _proof_html(
         location = safe(lst.get("location_text", ""))
         available = safe(lst.get("available_from", ""))
         score = lst.get("relevance_score", 0)
-        tram = ", ".join(f"T{t}" for t in lst.get("tram_match_lines", []))
+        lines = lst.get("transit_match_lines") or lst.get("tram_match_lines") or []
+        tram = ", ".join(f"T{t}" for t in lines)
         vegan = safe(lst.get("vegan_signal", ""))
         url = lst.get("direct_url", "")
         verified_at = lst.get("last_verified_at", "—")

@@ -80,7 +80,8 @@ def _modal(lst: dict) -> str:
     status = lst.get("status", "neu")
     score = lst.get("relevance_score", 0)
     tags = lst.get("tags", [])
-    tram = ", ".join(f"T{t}" for t in lst.get("tram_match_lines", []))
+    _lines = lst.get("transit_match_lines") or lst.get("tram_match_lines") or []
+    tram = ", ".join(f"T{t}" for t in _lines)
     direct_url = lst.get("direct_url", "")
     source_search_url = lst.get("source_search_url", "")
     recovery_query = lst.get("recovery_query", "") or lst.get("title", "")
@@ -242,7 +243,8 @@ def _table_row(lst: dict) -> str:
     """Build a single <tr> that opens the modal on click."""
     lid = lst.get("listing_id", "")
     price = lst.get("price_chf")
-    tram = ", ".join(f"T{t}" for t in lst.get("tram_match_lines", []))
+    _lines = lst.get("transit_match_lines") or lst.get("tram_match_lines") or []
+    tram = ", ".join(f"T{t}" for t in _lines)
     tier_icon, tier_label, tier_cls, tier_tip = _tier(lst)
     status = lst.get("status", "neu")
     score = lst.get("relevance_score", 0)

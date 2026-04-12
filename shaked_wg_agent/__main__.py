@@ -1,26 +1,53 @@
 """CLI entry point: python -m shaked_wg_agent [run|status|list]"""
 from __future__ import annotations
 
-import sys
+import argparse
+import json
+import logging
 from datetime import UTC, datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
 from rich.console import Console
-from rich.table import Table
+
+from shaked_wg_agent.config import DATA_DIR
 
 # Load .env from project root (two levels up from this file)
 load_dotenv(Path(__file__).parent.parent / ".env")
 
+logger = logging.getLogger(__name__)
 console = Console()
 
 
-def cmd_run() -> None:
+def _profile_id_for_city(city_id: str) -> str | None:
+    """Return profile_id of the first profile JSON whose city_id matches."""
+    profiles_dir = DATA_DIR / "profiles"
+    if not profiles_dir.is_dir():
+        return None
+    for path in sorted(profiles_dir.glob("*.json")):
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        if raw.get("city_id") == city_id:
+            return str(raw["profile_id"])
+    return None
+
+
+def cmd_run(args: argparse.Namespace) -> None:
     """Trigger a full scan across all enabled sources."""
     from shaked_wg_agent.runner import run_scan
 
+    profile_id: str | None = args.profile
+    if args.city is not None and profile_id is None:
+        logging.basicConfig(level=logging.WARNING)
+        logger.warning("--city is deprecated; use --profile instead")
+        resolved = _profile_id_for_city(args.city)
+        if resolved is None:
+            raise SystemExit(f"No profile found targeting city '{args.city}'")
+        profile_id = resolved
+    elif args.city is not None and profile_id is not None:
+        pass  # profile takes precedence — ignore city
+
     console.print("[bold cyan]🔍 Starting WG scan…[/bold cyan]")
-    run = run_scan()
+    run = run_scan(profile_id=profile_id)
 
     console.print(f"[green]✅ Run complete:[/green] {run['run_id']}")
     console.print(f"   Sources scanned : {run['sources_scanned']}")
@@ -40,21 +67,21 @@ def cmd_run() -> None:
             console.print(f"   - {err}")
 
 
-def cmd_status() -> None:
+def cmd_status(args: argparse.Namespace) -> None:
     """Print a project summary."""
     from shaked_wg_agent.config import load_config
     from shaked_wg_agent.persistence import last_run, load_listings
 
-    cfg = load_config()
+    cfg = load_config(args.profile)
     listings = load_listings()
     last = last_run()
 
     console.rule("[bold]Shaked WG Basel — Status[/bold]")
-    console.print(f"  Profile   : [cyan]{cfg.agent.profile_name}[/cyan]")
-    console.print(f"  Budget    : CHF {cfg.agent.budget_min_chf}–{cfg.agent.budget_max_chf}")
-    console.print(f"  Move-in   : {cfg.agent.move_in_from}")
-    console.print(f"  Diet      : {cfg.agent.diet}")
-    console.print(f"  Tram lines: {', '.join(cfg.agent.tram_lines)}")
+    console.print(f"  Profile   : [cyan]{cfg.profile.profile_name}[/cyan]")
+    console.print(f"  Budget    : CHF {cfg.profile.budget_min_chf}–{cfg.profile.budget_max_chf}")
+    console.print(f"  Move-in   : {cfg.profile.move_in_from}")
+    console.print(f"  Diet      : {cfg.profile.diet}")
+    console.print(f"  Tram lines: {', '.join(cfg.profile.transit_lines)}")
     console.print()
     console.print(f"  Listings  : {len(listings)} total")
 
@@ -66,8 +93,10 @@ def cmd_status() -> None:
         )
 
     if last:
-        console.print(f"  Last run  : {last['run_timestamp']} — "
-                      f"{last['new_results']} new, {last['results_scanned']} scanned")
+        console.print(
+            f"  Last run  : {last['run_timestamp']} — "
+            f"{last['new_results']} new, {last['results_scanned']} scanned"
+        )
     else:
         console.print("  Last run  : [yellow]none yet[/yellow]")
 
@@ -76,6 +105,7 @@ def cmd_status() -> None:
     if end:
         try:
             from datetime import date
+
             days_left = (date.fromisoformat(end) - date.fromisoformat(now)).days
             color = "red" if days_left < 10 else "yellow" if days_left < 21 else "green"
             console.print(f"  Deadline  : [{color}]{days_left} days left (ends {end})[/{color}]")
@@ -85,6 +115,8 @@ def cmd_status() -> None:
 
 def cmd_list() -> None:
     """Print listings table sorted by relevance score."""
+    from rich.table import Table
+
     from shaked_wg_agent.persistence import load_listings
 
     listings = load_listings()
@@ -116,7 +148,8 @@ def cmd_list() -> None:
         status = lst.get("status", "")
         color = status_colors.get(status, "white")
         price = f"CHF {lst['price_chf']}" if lst.get("price_chf") else "?"
-        tram = ", ".join(lst.get("tram_match_lines", []))
+        lines = lst.get("transit_match_lines") or lst.get("tram_match_lines") or []
+        tram = ", ".join(lines)
         vegan = lst.get("vegan_signal", "")[:17]
         table.add_row(
             str(score),
@@ -133,15 +166,29 @@ def cmd_list() -> None:
 
 
 def main() -> None:
-    commands = {"run": cmd_run, "status": cmd_status, "list": cmd_list}
-    if len(sys.argv) < 2 or sys.argv[1] not in commands:
-        console.print("[bold]Usage:[/bold] python -m shaked_wg_agent [run|status|list]")
-        console.print()
-        console.print("  [cyan]run[/cyan]     — trigger full scan across all enabled sources")
-        console.print("  [cyan]status[/cyan]  — show project summary and last run info")
-        console.print("  [cyan]list[/cyan]    — show all listings sorted by relevance score")
-        sys.exit(1)
-    commands[sys.argv[1]]()
+    parser = argparse.ArgumentParser(
+        description="Shaked WG Basel search agent",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_run = sub.add_parser("run", help="trigger full scan across all enabled sources")
+    p_run.add_argument("--profile", type=str, default=None, help="Profile ID (default: from agent.json)")
+    p_run.add_argument("--city", type=str, default=None, help=argparse.SUPPRESS)
+    p_run.set_defaults(func=cmd_run)
+
+    p_status = sub.add_parser("status", help="show project summary")
+    p_status.add_argument("--profile", type=str, default=None, help="Profile ID (default: from agent.json)")
+    p_status.set_defaults(func=cmd_status)
+
+    p_list = sub.add_parser("list", help="show all listings sorted by relevance score")
+
+    def _cmd_list(_a: argparse.Namespace) -> None:
+        cmd_list()
+
+    p_list.set_defaults(func=_cmd_list)
+
+    args = parser.parse_args()
+    args.func(args)
 
 
 if __name__ == "__main__":

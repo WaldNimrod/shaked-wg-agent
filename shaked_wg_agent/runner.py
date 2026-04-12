@@ -3,13 +3,14 @@ from __future__ import annotations
 
 import tempfile
 import uuid
+from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import requests as _requests
 
-from shaked_wg_agent.config import ProjectConfig, Source, load_config
+from shaked_wg_agent.config import CityDefinition, ProjectConfig, ResolvedSource, load_config
 from shaked_wg_agent.persistence import (
     append_run,
     load_listings,
@@ -24,13 +25,13 @@ from shaked_wg_agent.scrapers.base import BaseScraper
 _VERIFY_TIMEOUT = 6  # seconds per URL check
 
 
-def _verify_flatfox_via_api(listings: list[dict]) -> None:
+def _verify_flatfox_via_api(listings: list[dict], city: CityDefinition) -> None:
     """Verify flatfox listings using the pin API (not blocked by Cloudflare).
 
     Fetches the current set of active PKs from the bbox search and marks
     each stored flatfox listing as verified_active=True/False accordingly.
     """
-    from shaked_wg_agent.scrapers.flatfox import _BBOX, _PIN_URL
+    from shaked_wg_agent.scrapers.flatfox import PIN_URL, flatfox_pin_query_params
 
     flatfox = [
         row
@@ -41,7 +42,8 @@ def _verify_flatfox_via_api(listings: list[dict]) -> None:
         return
 
     try:
-        resp = _requests.get(_PIN_URL, params=_BBOX, timeout=20)
+        params = flatfox_pin_query_params(city)
+        resp = _requests.get(PIN_URL, params=params, timeout=20)
         resp.raise_for_status()
         active_pks = {str(item["pk"]) for item in resp.json() if "pk" in item}
     except Exception:
@@ -60,7 +62,7 @@ def _verify_flatfox_via_api(listings: list[dict]) -> None:
             lst["url_status"] = "broken_needs_recovery"
 
 
-def _verify_listings(listings: list[dict]) -> list[dict]:
+def _verify_listings(listings: list[dict], city: CityDefinition) -> list[dict]:
     """Verify stored listings are still live.
 
     Strategy by source:
@@ -68,7 +70,7 @@ def _verify_listings(listings: list[dict]) -> list[dict]:
     - others: HEAD request per URL (definitive 404 → broken, 200 → active, else → unchanged)
     """
     # flatfox: API-based presence check (reliable, CF-bypass)
-    _verify_flatfox_via_api(listings)
+    _verify_flatfox_via_api(listings, city)
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
     for lst in listings:
@@ -108,7 +110,7 @@ def _verify_listings(listings: list[dict]) -> list[dict]:
     return listings
 
 
-def _build_scraper(source: Source) -> BaseScraper:
+def _build_scraper(source: ResolvedSource, city: CityDefinition) -> BaseScraper:
     """Instantiate the correct scraper for a given source."""
     from shaked_wg_agent.scrapers.flatfox import FlatfoxScraper
     from shaked_wg_agent.scrapers.wg_gesucht import WgGesuchtScraper
@@ -119,10 +121,10 @@ def _build_scraper(source: Source) -> BaseScraper:
         "wg-gesucht": WgGesuchtScraper,
         "flatfox": FlatfoxScraper,
     }
-    cls = mapping.get(source.id)
+    cls = mapping.get(source.source_id)
     if cls is None:
-        raise ValueError(f"No scraper registered for source id '{source.id}'")
-    return cls(source_id=source.id, search_url=source.search_url)
+        raise ValueError(f"No scraper registered for source id '{source.source_id}'")
+    return cls(source_id=source.source_id, search_url=source.search_url, city=city)
 
 
 def _publish(cfg: ProjectConfig) -> str | None:
@@ -142,7 +144,7 @@ def _publish(cfg: ProjectConfig) -> str | None:
         html = generate_report(
             listings=listings,
             runs=runs,
-            profile_name=cfg.agent.profile_name,
+            profile_name=cfg.profile.profile_name,
             project_end=cfg.agent.project_end,
         )
         tmp = Path(tempfile.mkdtemp()) / "index.html"
@@ -155,13 +157,17 @@ def _publish(cfg: ProjectConfig) -> str | None:
         return f"ERROR: {exc}"
 
 
-def run_scan(cfg: ProjectConfig | None = None) -> dict[str, Any]:
+def run_scan(
+    profile_id: str | None = None,
+    cfg: ProjectConfig | None = None,
+    triggered_by: str = "manual",
+) -> dict[str, Any]:
     """Execute a full scan across all enabled sources.
 
     Returns a run record dict (also persisted to data/runs.json).
     """
     if cfg is None:
-        cfg = load_config()
+        cfg = load_config(profile_id)
 
     run_id = f"run-{datetime.now(UTC).strftime('%Y%m%d-%H%M%S')}-{uuid.uuid4().hex[:4]}"
     started_at = datetime.now(UTC)
@@ -172,35 +178,39 @@ def run_scan(cfg: ProjectConfig | None = None) -> dict[str, Any]:
     updated_results = 0
     active_ids: set[str] = set()
     errors: list[str] = []
+    new_rows: list[dict[str, Any]] = []
 
     for source in cfg.active_sources:
         scraper: BaseScraper | None = None
         try:
-            scraper = _build_scraper(source)
+            scraper = _build_scraper(source, cfg.city)
             scraped = scraper.fetch_listings()
             sources_scanned += 1
             results_scanned += len(scraped)
 
             for scraped_listing in scraped:
                 listing_dict = scraped_listing.to_dict()
-                listing_dict["relevance_score"] = score_listing(listing_dict, cfg.agent)
+                listing_dict["city_id"] = cfg.city.city_id
+                listing_dict["profile_id"] = cfg.profile.profile_id
+                listing_dict["relevance_score"] = score_listing(listing_dict, cfg.profile)
                 action, saved = upsert_listing(listing_dict)
                 active_ids.add(saved["listing_id"])
                 if action == "new":
                     new_results += 1
+                    new_rows.append(saved)
                 elif action == "updated":
                     updated_results += 1
         except Exception as exc:
-            errors.append(f"{source.id}: {exc}")
+            errors.append(f"{source.source_id}: {exc}")
         finally:
             if scraper is not None:
                 scraper.close()
 
-    stale_removed = mark_stale_listings(active_ids, cfg.agent.retention_days)
+    stale_removed = mark_stale_listings(active_ids, cfg.profile.retention_days)
 
     # Verify all stored listings are still live (HEAD request per URL)
     all_listings = load_listings()
-    verified = _verify_listings(all_listings)
+    verified = _verify_listings(all_listings, cfg.city)
     save_listings(verified)
 
     duration = round((datetime.now(UTC) - started_at).total_seconds())
@@ -211,7 +221,9 @@ def run_scan(cfg: ProjectConfig | None = None) -> dict[str, Any]:
     run_record: dict[str, Any] = {
         "run_id": run_id,
         "run_timestamp": started_at.isoformat(timespec="seconds"),
-        "triggered_by": "manual",
+        "triggered_by": triggered_by,
+        "city_id": cfg.city.city_id,
+        "profile_id": cfg.profile.profile_id,
         "sources_scanned": sources_scanned,
         "results_scanned": results_scanned,
         "new_results": new_results,
@@ -221,7 +233,18 @@ def run_scan(cfg: ProjectConfig | None = None) -> dict[str, Any]:
         "errors": errors,
         "report_url": report_url,
         "operator_notes": "",
+        "notification_sent": None,
     }
+
+    if new_results > 0 and cfg.profile.notifications is not None:
+        from shaked_wg_agent.notifier import notify_digest
+
+        run_record["notification_sent"] = notify_digest(
+            asdict(cfg.profile),
+            asdict(cfg.city),
+            run_record,
+            new_rows,
+        )
 
     append_run(run_record)
     return run_record

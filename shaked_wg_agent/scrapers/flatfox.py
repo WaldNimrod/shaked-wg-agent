@@ -1,9 +1,9 @@
 """Scraper for flatfox.ch — uses public REST API (no JS rendering needed).
 
 Flow:
-  1. GET /api/v1/pin/ (bbox=Basel) → list of all PKs in the area
+  1. GET /api/v1/pin/ (bbox) → list of all PKs in the area
   2. Batch GET /api/v1/public-listing/?pk=...&pk=... (50/batch) → full details
-  3. Filter locally: Basel zip (4001–4059), RENT only, WG rooms or small apartments
+  3. Filter locally: city zip list, RENT only, WG rooms or small apartments
   4. Direct URL: constructed from API `url` field
 """
 from __future__ import annotations
@@ -11,21 +11,15 @@ from __future__ import annotations
 import re
 import time
 
+from shaked_wg_agent.config import CityDefinition
 from shaked_wg_agent.scrapers.base import BaseScraper, ScrapedListing
 
 _BASE_URL = "https://flatfox.ch"
-_PIN_URL = f"{_BASE_URL}/api/v1/pin/"
+PIN_URL = f"{_BASE_URL}/api/v1/pin/"
 _LISTING_URL = f"{_BASE_URL}/api/v1/public-listing/"
 
-# Basel metro bounding box — filter by zip below to exclude suburbs
-_BBOX = {
-    "west": "7.5147", "east": "7.6559",
-    "south": "47.5176", "north": "47.5956",
-    "max_count": "500",
-}
-
-# Basel proper zip codes (4001–4059)
-_BASEL_ZIPS = {str(z) for z in range(4001, 4060)}
+# Fallback when city has no zip_filter (should not happen for configured cities)
+_BASEL_ZIPS_FALLBACK = {str(z) for z in range(4001, 4060)}
 
 # Only these object categories are relevant for Shaked
 _ALLOWED_CATEGORIES = {"SHARED", "APARTMENT"}
@@ -40,27 +34,38 @@ _VEGAN_KEYWORDS = ["vegan", "pflanzlich", "vegetarisch", "tierfreie"]
 
 _ZIP_DISTRICT: dict[str, str] = {
     "4001": "Innenstadt", "4002": "Innenstadt",
-    "4051": "Altstadt",   "4052": "Gundeli",
+    "4051": "Altstadt", "4052": "Gundeli",
     "4053": "Bachletten", "4054": "Iselin",
-    "4055": "St. Alban",  "4056": "Matthäus",
+    "4055": "St. Alban", "4056": "Matthäus",
     "4057": "Kleinbasel", "4058": "Kleinhüningen",
     "4059": "Allschwil-Grenze",
 }
 
-# Tram lines serving each Basel zip — used when description has no tram mentions.
-# Based on Basel BVB tram network (lines relevant for Shaked: T2, T3, T8, T16).
+# Tram lines per Basel zip when description has no tram mentions.
 _ZIP_TRAM: dict[str, list[str]] = {
-    "4001": ["3", "8", "10", "11"],  # Innenstadt / Marktplatz
+    "4001": ["3", "8", "10", "11"],
     "4002": ["3", "8", "10"],
-    "4051": ["3", "8", "11"],        # Altstadt / Barfüsserplatz
-    "4052": ["14", "16"],            # Gundeli
-    "4053": ["3", "6"],              # Bachletten
-    "4054": ["14", "16"],            # Iselin
-    "4055": ["3", "10"],             # St. Alban
-    "4056": ["14", "16"],            # Matthäus / Am Ring
-    "4057": ["2", "3"],              # Kleinbasel / Claraplatz
-    "4058": ["2", "14"],             # Kleinhüningen
+    "4051": ["3", "8", "11"],
+    "4052": ["14", "16"],
+    "4053": ["3", "6"],
+    "4054": ["14", "16"],
+    "4055": ["3", "10"],
+    "4056": ["14", "16"],
+    "4057": ["2", "3"],
+    "4058": ["2", "14"],
 }
+
+
+def flatfox_pin_query_params(city: CityDefinition) -> dict[str, str]:
+    """Query params for GET /api/v1/pin/ from city bounding box."""
+    bb = city.bounding_box
+    return {
+        "west": str(bb.west),
+        "east": str(bb.east),
+        "south": str(bb.south),
+        "north": str(bb.north),
+        "max_count": "500",
+    }
 
 
 class FlatfoxScraper(BaseScraper):
@@ -90,10 +95,13 @@ class FlatfoxScraper(BaseScraper):
 
         return results
 
-    # ── private helpers ──────────────────────────────────────────────────────
+    def _allowed_zips(self) -> set[str]:
+        zf = self.city.zip_filter
+        return set(zf) if zf else _BASEL_ZIPS_FALLBACK
 
     def _get_all_pks(self) -> list[int]:
-        resp = self._session.get(_PIN_URL, params=_BBOX, timeout=20)
+        params = flatfox_pin_query_params(self.city)
+        resp = self._session.get(PIN_URL, params=params, timeout=20)
         resp.raise_for_status()
         data = resp.json()
         items = data if isinstance(data, list) else data.get("results", [])
@@ -109,9 +117,9 @@ class FlatfoxScraper(BaseScraper):
 
     def _parse(self, lst: dict) -> ScrapedListing | None:
         try:
-            # ── zip filter: Basel only ────────────────────────────────────
             zipcode = str(lst.get("zipcode", ""))
-            if zipcode not in _BASEL_ZIPS:
+            allowed = self._allowed_zips()
+            if zipcode not in allowed:
                 return None
 
             if lst.get("offer_type") != "RENT":
@@ -120,11 +128,9 @@ class FlatfoxScraper(BaseScraper):
             category = lst.get("object_category", "")
             price = lst.get("price_display")
 
-            # Skip irrelevant categories (parking, industry, hobby rooms, etc.)
             if category not in _ALLOWED_CATEGORIES:
                 return None
 
-            # For non-WG apartments: apply price + room size caps
             if category == "APARTMENT":
                 rooms = lst.get("number_of_rooms") or 0
                 if price and int(price) > _MAX_PRICE_APARTMENT:
@@ -132,21 +138,18 @@ class FlatfoxScraper(BaseScraper):
                 if rooms and float(rooms) > _MAX_ROOMS_APARTMENT:
                     return None
 
-            # ── build direct URL ───────────────────────────────────────────
             pk = str(lst["pk"])
-            api_url = lst.get("url", "")  # e.g. /en/flat/slug/pk/
+            api_url = lst.get("url", "")
             if api_url:
-                # German URL: /en/flat/ → /de/wohnung/ (flatfox DE path for apartments)
                 direct_url = _BASE_URL + api_url.replace("/en/flat/", "/de/wohnung/")
             else:
                 slug = lst.get("slug", "")
                 direct_url = (
                     f"{_BASE_URL}/de/wohnung/{slug}/{pk}/"
                     if slug
-                    else f"{_BASE_URL}/en/flat/{pk}/"  # fallback: English PK-only
+                    else f"{_BASE_URL}/en/flat/{pk}/"
                 )
 
-            # ── extract fields ─────────────────────────────────────────────
             title = (
                 lst.get("short_title")
                 or lst.get("pitch_title")
@@ -156,7 +159,7 @@ class FlatfoxScraper(BaseScraper):
             )
             description = lst.get("description") or ""
             street = lst.get("street") or ""
-            city = lst.get("city") or "Basel"
+            place = lst.get("city") or self.city.city_name
             rooms = lst.get("number_of_rooms")
             floor_space = lst.get("surface_living") or lst.get("space_display")
             object_type = lst.get("object_type", "")
@@ -165,14 +168,13 @@ class FlatfoxScraper(BaseScraper):
             available_from = lst.get("moving_date") or lst.get("move_in_date")
             agency = (lst.get("agency") or {}).get("name", "")
 
-            district = _ZIP_DISTRICT.get(zipcode, city)
-            location_text = f"{street}, {zipcode} {city}" if street else f"{zipcode} {city}"
+            district = _ZIP_DISTRICT.get(zipcode, place)
+            location_text = f"{street}, {zipcode} {place}" if street else f"{zipcode} {place}"
 
             full_text = f"{title} {description} {street}"
-            tram_lines = list({m.group(1) for m in _TRAM_PATTERN.finditer(full_text)})
-            # If no tram mentioned in text, infer from zip code (flatfox API has no tram field)
-            if not tram_lines:
-                tram_lines = _ZIP_TRAM.get(zipcode, [])
+            line_ids = list({m.group(1) for m in _TRAM_PATTERN.finditer(full_text)})
+            if not line_ids:
+                line_ids = _ZIP_TRAM.get(zipcode, [])
             vegan = self._detect_vegan(full_text)
 
             summary_parts = [
@@ -185,7 +187,6 @@ class FlatfoxScraper(BaseScraper):
             summary_prefix = " · ".join(p for p in summary_parts if p)
             summary = f"{summary_prefix}. {description[:200]}" if summary_prefix else description[:240]
 
-            # Determine tier: SHARED = 🔐 (has direct link, contact via platform)
             url_status = "direct"
 
             return ScrapedListing(
@@ -197,13 +198,13 @@ class FlatfoxScraper(BaseScraper):
                 available_from=str(available_from) if available_from else None,
                 location_text=location_text,
                 district=district,
-                tram_match_lines=tram_lines,
+                transit_match_lines=line_ids,
                 roommate_signal=agency or "",
                 vegan_signal=vegan,
                 summary=summary[:300],
                 direct_url=direct_url,
                 url_status=url_status,
-                recovery_query=f"site:flatfox.ch {title[:40]} Basel",
+                recovery_query=f"site:flatfox.ch {title[:40]} {self.city.city_name}",
             )
         except Exception:
             return None

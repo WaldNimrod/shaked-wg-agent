@@ -84,7 +84,7 @@ class WgzimmerScraper(BaseScraper):
                 available_from=available_from,
                 location_text=location_text,
                 district=self._extract_district(location_text),
-                tram_match_lines=tram_lines,
+                transit_match_lines=tram_lines,
                 roommate_signal=roommate_signal,
                 vegan_signal=vegan,
                 summary=full_text[:200],

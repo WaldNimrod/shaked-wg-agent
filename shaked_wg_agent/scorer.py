@@ -2,7 +2,7 @@
 
 Scoring breakdown (max 100 pts, capped):
   vegan_signal    — up to 35 pts (exact "vegan" > partial > pflanzlich > none)
-  tram_lines      — up to 25 pts (intersection of listing tram_match_lines with config)
+  transit_lines   — up to 25 pts (intersection of listing transit_match_lines with profile)
   budget          — pass/fail gate (0 pts if outside budget, no penalty for within)
   roommate_age    — up to 15 pts (young signal present)
   freshness       — up to 15 pts (decays linearly over 14 days from first_seen_at)
@@ -15,7 +15,7 @@ import math
 from datetime import UTC, date, datetime
 from typing import Any
 
-from shaked_wg_agent.config import AgentConfig
+from shaked_wg_agent.config import SearchProfile
 
 # Vegan signal keywords (ordered by strength)
 _VEGAN_STRONG = {"vegan", "vegane", "veganer", "veganes", "tierfreie küche", "tierfreie wg"}
@@ -37,16 +37,20 @@ def _vegan_score(signal: str) -> int:
     return 5  # signal exists but unrecognised — small positive
 
 
-def _tram_score(match_lines: list[str], preferred_lines: list[str]) -> int:
-    """Return 0–25 based on tram line intersection."""
+def _transit_score(match_lines: list[str], preferred_lines: list[str]) -> int:
+    """Return 0–25 based on transit line intersection."""
     if not match_lines or not preferred_lines:
         return 0
     preferred_set = set(preferred_lines)
     matches = len(set(match_lines) & preferred_set)
     if matches == 0:
         return 0
-    # Linear: 1 match → 12, 2 → 20, 3+ → 25
     return min(25, 12 + (matches - 1) * 8)
+
+
+def _listing_transit_lines(listing: dict[str, Any]) -> list[str]:
+    raw = listing.get("transit_match_lines") or listing.get("tram_match_lines") or []
+    return list(raw) if raw else []
 
 
 def _roommate_score(signal: str, preferred_age: str) -> int:
@@ -122,36 +126,37 @@ def _url_score(url_status: str) -> int:
     return mapping.get(url_status.lower() if url_status else "", 3)
 
 
-def _budget_ok(price_chf: int | None, cfg: AgentConfig) -> bool:
+def _budget_ok(price_chf: int | None, profile: SearchProfile) -> bool:
     """Return False if price is outside budget (hard gate)."""
     if price_chf is None:
         return True  # unknown price — don't disqualify
-    return cfg.budget_min_chf <= price_chf <= cfg.budget_max_chf
+    return profile.budget_min_chf <= price_chf <= profile.budget_max_chf
 
 
-def score_listing(listing: dict[str, Any], cfg: AgentConfig) -> int:
+def score_listing(listing: dict[str, Any], profile: SearchProfile) -> int:
     """Compute relevance score (0–100) for a single listing.
 
     Returns 0 if the listing fails the budget hard gate.
     """
     price = listing.get("price_chf")
-    if not _budget_ok(price, cfg):
+    if not _budget_ok(price, profile):
         return 0
 
+    lines = _listing_transit_lines(listing)
     total = (
         _vegan_score(listing.get("vegan_signal", ""))
-        + _tram_score(listing.get("tram_match_lines", []), cfg.tram_lines)
-        + _roommate_score(listing.get("roommate_signal", ""), cfg.preferred_roommate_age)
+        + _transit_score(lines, profile.transit_lines)
+        + _roommate_score(listing.get("roommate_signal", ""), profile.preferred_roommate_age)
         + _freshness_score(listing.get("posted_date"), listing.get("first_seen_at"))
-        + _available_score(listing.get("available_from"), cfg.move_in_from)
+        + _available_score(listing.get("available_from"), profile.move_in_from)
         + _url_score(listing.get("url_status", ""))
     )
 
     return min(100, total)
 
 
-def score_all(listings: list[dict[str, Any]], cfg: AgentConfig) -> list[dict[str, Any]]:
+def score_all(listings: list[dict[str, Any]], profile: SearchProfile) -> list[dict[str, Any]]:
     """Re-score all listings in-place and return sorted (highest first)."""
     for lst in listings:
-        lst["relevance_score"] = score_listing(lst, cfg)
+        lst["relevance_score"] = score_listing(lst, profile)
     return sorted(listings, key=lambda x: x.get("relevance_score", 0), reverse=True)
