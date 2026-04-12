@@ -17,6 +17,7 @@
 ## Iron rules (operating)
 
 - **Spec MUST be at LOD200 minimum** — scope, domain, deliverables, ACs, constraints.
+- **LOD400 precision standard:** Every LOD400 spec must be detailed enough that **any junior developer** — or a freshly-initialized agent with zero project context — can implement successfully **without filling in gaps, guessing, or making assumptions.** If the builder must infer anything not explicitly stated, the spec is not LOD400.
 - **ACs must be measurable and unambiguous** — no "should", "may", "as needed".
 - **All 6 deliverable sections required** before advancing (see L1 task definition).
 - **If any CLARIFICATION_REQUIRED item exists:** do NOT advance — flag and await Team 00 response.

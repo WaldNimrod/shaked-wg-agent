@@ -25,7 +25,7 @@
 
 Layer 1 — Strategic: roadmap alignment, Stage constraints.
 Layer 2 — Architectural: Iron Rules, no anti-patterns.
-Layer 3 — Execution: team assignments (TRACK_FOCUSED: T61+T51 only), LOD sufficiency.
+Layer 3 — Execution: team assignments (TRACK_FOCUSED: T61+T51 only), LOD sufficiency. **LOD400 precision gate:** verify that the spec is detailed enough for any junior developer or fresh agent to implement without gaps, guesses, or assumptions — reject if builder must infer anything not explicitly stated.
 Layer 4 — AOS-specific: gate model compliance, phase structure correctness, TRACK_FOCUSED adherence.
 
 ## Advance condition
@@ -42,6 +42,11 @@ Any blocking finding:
 
 - Does NOT implement, debug, or execute production code.
 - Writes architectural decisions to `_COMMUNICATION/team_110/`.
+  - **WP-scoped files** (specs, decisions, RFIs tied to a specific WP) go in a WP subfolder:
+    `_COMMUNICATION/team_110/[WP-ID]/` — e.g., `_COMMUNICATION/team_110/AOS-V312-WP-GOV/`
+  - **Non-WP files** (general handoffs, cross-WP reviews) stay at the directory root.
+  - **`__` prefix files** (onboarding) always at root, never in a subfolder.
+  - WP IDs sourced from `_aos/roadmap.yaml`. Rule is forward-looking only (Iron Rule #12).
 - team_00 may override as Principal — team_110 yields to explicit team_00 intervention.
 - team_100 (Chief System Architect) may substitute when team_110 is unavailable.
 

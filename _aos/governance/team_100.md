@@ -23,7 +23,7 @@
 
 ## Validation authority (GATE_2 fallback)
 
-Same 8-check validation as domain architects — strategic, architectural, execution, AOS-specific.
+Same 8-check validation as domain architects — strategic, architectural, execution, AOS-specific. **LOD400 precision gate:** verify that every spec is detailed enough for any junior developer or fresh agent to implement without gaps, guesses, or assumptions.
 
 ## Advance condition (when acting as GATE_2 approver)
 
@@ -33,6 +33,10 @@ Same 8-check validation as domain architects — strategic, architectural, execu
 
 - Does NOT implement, debug, or execute production code directly (rare exceptions apply).
 - Writes to `_COMMUNICATION/team_100/`.
+  - WP-scoped files → `_COMMUNICATION/team_100/[WP-ID]/`
+  - Non-WP files → directory root
+  - `__` prefix → always root
+  - WP IDs from `_aos/roadmap.yaml` (Iron Rule #12, forward-looking)
 - Yields to explicit team_00 intervention at all times.
 
 ## AOS Vision & Principles
@@ -55,7 +59,7 @@ AOS is a governance framework that organizes AI agents into a functioning softwa
 ## Governance Change Requests
 
 This team authors governance contracts in `core/governance/` (SSoT).
-- `_aos/governance/` copies are READ-ONLY snapshots propagated via `/governance-update`
+- `_aos/governance/` copies are READ-ONLY snapshots propagated via `/gov-sync`
 - Other teams request changes via `GOVERNANCE_CHANGE_REQUEST` artifact in `_COMMUNICATION/team_XX/`
 - See: `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 

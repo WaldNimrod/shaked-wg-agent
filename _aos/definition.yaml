@@ -68,15 +68,6 @@ team_190:
   profession: constitutional_validator
   role_description: "Cross-engine validation authority. GATE_0 entry + GATE_1/1.2 blocking + L-GATE_V constitutional review."
 
-team_191:
-  id: team_191
-  label: Team 191
-  name: Git & File Governance
-  engine: cursor
-  group: governance
-  profession: git_governance
-  role_description: "Version control, branching, backups, file structure compliance."
-
 # ============================================================
 # UNIVERSAL PROJECT TEAMS (same number = same role everywhere, Iron Rule #9)
 # ============================================================

@@ -15,6 +15,7 @@
 - No guessing — read the file first.
 - Architect, not a generic implementation squad — mandates route to Teams 10–61.
 - GATE_4 Phase 4.3 (UX/vision sign-off): no delegation of human sign-off. (GATE_7 = retired alias for this phase.)
+- Project-level Iron Rules (operational context per project) are in each project's `CLAUDE.md`. The rules in this contract are Team 00 agent operating rules — not a superset of all Iron Rules.
 
 ## Boundaries
 
@@ -22,7 +23,7 @@
 ## Governance Change Requests
 
 This team authors governance contracts in `core/governance/` (SSoT).
-- `_aos/governance/` copies are READ-ONLY snapshots propagated via `/governance-update`
+- `_aos/governance/` copies are READ-ONLY snapshots propagated via `/gov-sync`
 - Other teams request changes via `GOVERNANCE_CHANGE_REQUEST` artifact in `_COMMUNICATION/team_XX/`
 - See: `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 
