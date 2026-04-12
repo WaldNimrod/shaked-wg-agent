@@ -9,7 +9,7 @@
 
 ## Context
 
-L-GATE_B is complete. The builder (Cursor Composer) has implemented all 5 S002 work packages against LOD400 specs. 81 tests pass, ruff clean, validate_aos.sh 12/12 PASS. Your job: **independently validate the implementation against each LOD400 AC**. Do NOT rely on the builder's LOD500 self-assessment — form your own verdict.
+L-GATE_B is complete. The builder (Cursor Composer) has implemented all 5 S002 work packages against LOD400 specs. 81 tests pass, ruff clean, validate_aos.sh 12/12 PASS. Canonical developer documentation has been produced (`docs/DEVELOPER_GUIDE.md`). Your job: **independently validate the implementation against each LOD400 AC AND validate the developer documentation**. Do NOT rely on the builder's LOD500 self-assessment — form your own verdict.
 
 **Iron Rule:** Your engine (OpenAI) ≠ builder engine (Cursor Composer). You have NOT been involved in building.
 
@@ -26,6 +26,7 @@ For each WP, compare the **implementation** (source code, data files, tests) aga
 | 3 | S002-P002-WP001 | `_aos/work_packages/S002-P002-WP001/LOD400_S002-P002-WP001.md` (v1.1.1) | `LOD500_asbuilt.md` | `shaked_wg_agent/api/app.py`, `routes.py`, `schemas.py`, `deps.py` |
 | 4 | S002-P002-WP002 | `_aos/work_packages/S002-P002-WP002/LOD400_S002-P002-WP002.md` (v1.1.2) | `LOD500_asbuilt.md` | `shaked_wg_agent/api/auth.py`, `app.py` |
 | 5 | S002-P003-WP001 | `_aos/work_packages/S002-P003-WP001/LOD400_S002-P003-WP001.md` (v1.1.0) | `LOD500_asbuilt.md` | `shaked_wg_agent/notifier/*.py`, `runner.py` |
+| 6 | Documentation | — | — | `docs/DEVELOPER_GUIDE.md` (validate against implementation) |
 
 ---
 
@@ -121,6 +122,31 @@ For each WP, compare the **implementation** (source code, data files, tests) aga
 
 ---
 
+## Documentation Validation
+
+**File:** `docs/DEVELOPER_GUIDE.md`
+
+This is the canonical developer reference for the system. Validate it against the actual implementation:
+
+| # | Check | What to verify |
+|---|-------|----------------|
+| 1 | Architecture accuracy | Component diagram and data flow match actual code structure |
+| 2 | Data model completeness | All dataclass fields in §3 match `config.py` (field names, types, defaults) |
+| 3 | API contract accuracy | Endpoints, request/response schemas, query params in §8 match `routes.py` + `schemas.py` |
+| 4 | Auth documentation | §9 behavior table matches actual `auth.py` responses |
+| 5 | Notification channels | §10 channel table (params, env vars, format) matches each notifier implementation |
+| 6 | Scoring dimensions | §7 table (max points, logic) matches `scorer.py` |
+| 7 | Environment variables | §13 complete list — no undocumented env vars in code, no documented vars missing from code |
+| 8 | CLI flags | §5 flags match `__main__.py` argparse definitions |
+| 9 | Directory structure | §15 tree matches actual file system |
+| 10 | S003 transition path | §16 accurately reflects what changes and what stays |
+| 11 | No stale references | No references to old patterns (flat config, `tram_match_lines` as primary, `middleware.py`) |
+| 12 | Sufficient for onboarding | A new developer reading only this document could understand the system well enough to make changes |
+
+**Verdict for documentation:** PASS / FAIL with findings. Documentation findings are BLOCKING — the doc is a gating deliverable for S002 closure.
+
+---
+
 ## Test Evidence (builder-reported)
 
 ```
@@ -148,9 +174,10 @@ _COMMUNICATION/team_190/S002_L-GATE_V_VALIDATION_RESULT.md
 **Required sections:**
 1. Per-WP verdict table (PASS / CONDITIONAL PASS / FAIL) with findings
 2. Cross-WP consistency check results
-3. Fidelity reconciliation (your assessment vs builder's LOD500)
-4. Overall verdict: PASS / CONDITIONAL PASS / FAIL
-5. If PASS: LOD500 sign-off text for §6 of each WP
+3. Documentation validation verdict with findings
+4. Fidelity reconciliation (your assessment vs builder's LOD500)
+5. Overall verdict: PASS / CONDITIONAL PASS / FAIL
+6. If PASS: LOD500 sign-off text for §6 of each WP
 
 **On PASS:** Each LOD500 `lod_status` changes from FINAL to LOCKED. Architecture agent (Team 110) updates `roadmap.yaml`.
 
@@ -159,6 +186,7 @@ _COMMUNICATION/team_190/S002_L-GATE_V_VALIDATION_RESULT.md
 ## Pre-conditions
 
 - L-GATE_B complete: all 5 WPs implemented, 5 LOD500 as-builts present
+- Canonical developer documentation: `docs/DEVELOPER_GUIDE.md` (16 sections, full system reference)
 - AOS governance: 12 PASS / 0 FAIL
 - Tests: 81 passed, ruff clean
 - Builder engine: Cursor Composer ≠ Validator engine: OpenAI ✅
