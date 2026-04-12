@@ -192,14 +192,15 @@ def load_config(profile_id: str | None = None) -> ProjectConfig
 
 | Rule | Error |
 |------|-------|
-| `budget_min_chf < budget_max_chf` | ConfigValidationError |
-| `enabled_sources ⊆ city.available_sources` | ConfigValidationError |
-| `profile_id` matches `^[a-z][a-z0-9-]{0,29}$` | ConfigValidationError |
-| `custom_tags` max 3 entries | ConfigValidationError |
-| `digest_max_listings` 1–25 | ConfigValidationError |
-| `min_score_threshold` 0–100 | ConfigValidationError |
-| Max 5 notification channels | ConfigValidationError |
-| `ChannelConfig.type` in `{email, telegram, discord, ntfy, webhook}` | ConfigValidationError |
+| `budget_min_chf < budget_max_chf` | `ValueError` |
+| `enabled_sources ⊆ city.available_sources` | `ValueError` |
+| `profile_id` matches `^[a-z][a-z0-9-]{0,29}$` | `ValueError` |
+| `custom_tags` max 3 entries | `ValueError` |
+| `digest_max_listings` 1–25 | `ValueError` |
+| `min_score_threshold` 0–100 | `ValueError` |
+| Max 5 notification channels | `ValueError` |
+| `ChannelConfig.type` in `{email, telegram, discord, ntfy, webhook}` | `ValueError` |
+| Profile/city file not found | `FileNotFoundError` |
 
 ---
 
@@ -207,7 +208,7 @@ def load_config(profile_id: str | None = None) -> ProjectConfig
 
 ```bash
 # Run a scan
-python -m shaked_wg_agent run [--profile PROFILE_ID] [--city CITY_ID] [--triggered-by TAG] [--sources SOURCE1,SOURCE2]
+python -m shaked_wg_agent run [--profile PROFILE_ID] [--city CITY_ID]
 
 # Show status
 python -m shaked_wg_agent status [--profile PROFILE_ID]
@@ -219,9 +220,7 @@ python -m shaked_wg_agent list
 | Flag | Description |
 |------|-------------|
 | `--profile` | Profile ID to use (default: from `agent.json`) |
-| `--city` | **Deprecated alias** for `--profile`. Resolves by scanning `data/profiles/*.json` for matching `city_id` |
-| `--triggered-by` | Tag for run record (default: `"manual"`) |
-| `--sources` | Comma-separated source filter (only scrape these) |
+| `--city` | **Deprecated alias** for `--profile`. Hidden from help. Resolves by scanning `data/profiles/*.json` for matching `city_id` |
 
 ### Commands
 
@@ -522,7 +521,7 @@ All data stored as JSON files in `data/`.
 - Array of listing dicts
 - `listing_id` = `{source}-{source_listing_id}` (unique key)
 - **Upsert logic:** If listing_id exists → update fields, preserve `first_seen_at`, update `last_seen_at`. If new → insert with `first_seen_at = now`.
-- **Stale removal:** Listings not seen for `retention_days` get `status = "stale"` and are removed
+- **Stale removal:** Listings not seen for `retention_days` are removed from the JSON file (no intermediate status — they are dropped directly)
 - **Verification:** After scan, HEAD request to each listing URL (flatfox uses PIN API). Updates `verified_active`, `last_verified_at`, `url_status`.
 
 ### Runs (`data/runs.json`)

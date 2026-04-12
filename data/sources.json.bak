@@ -1,0 +1,38 @@
+[
+  {
+    "id": "wgzimmer",
+    "label": "wgzimmer.ch",
+    "base_url": "https://www.wgzimmer.ch",
+    "search_url": "https://www.wgzimmer.ch/en/wgzimmer/search/mate/ch/baselstadt.html",
+    "enabled": true,
+    "priority": 1,
+    "notes": "Hauptquelle. Viele Angebote auf Deutsch. Direkte Links verfügbar."
+  },
+  {
+    "id": "wg-gesucht",
+    "label": "wg-gesucht.de",
+    "base_url": "https://www.wg-gesucht.de",
+    "search_url": "https://www.wg-gesucht.de/wg-zimmer-in-Basel.59.0.1.0.html",
+    "enabled": false,
+    "priority": 2,
+    "notes": "DISABLED: city ID 59 = Heidelberg (not Basel). Swiss cities require login/CAPTCHA. Not usable without authentication."
+  },
+  {
+    "id": "tutti",
+    "label": "tutti.ch",
+    "base_url": "https://www.tutti.ch",
+    "search_url": "https://www.tutti.ch/de/li/basel-stadt/immobilien/wohnungen-mieten",
+    "enabled": false,
+    "priority": 3,
+    "notes": "Manchmal günstige Angebote. Direkte Links oft vorhanden."
+  },
+  {
+    "id": "flatfox",
+    "label": "flatfox.ch",
+    "base_url": "https://flatfox.ch",
+    "search_url": "https://flatfox.ch/de/search/?west=7.5147&east=7.6559&south=47.5176&north=47.5956",
+    "enabled": true,
+    "priority": 4,
+    "notes": "Schweizer Plattform. Meist direkte Angebote."
+  }
+]
