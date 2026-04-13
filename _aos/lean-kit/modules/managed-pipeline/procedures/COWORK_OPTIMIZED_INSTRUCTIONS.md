@@ -1,6 +1,19 @@
 # S005-P004 — Cowork-Optimized Submission Package
 
-## How to Use This File
+> **SUPERSEDED — DO NOT USE AS TEMPLATE**
+>
+> This document is a v3-era artifact produced by Team 20 (Builder Agent) during the initial Cowork adaptation. It contains multiple unfixed bugs that would cause runtime failures in Cowork:
+> - `SOURCE_ROOT/` used as literal text (not `$SOURCE_ROOT/`) — all shell commands fail
+> - `grep -v "\.get\("` — BRE regex error on Ubuntu 22
+> - No `export` or `mkdir -p` — variable not available to child processes, output dirs missing
+> - Mount path doesn't include version suffix
+>
+> **For current templates and rules:** see `COWORK_PACKAGE_STANDARD.md` (P-OPS-3)
+> **For a working reference implementation:** see `_COMMUNICATION/cowork/S005-P004-v7/`
+>
+> This file is preserved solely as a historical record of Team 20's original field findings (the "before" state). The valuable content — environment capabilities, capability comparison table — has been incorporated into P-OPS-3 Appendix A.
+
+## How to Use This File (ORIGINAL — OUTDATED)
 
 This file contains two sections ready for copy-paste:
 1. **Instructions** → Paste into the Cowork project "Instructions" field

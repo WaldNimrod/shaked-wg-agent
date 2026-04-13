@@ -105,3 +105,26 @@ MANDATE ACTIVATION (single Claude Code session)
 - **When to re-evaluate Agent Teams:** When WPs are genuinely independent (no shared files, no field rename cascades) and can benefit from parallel execution.
 - **When to re-evaluate Cowork Desktop:** When L2.5 needs non-code automation (report generation, stakeholder communication, CI/CD orchestration).
 - **R-OPS-2 status:** CLOSED for S005-P004. Re-open for S006+ if parallel WP patterns emerge.
+
+---
+
+## Reconciliation Note (2026-04-13)
+
+This decision record evaluated three environments on 2026-04-12, before the S005-P004 Cowork submission process began. The evaluation's terminology requires clarification for future readers:
+
+### "Cowork" Refers to Two Different Things
+
+1. **Claude Cowork Desktop** (`/setup-cowork`) — The plugin-based business workflow tool evaluated in Section 1 above. This is the onboarding/connector feature. The "NOT SUITABLE" verdict applies to **this specific tool**.
+
+2. **Cowork execution environment** — The sandboxed Linux VM where Team 20 executes work packages. This is what S005-P004 was actually submitted to and what P-OPS-3 documents. This environment **was** suitable and was used successfully.
+
+The recommended approach (Option 3: "Claude Code Single Session + Serial Mandates") was the pattern ultimately used, but delivered **through** the Cowork execution environment rather than a local Claude Code session. The execution environment provides the same capabilities (shell, Python, file tools) with the additional benefit of isolation and mounted workspace management.
+
+### Implication for Future Research
+
+When evaluating execution environments for future packages, distinguish between:
+- **Cowork Desktop** (business automation, plugin ecosystem) — per this evaluation, not suited for code work packages
+- **Cowork VM** (sandboxed Linux, shell, file tools) — proven effective for serial WP execution with verification gates
+- **Claude Code local** (developer's machine) — the baseline option, no isolation
+
+The serial mandate execution pattern documented here applies regardless of whether the session runs locally or in the Cowork VM. The key constraint is **serial execution with validation gates between WPs**, not the specific runtime environment.

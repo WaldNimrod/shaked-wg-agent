@@ -8,6 +8,87 @@ approved_by: team_00
 
 # P-OPS-3: Cowork Package Submission Standard
 
+## Reading Guide — Entry Point for Research Teams
+
+This procedure documents AOS's operational standard for submitting code work packages to the Cowork execution environment. It was developed through 7 iterative rounds on the S005-P004 internationalization package (April 2026) and captures hard-won knowledge about bridging the gap between specification authoring (Team 110) and autonomous agent execution (Team 20 in Cowork).
+
+**If you are continuing research on the Cowork channel, start here.**
+
+### What Is Cowork?
+
+Cowork is Anthropic's agent execution environment — a sandboxed Linux VM (Ubuntu 22) with shell, Python 3.10, file tools, and mounted host directories. It is **not** a chat interface. The executing agent (Team 20) has full development capabilities: it can run grep, pytest, read/write files, and execute arbitrary shell commands. Understanding this is the single most important insight in this document — the entire v1→v3 evolution (Appendix A) was driven by the discovery that Cowork is a development environment, not a conversation.
+
+### Document Map
+
+This procedure exists alongside several companion documents. Each serves a distinct role:
+
+| Document | Location | What It Is | When to Read |
+|----------|----------|------------|--------------|
+| **P-OPS-3** (this file) | `_aos/.../procedures/COWORK_PACKAGE_STANDARD.md` | Canonical procedure: rules, templates, and operational knowledge for preparing Cowork packages | First — this is the authoritative source |
+| **R-OPS-2** | `_aos/.../procedures/COWORK_EVALUATION_DECISION.md` | Decision record: why we chose Cowork over Agent Teams and Cowork Desktop for serial WP execution | When evaluating execution environment alternatives |
+| **Adaptation Report** | `_aos/.../procedures/Cowork_Adaptation_Report_S005-P004.docx` | Team 20's original 9-section field report from the first Cowork execution attempt — raw findings that drove v1→v3 rewrite | When you need the primary source for environment capabilities and constraints |
+| **Optimized Instructions** | `_aos/.../procedures/COWORK_OPTIMIZED_INSTRUCTIONS.md` | **SUPERSEDED (v3).** Early Team 20 draft of Instructions + Prompt. Contains unfixed bugs (literal SOURCE_ROOT, BRE regex). Preserved for historical reference only — do not use as template | Only for historical context |
+| **Validator Tool** | `_aos/.../procedures/aos_package_validator.py` | Canonical copy of the AOS Package Validator (v1.1, 11 checks). Generic — works for any Cowork package, not just S005-P004 | When preparing or reviewing any Cowork package |
+| **Validator Config Template** | `_aos/.../procedures/aos_validator_config_template.json` | Config template with documented fields for creating per-package validator configs | When creating a new package's validator config |
+| **S005-P004-v7 Package** | `_COMMUNICATION/cowork/S005-P004-v7/` | The actual submission package (v7) — living example of every rule in this procedure | When you need a concrete reference implementation |
+
+### Structure of This Document
+
+| Section | Purpose | Audience |
+|---------|---------|----------|
+| **Rule** through **Delivery Format** | Operational rules and templates — the "what to do" | Package authors |
+| **Template: PACKAGE.md** | Canonical template for the main package file | Package authors |
+| **Appendix A** | Design decisions and lessons learned (v1→v4) — the "why" behind every rule | Researchers, process designers |
+| **Appendix B** | Automated validation integration (v4→v5) — validator tool, config, feedback loop | QA engineers, tool developers |
+| **Appendix C** | Mount-path alignment (v5→v6) — path conventions, new validator check | Package authors, tool developers |
+| **Appendix D** | grep BRE regex fix (v6→v7) — shell quoting knowledge | Package authors |
+
+### Team Roles in the Cowork Workflow
+
+| Team | Role | Responsibilities |
+|------|------|-----------------|
+| **Team 00** (Nimrod) | Authority / Product Owner | Approves packages, sets quality bar, directs process improvements |
+| **Team 110** (shaked_arch / Claude Code) | Specification Author | Writes LOD400 specs, mandates, Instructions, Activation Prompt, PACKAGE.md. Runs pre-submit validation. |
+| **Team 20** (Builder Agent) | Executor in Cowork | Receives the package, executes work packages in Cowork VM, produces modified code in output/ |
+| **Team 190** (Cowork QA) | Quality Reviewer | Reviews submitted packages for Cowork compatibility, reports findings with severity ratings |
+
+### Key Concepts Glossary
+
+| Term | Meaning |
+|------|---------|
+| **SOURCE_ROOT** | Shell variable anchoring all file paths in the package. Set via `export` in the Activation Prompt. Points to `mnt/{FOLDER_NAME}/assets`. |
+| **Instructions** | Declarative system context loaded into every Cowork message. Describes the world — never commands action. |
+| **Activation Prompt** | Imperative first message that triggers execution. Commands the agent to start working, phase by phase. |
+| **Verification Gate** | Shell command (grep, python) run between WPs to confirm changes are correct before proceeding. |
+| **WP Chaining** | When WP(N+1) reads files from output/ that WP(N) already modified, instead of from the original source. |
+| **Manifest** | Exhaustive list of every file in the package with its role (modify/read-only/create) and WP assignment. |
+| **Validator** | `aos_package_validator.py` — automated structural checker. Must pass (0 CRITICAL) before submission. |
+
+### Information Flow: How a Package Gets From Spec to Execution
+
+```
+Team 110 writes specs (LOD400) + mandates
+        ↓
+Team 110 prepares Cowork package:
+  Instructions.txt + Activation_Prompt.txt + PACKAGE.md + assets/
+        ↓
+Team 110 runs validator → must be 0 CRITICAL
+        ↓
+Team 00 reviews and approves submission
+        ↓
+Team 190 reviews for Cowork compatibility (optional QA gate)
+        ↓
+Package mounted in Cowork VM
+        ↓
+Team 20 (agent) executes: reads mandate → reads spec → edits code → verifies → next WP
+        ↓
+Output in assets/output/ — diff-reviewable against originals
+        ↓
+Team 00 integrates output into main codebase
+```
+
+---
+
 ## Rule
 
 Every work package submitted for execution via the Cowork channel **must** be delivered as a self-contained folder. The recipient (Team 00 or the executing agent) receives **one path** and **one main file name** — nothing else is needed to start.
@@ -150,6 +231,133 @@ mv _COMMUNICATION/cowork/{PACKAGE_ID}/ _archive/cowork/{PACKAGE_ID}/
 ```
 
 Archive preserves the exact submission state for audit trail. Archived packages are never modified.
+
+## Shell Best Practices for Verification Gates
+
+Verification gates are shell commands that the agent runs in Cowork's Ubuntu 22 Bash environment. Incorrect quoting or syntax causes runtime failures that the validator cannot detect (it checks structure, not shell semantics).
+
+### Quoting Rules
+
+| Pattern Type | Use | Example |
+|-------------|-----|---------|
+| Literal string match | Single quotes | `grep -v '\.get('` |
+| Variable expansion needed | Double quotes | `grep -rn "price_chf" "$SOURCE_ROOT/output/src/"` |
+| Mixed (variable + regex) | Double quotes for path, pipe to single-quoted pattern | `grep ... "$SOURCE_ROOT/..." \| grep -v '\.get('` |
+
+### BRE vs ERE in grep
+
+Cowork runs Ubuntu 22 where `grep` defaults to **BRE** (Basic Regular Expressions):
+- `\(` and `\)` are **group delimiters** in BRE — not literal parentheses
+- A lone `\(` without `\)` causes: `grep: Unmatched ( or \(`
+- To match a literal `(`, use `(` (unescaped) in BRE, or use `grep -E` for ERE mode
+- **Single quotes prevent double interpretation:** `'\.get('` passes `\.get(` literally to grep
+
+**Platform trap:** macOS grep is more lenient (ERE-leaning). A command that works on macOS may fail on Ubuntu. Always test verification gate commands with strict BRE assumptions.
+
+### Common Patterns
+
+```bash
+# Find old field names, excluding backward-compat fallbacks
+grep -rn "price_chf" "$SOURCE_ROOT/output/src/" --include="*.py" | grep -v '\.get('
+
+# Verify no hardcoded strings remain in a specific file
+grep -n '"CHF"' "$SOURCE_ROOT/output/src/shaked_wg_agent/publisher/html_report.py"
+
+# Python validation for complex assertions
+python3 -c "
+import json, os
+d = json.load(open(os.environ['SOURCE_ROOT'] + '/output/data/sources.json'))
+assert len(d) == 3
+print('PASS')
+"
+```
+
+### What the Validator Checks vs What It Doesn't
+
+| Validator Checks | Validator Does NOT Check |
+|-----------------|------------------------|
+| `$SOURCE_ROOT` is used (not literal `SOURCE_ROOT`) | Whether the grep pattern is valid BRE |
+| `-rn` on directories has `--include` | Whether quoting will survive Bash expansion |
+| Verification gates exist in the prompt | Whether the expected result is actually correct |
+| SOURCE_ROOT path matches folder name | Whether the command will succeed at runtime |
+
+## Mount Path Convention
+
+When Cowork mounts a folder, it becomes available at `mnt/{FOLDER_NAME}/`. The folder name is the **exact directory name** as it appears on the host filesystem.
+
+### The Rule
+
+```
+SOURCE_ROOT = mnt/{EXACT_FOLDER_NAME}/assets
+```
+
+If the package folder is named `S005-P004-v7`, then SOURCE_ROOT must be `mnt/S005-P004-v7/assets`. Not `mnt/S005-P004/assets`.
+
+### Why This Matters
+
+Every version creates a new folder (Rule 5: immutable after submission). The folder name includes the version suffix. If SOURCE_ROOT doesn't match the actual folder name, every shell command fails with "No such file or directory" — and the agent has no way to recover.
+
+### Where SOURCE_ROOT Appears
+
+| File | Format | Why |
+|------|--------|-----|
+| Activation Prompt | `export SOURCE_ROOT="mnt/S005-P004-v7/assets"` | Shell execution — must be `export` for child processes |
+| Instructions | `SOURCE_ROOT = mnt/S005-P004-v7/assets` | Declarative reference — no `export` (not a shell context) |
+| Validator Config | `"SOURCE_ROOT": "mnt/S005-P004-v7/assets"` in `shell_variables` | Automated validation of path consistency |
+
+### Validator CHECK 11: MOUNT_PATH_ALIGNMENT
+
+The validator extracts the folder name from `package_root` and verifies that all SOURCE_ROOT definitions contain it. This catch was added in v6 after a CRITICAL mount-path mismatch went undetected through 5 review cycles.
+
+## Quality Assurance Workflow
+
+Every Cowork package goes through a validation feedback loop before submission.
+
+### Pre-Submit Validation (Mandatory)
+
+```bash
+# 1. Set package_root to your local path
+# 2. Run validator
+cd validation/
+python3 aos_package_validator.py validate_{PACKAGE_ID}-{VERSION}.json
+# 3. Confirm: PASS, 0 CRITICAL
+```
+
+**Pass criteria:** 0 CRITICAL findings. INFO findings are acceptable (informational only).
+
+### Package Contents for QA
+
+Every submission folder must include in `validation/`:
+
+| File | Purpose |
+|------|---------|
+| `aos_package_validator.py` | Validator tool (enables post-submit self-check by Team 20) |
+| `aos_validator_config_template.json` | Reference for creating new configs |
+| `validate_{PACKAGE_ID}-{VERSION}.json` | This package's config (`package_root: "SET_BEFORE_RUN"`) |
+| `validate_{PACKAGE_ID}-{VERSION}_report.json` | Pre-submit passing report as proof |
+
+### Post-Submit Verification (Optional)
+
+The Cowork agent (Team 20) can run the same validator after execution to verify its own output. The `package_root` is set to the Cowork mount path.
+
+### Feedback Loop Pattern
+
+```
+Author (Team 110) prepares package
+        ↓
+Validator run → findings?
+        ↓ yes                    ↓ no
+Fix findings               Submit to Team 00
+Re-run validator                 ↓
+        ↓                   Team 190 review → findings?
+Repeat until PASS               ↓ yes           ↓ no
+                           New version folder    Execute in Cowork
+                           Fix findings
+                           Re-validate
+                           Re-submit
+```
+
+Each round creates a new version folder (v5, v6, v7...) and is documented as a new appendix in this procedure. Prior versions are never modified.
 
 ## Delivery Format
 
@@ -352,11 +560,12 @@ PHASE 2 — Step 2:
 
 **v3-v4 (Cowork-native):** Actual shell commands with expected results:
 ```
-grep -rn "price_chf" SOURCE_ROOT/output/src/ --include="*.py" | grep -v "\.get\("
+grep -rn "price_chf" SOURCE_ROOT/output/src/ --include="*.py" | grep -v '\.get('
 → Expected: zero hits
 ```
 - The agent runs the command, sees the output, and can fix issues before proceeding.
 - Python validation scripts for complex checks (e.g., verifying Locale dataclass has exactly 10 fields).
+- **Note:** The original v3-v4 example used `"\.get\("` (double quotes), which caused a BRE regex error on Ubuntu. Fixed in v7 — see Appendix D for the full explanation. The corrected form is shown above.
 
 ### A.6 — Activation Prompt Length Problem
 
@@ -456,7 +665,7 @@ This single issue affected 15 of 15 shell commands in the activation prompt. No 
 **Location:** `_aos/lean-kit/modules/managed-pipeline/procedures/aos_package_validator.py`
 **Config template:** `_aos/lean-kit/modules/managed-pipeline/procedures/aos_validator_config_template.json`
 
-The validator performs 10 categories of automated checks:
+The validator performs 11 categories of automated checks (10 original + MOUNT_PATH_ALIGNMENT added in v6):
 
 | # | Check | What It Validates |
 |---|-------|-------------------|
@@ -558,10 +767,10 @@ The validator and config are included in the package so they can be run inside C
 
 ```bash
 cd validation/
-python3 aos_package_validator.py validate_S005-P004-v5.json
+python3 aos_package_validator.py validate_{PACKAGE_ID}-{VERSION}.json
 ```
 
-This enables a verification loop: pre-submit validation by the authoring team + post-submit self-check by the executing agent.
+This enables a verification loop: pre-submit validation by the authoring team + post-submit self-check by the executing agent. (The example above used `validate_S005-P004-v5.json` in the original v5 round — substitute your package's actual config filename.)
 
 ### B.9 — Lessons Learned
 
