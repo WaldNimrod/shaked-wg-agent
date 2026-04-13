@@ -1,0 +1,77 @@
+[
+  {
+    "source_id": "wgzimmer",
+    "label": "wgzimmer.ch",
+    "base_url": "https://www.wgzimmer.ch",
+    "scraper_class": "shaked_wg_agent.scrapers.wgzimmer_pw.WgzimmerPlaywrightScraper",
+    "requires_playwright": true,
+    "notes": "Hauptquelle. Canton-basierte Suche.",
+    "city_params": {
+      "basel": {
+        "search_url": "https://www.wgzimmer.ch/en/wgzimmer/search/mate/ch/baselstadt.html",
+        "connection_method": "canton",
+        "enabled": true
+      },
+      "zurich": {
+        "search_url": "https://www.wgzimmer.ch/en/wgzimmer/search/mate/ch/zuerich.html",
+        "connection_method": "canton",
+        "enabled": true
+      },
+      "bern": {
+        "search_url": "https://www.wgzimmer.ch/en/wgzimmer/search/mate/ch/bern.html",
+        "connection_method": "canton",
+        "enabled": true
+      }
+    }
+  },
+  {
+    "source_id": "flatfox",
+    "label": "flatfox.ch",
+    "base_url": "https://flatfox.ch",
+    "scraper_class": "shaked_wg_agent.scrapers.flatfox.FlatfoxScraper",
+    "requires_playwright": false,
+    "notes": "Schweizer Plattform. Bbox-basierte REST API.",
+    "city_params": {
+      "basel": {
+        "search_url": "https://flatfox.ch/de/search/?west=7.5147&east=7.6559&south=47.5176&north=47.5956",
+        "connection_method": "bbox",
+        "enabled": true
+      },
+      "zurich": {
+        "search_url": "https://flatfox.ch/de/search/?west=8.4680&east=8.6160&south=47.3400&north=47.4200",
+        "connection_method": "bbox",
+        "enabled": true
+      },
+      "bern": {
+        "search_url": "https://flatfox.ch/de/search/?west=7.3900&east=7.4900&south=46.9200&north=46.9700",
+        "connection_method": "bbox",
+        "enabled": true
+      }
+    }
+  },
+  {
+    "source_id": "wg-gesucht",
+    "label": "wg-gesucht.de",
+    "base_url": "https://www.wg-gesucht.de",
+    "scraper_class": "shaked_wg_agent.scrapers.wg_gesucht.WgGesuchtScraper",
+    "requires_playwright": false,
+    "notes": "DISABLED: requires login/CAPTCHA for Swiss cities.",
+    "city_params": {
+      "basel": {
+        "search_url": "",
+        "connection_method": "city_id_param",
+        "enabled": false
+      },
+      "zurich": {
+        "search_url": "",
+        "connection_method": "city_id_param",
+        "enabled": false
+      },
+      "bern": {
+        "search_url": "",
+        "connection_method": "city_id_param",
+        "enabled": false
+      }
+    }
+  }
+]

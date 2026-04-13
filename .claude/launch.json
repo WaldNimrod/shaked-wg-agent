@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "api",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "uvicorn", "shaked_wg_agent.api.app:create_app", "--factory", "--reload", "--port", "8000"],
+      "port": 8000
+    },
+    {
+      "name": "mockups",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "9000", "--directory", "_aos/work_packages/S005-P004-WP001"],
+      "port": 9000
+    }
+  ]
+}
