@@ -172,18 +172,18 @@ class WgzimmerPlaywrightScraper(BaseScraper):
             district = _ZIP_DISTRICT.get(zipcode, city)
 
             # ── Price ─────────────────────────────────────────────────────
-            price = (
+            price_raw = (
                 item.get("price")
                 or item.get("rent")
                 or item.get("miete")
                 or item.get("totalCost")
             )
             try:
-                price_chf = int(price) if price else None
+                price_val = int(price_raw) if price_raw else None
             except (ValueError, TypeError):
-                price_text = str(price or "")
+                price_text = str(price_raw or "")
                 m = _PRICE_PATTERN.search(price_text)
-                price_chf = int(m.group(1)) if m else None
+                price_val = int(m.group(1)) if m else None
 
             # ── Title / description ───────────────────────────────────────
             title = str(
@@ -247,7 +247,9 @@ class WgzimmerPlaywrightScraper(BaseScraper):
                 source_listing_id=sid,
                 source_search_url=self.search_url,
                 title=title[:100],
-                price_chf=price_chf,
+                price=price_val,
+                currency=self.city.currency,
+                country=self.city.country,
                 available_from=available_from,
                 location_text=location_text,
                 district=district,
@@ -299,7 +301,9 @@ class WgzimmerPlaywrightScraper(BaseScraper):
                         source_listing_id=sid,
                         source_search_url=self.search_url,
                         title=title[:100],
-                        price_chf=int(price_m.group(1)) if price_m else None,
+                        price=int(price_m.group(1)) if price_m else None,
+                        currency=self.city.currency,
+                country=self.city.country,
                         available_from=None,
                         location_text=self.city.city_name,
                         district=self.city.city_name,

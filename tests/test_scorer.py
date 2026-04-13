@@ -27,8 +27,8 @@ def base_profile() -> SearchProfile:
         profile_name="Test",
         city_id="basel",
         move_in_from="2026-06-01",
-        budget_min_chf=200,
-        budget_max_chf=1000,
+        budget_min=200,
+        budget_max=1000,
         preferred_roommate_age="young",
         rental_duration="permanent",
         diet="vegan",
@@ -45,7 +45,7 @@ def base_profile() -> SearchProfile:
 @pytest.fixture()
 def perfect_listing() -> dict:
     return {
-        "price_chf": 700,
+        "price": 700,
         "vegan_signal": "vegane Küche, kein Fleisch",
         "transit_match_lines": ["2", "3"],
         "roommate_signal": "Studenten WG 22 Jahre",
@@ -202,7 +202,7 @@ def test_score_listing_perfect(perfect_listing: dict, base_profile: SearchProfil
 
 
 def test_score_listing_over_budget(perfect_listing: dict, base_profile: SearchProfile) -> None:
-    perfect_listing["price_chf"] = 2000
+    perfect_listing["price"] = 2000
     assert score_listing(perfect_listing, base_profile) == 0
 
 

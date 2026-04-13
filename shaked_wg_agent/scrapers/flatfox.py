@@ -10,6 +10,9 @@ from __future__ import annotations
 
 import re
 import time
+from datetime import UTC, datetime
+
+import requests as _requests
 
 from shaked_wg_agent.config import CityDefinition
 from shaked_wg_agent.scrapers.base import BaseScraper, ScrapedListing
@@ -194,7 +197,9 @@ class FlatfoxScraper(BaseScraper):
                 source_listing_id=pk,
                 source_search_url=self.search_url,
                 title=title[:100],
-                price_chf=int(price) if price else None,
+                price=int(price) if price else None,
+                currency=self.city.currency,
+                country=self.city.country,
                 available_from=str(available_from) if available_from else None,
                 location_text=location_text,
                 district=district,
@@ -216,3 +221,38 @@ class FlatfoxScraper(BaseScraper):
             if kw in lower:
                 return kw
         return "kein Signal"
+
+
+def verify_listings(listings: list[dict], city: CityDefinition) -> None:
+    """Verify flatfox listings using the pin API (not blocked by Cloudflare).
+
+    Fetches the current set of active PKs from the bbox search and marks
+    each stored flatfox listing as verified_active=True/False accordingly.
+    """
+    flatfox = [
+        row
+        for row in listings
+        if row.get("source") == "flatfox" and row.get("source_listing_id")
+    ]
+    if not flatfox:
+        return
+
+    try:
+        params = flatfox_pin_query_params(city)
+        resp = _requests.get(PIN_URL, params=params, timeout=20)
+        resp.raise_for_status()
+        active_pks = {str(item["pk"]) for item in resp.json() if "pk" in item}
+    except Exception:
+        return  # API unreachable — leave existing state unchanged
+
+    now = datetime.now(UTC).isoformat(timespec="seconds")
+    for lst in flatfox:
+        pk = str(lst["source_listing_id"])
+        if pk in active_pks:
+            lst["verified_active"] = True
+            lst["last_verified_at"] = now
+            if lst.get("url_status") == "broken_needs_recovery":
+                lst["url_status"] = "direct"
+        else:
+            lst["verified_active"] = False
+            lst["url_status"] = "broken_needs_recovery"

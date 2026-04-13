@@ -22,6 +22,14 @@ _TIER_SEARCH = ("🔍", "Suche nötig", "secondary", "Kein Direktlink — über 
 _TIER_BROKEN = ("⚠️", "Offline?", "danger", "URL möglicherweise offline — Recovery-Suche verwenden")
 
 
+def _listing_price(lst: dict) -> Any:
+    """Read listing price with backward-compat fallback."""
+    price = lst.get("price")
+    if price is None:
+        price = lst.get("price_chf")
+    return price
+
+
 def _tier(lst: dict) -> tuple:
     """Return (icon, label, badge_class, tooltip) for a listing's access tier."""
     url_status = lst.get("url_status", "")
@@ -68,7 +76,8 @@ def _modal(lst: dict) -> str:
     """Build a full-screen Bootstrap modal for a listing."""
     lid = lst.get("listing_id", "")
     title = _safe(lst.get("title", ""), "Unbekannt")
-    price = lst.get("price_chf")
+    price = _listing_price(lst)
+    currency = lst.get("currency", "CHF")
     district = _safe(lst.get("district", ""))
     location = _safe(lst.get("location_text", ""))
     roommate = _safe(lst.get("roommate_signal", ""))
@@ -168,6 +177,10 @@ def _modal(lst: dict) -> str:
         for k, v in _STATUS_BADGE.items()
     )
 
+    price_badge = (
+        f"<span>💰 {_html.escape(str(currency))} {price}/Mt.</span>" if price else ""
+    )
+
     return f"""
 <div class="modal fade" id="modal-{lid}" tabindex="-1" aria-labelledby="modal-label-{lid}" aria-hidden="true" data-listing-id="{lid}">
   <div class="modal-dialog modal-fullscreen-md-down modal-xl modal-dialog-scrollable">
@@ -181,7 +194,7 @@ def _modal(lst: dict) -> str:
           </div>
           <div class="d-flex gap-3 flex-wrap small opacity-90">
             <span>📍 {district}</span>
-            {"<span>💰 CHF " + str(price) + "/Mt.</span>" if price else ""}
+            {price_badge}
             {"<span>🗓 ab " + available + "</span>" if available and available != "—" else ""}
             {"<span>🚃 " + tram + "</span>" if tram else ""}
             <span>📊 Score: <strong>{score}</strong></span>
@@ -242,13 +255,18 @@ def _modal(lst: dict) -> str:
 def _table_row(lst: dict) -> str:
     """Build a single <tr> that opens the modal on click."""
     lid = lst.get("listing_id", "")
-    price = lst.get("price_chf")
+    price = _listing_price(lst)
+    currency = lst.get("currency", "CHF")
     _lines = lst.get("transit_match_lines") or lst.get("tram_match_lines") or []
     tram = ", ".join(f"T{t}" for t in _lines)
     tier_icon, tier_label, tier_cls, tier_tip = _tier(lst)
     status = lst.get("status", "neu")
     score = lst.get("relevance_score", 0)
     district = lst.get("district", "")
+
+    price_cell = (
+        f"{_html.escape(str(currency))} {price}" if price else "—"
+    )
 
     return (
         f'<tr data-bs-toggle="modal" data-bs-target="#modal-{lid}" style="cursor:pointer"'
@@ -263,7 +281,7 @@ def _table_row(lst: dict) -> str:
         f'</td>'
         f'<td>{_score_bar(score)}</td>'
         f'<td>{_badge(status)}</td>'
-        f'<td class="text-nowrap">{"CHF " + str(price) if price else "—"}</td>'
+        f'<td class="text-nowrap">{price_cell}</td>'
         f'<td>{_safe(district)}</td>'
         f'<td class="text-nowrap">{tram}</td>'
         f'<td>{_vegan_cell(lst.get("vegan_signal", ""))}</td>'
@@ -472,6 +490,7 @@ def generate_report(
     runs: list[dict[str, Any]],
     profile_name: str = "Shaked Basel WG Search",
     project_end: str = "2026-06-08",
+    currency: str = "CHF",
 ) -> str:
     """Return full HTML string for the listings report page."""
     sorted_listings = sorted(listings, key=lambda x: x.get("relevance_score", 0), reverse=True)
@@ -518,6 +537,8 @@ def generate_report(
         f'<option value="{k}">{v[1]}</option>'
         for k, v in _STATUS_BADGE.items()
     )
+
+    cur_esc = _html.escape(str(currency))
 
     return f"""<!DOCTYPE html>
 <html lang="de">
@@ -618,9 +639,9 @@ def generate_report(
     <select class="form-select form-select-sm filter-sel" style="width:auto"
             onchange="setFilter('price', this.value)">
       <option value="alle">Preis: alle</option>
-      <option value="600">≤ 600 CHF</option>
-      <option value="800">≤ 800 CHF</option>
-      <option value="1000">≤ 1000 CHF</option>
+      <option value="600">≤ 600 {cur_esc}</option>
+      <option value="800">≤ 800 {cur_esc}</option>
+      <option value="1000">≤ 1000 {cur_esc}</option>
     </select>
     <select class="form-select form-select-sm filter-sel" style="width:auto"
             onchange="setFilter('tier', this.value)">

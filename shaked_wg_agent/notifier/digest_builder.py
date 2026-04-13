@@ -28,7 +28,8 @@ def build_digest_payload(
     listings_summaries = [
         {
             "title": row.get("title", ""),
-            "price_chf": row.get("price_chf"),
+            "price": row.get("price") if row.get("price") is not None else row.get("price_chf"),
+            "currency": row.get("currency", "CHF"),
             "district": row.get("district", ""),
             "relevance_score": int(row.get("relevance_score", 0) or 0),
             "direct_url": row.get("direct_url", ""),
@@ -46,6 +47,7 @@ def build_digest_payload(
         "profile_name": profile.get("profile_name", ""),
         "city_id": city.get("city_id", ""),
         "city_name": city.get("city_name", ""),
+        "country": city.get("country", "CH"),
         "run_id": run_record.get("run_id", ""),
         "scan_timestamp": scan_ts,
         "total_new": total_new,

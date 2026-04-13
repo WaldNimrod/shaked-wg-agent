@@ -16,8 +16,11 @@ class NtfyNotifier(BaseNotifier):
         chunks = []
         for lst in digest_payload.get("listings", []):
             title = lst.get("title", "")
-            price = lst.get("price_chf")
-            ps = "k.A." if price is None else f"CHF {price}"
+            price = lst.get("price")
+            if price is None:
+                price = lst.get("price_chf")
+            currency = lst.get("currency", "CHF")
+            ps = "k.A." if price is None else f"{currency} {price}"
             dist = lst.get("district", "")
             sc = int(lst.get("relevance_score", 0) or 0)
             url = lst.get("direct_url", "")

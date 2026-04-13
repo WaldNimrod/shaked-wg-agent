@@ -27,8 +27,11 @@ class DiscordNotifier(BaseNotifier):
         for lst in shown:
             score = int(lst.get("relevance_score", 0) or 0)
             color = 0x2E7D32 if score >= 70 else 0xE65100 if score >= 40 else 0xC62828
-            price = lst.get("price_chf")
-            price_s = "k.A." if price is None else str(price)
+            price = lst.get("price")
+            if price is None:
+                price = lst.get("price_chf")
+            currency = lst.get("currency", "CHF")
+            price_s = "k.A." if price is None else f"{currency} {price}"
             fields = [
                 {"name": "Preis", "value": price_s, "inline": True},
                 {"name": "Quartier", "value": str(lst.get("district", "")), "inline": True},

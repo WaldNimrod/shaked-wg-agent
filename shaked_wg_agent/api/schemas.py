@@ -71,7 +71,8 @@ class ListingResponse(BaseModel):
     listing_id: str
     source: str
     title: str = ""
-    price_chf: int | None = None
+    price: int | None = None
+    currency: str = "CHF"
     available_from: str | None = None
     location_text: str = ""
     district: str = ""

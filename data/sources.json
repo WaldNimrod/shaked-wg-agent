@@ -3,7 +3,7 @@
     "source_id": "wgzimmer",
     "label": "wgzimmer.ch",
     "base_url": "https://www.wgzimmer.ch",
-    "scraper_class": "WgzimmerScraper",
+    "scraper_class": "shaked_wg_agent.scrapers.wgzimmer_pw.WgzimmerPlaywrightScraper",
     "requires_playwright": true,
     "notes": "Hauptquelle. Canton-basierte Suche.",
     "city_params": {
@@ -28,7 +28,7 @@
     "source_id": "flatfox",
     "label": "flatfox.ch",
     "base_url": "https://flatfox.ch",
-    "scraper_class": "FlatfoxScraper",
+    "scraper_class": "shaked_wg_agent.scrapers.flatfox.FlatfoxScraper",
     "requires_playwright": false,
     "notes": "Schweizer Plattform. Bbox-basierte REST API.",
     "city_params": {
@@ -53,7 +53,7 @@
     "source_id": "wg-gesucht",
     "label": "wg-gesucht.de",
     "base_url": "https://www.wg-gesucht.de",
-    "scraper_class": "WgGesuchtScraper",
+    "scraper_class": "shaked_wg_agent.scrapers.wg_gesucht.WgGesuchtScraper",
     "requires_playwright": false,
     "notes": "DISABLED: requires login/CAPTCHA for Swiss cities.",
     "city_params": {
@@ -70,21 +70,6 @@
       "bern": {
         "search_url": "",
         "connection_method": "city_id_param",
-        "enabled": false
-      }
-    }
-  },
-  {
-    "source_id": "tutti",
-    "label": "tutti.ch",
-    "base_url": "https://www.tutti.ch",
-    "scraper_class": "TuttiScraper",
-    "requires_playwright": false,
-    "notes": "Manchmal guenstige Angebote. Nur Basel implementiert.",
-    "city_params": {
-      "basel": {
-        "search_url": "https://www.tutti.ch/de/li/basel-stadt/immobilien/wohnungen-mieten",
-        "connection_method": "canton",
         "enabled": false
       }
     }

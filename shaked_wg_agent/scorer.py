@@ -16,23 +16,22 @@ from datetime import UTC, date, datetime
 from typing import Any
 
 from shaked_wg_agent.config import SearchProfile
-
-# Vegan signal keywords (ordered by strength)
-_VEGAN_STRONG = {"vegan", "vegane", "veganer", "veganes", "tierfreie küche", "tierfreie wg"}
-_VEGAN_PARTIAL = {"pflanzlich", "pflanzliche", "vegan-freundlich", "vegetarisch"}
-_VEGAN_WEAK = {"kein fleisch", "kein fisch", "plant-based"}
+from shaked_wg_agent.locale import get_locale
 
 
-def _vegan_score(signal: str) -> int:
-    """Return 0–35 based on vegan_signal field content."""
-    if not signal or signal.lower() in ("kein signal", "unbekannt", ""):
+def _vegan_score(signal: str, country: str = "CH") -> int:
+    """Return 0–35 based on vegan_signal field content (locale-aware)."""
+    if not signal:
         return 0
+    locale = get_locale(country)
     lower = signal.lower()
-    if any(kw in lower for kw in _VEGAN_STRONG):
+    if lower in locale.vegan_no_signal:
+        return 0
+    if any(kw in lower for kw in locale.vegan_strong):
         return 35
-    if any(kw in lower for kw in _VEGAN_PARTIAL):
+    if any(kw in lower for kw in locale.vegan_partial):
         return 22
-    if any(kw in lower for kw in _VEGAN_WEAK):
+    if any(kw in lower for kw in locale.vegan_weak):
         return 12
     return 5  # signal exists but unrecognised — small positive
 
@@ -126,11 +125,11 @@ def _url_score(url_status: str) -> int:
     return mapping.get(url_status.lower() if url_status else "", 3)
 
 
-def _budget_ok(price_chf: int | None, profile: SearchProfile) -> bool:
+def _budget_ok(price: int | None, profile: SearchProfile) -> bool:
     """Return False if price is outside budget (hard gate)."""
-    if price_chf is None:
+    if price is None:
         return True  # unknown price — don't disqualify
-    return profile.budget_min_chf <= price_chf <= profile.budget_max_chf
+    return profile.budget_min <= price <= profile.budget_max
 
 
 def score_listing(listing: dict[str, Any], profile: SearchProfile) -> int:
@@ -138,13 +137,15 @@ def score_listing(listing: dict[str, Any], profile: SearchProfile) -> int:
 
     Returns 0 if the listing fails the budget hard gate.
     """
-    price = listing.get("price_chf")
+    price = listing.get("price")
+    if price is None:
+        price = listing.get("price_chf")
     if not _budget_ok(price, profile):
         return 0
 
     lines = _listing_transit_lines(listing)
     total = (
-        _vegan_score(listing.get("vegan_signal", ""))
+        _vegan_score(listing.get("vegan_signal", ""), listing.get("country", "CH"))
         + _transit_score(lines, profile.transit_lines)
         + _roommate_score(listing.get("roommate_signal", ""), profile.preferred_roommate_age)
         + _freshness_score(listing.get("posted_date"), listing.get("first_seen_at"))

@@ -78,10 +78,12 @@ def cmd_status(args: argparse.Namespace) -> None:
 
     console.rule("[bold]Shaked WG Basel — Status[/bold]")
     console.print(f"  Profile   : [cyan]{cfg.profile.profile_name}[/cyan]")
-    console.print(f"  Budget    : CHF {cfg.profile.budget_min_chf}–{cfg.profile.budget_max_chf}")
+    console.print(
+        f"  Budget    : {cfg.city.currency} {cfg.profile.budget_min}–{cfg.profile.budget_max}"
+    )
     console.print(f"  Move-in   : {cfg.profile.move_in_from}")
     console.print(f"  Diet      : {cfg.profile.diet}")
-    console.print(f"  Tram lines: {', '.join(cfg.profile.transit_lines)}")
+    console.print(f"  Transit lines: {', '.join(cfg.profile.transit_lines)}")
     console.print()
     console.print(f"  Listings  : {len(listings)} total")
 
@@ -117,8 +119,15 @@ def cmd_list() -> None:
     """Print listings table sorted by relevance score."""
     from rich.table import Table
 
+    from shaked_wg_agent.config import load_config
+    from shaked_wg_agent.locale import get_locale
     from shaked_wg_agent.persistence import load_listings
 
+    try:
+        cfg = load_config(None)
+        locale = get_locale(cfg.city.country)
+    except Exception:
+        locale = get_locale("CH")
     listings = load_listings()
     if not listings:
         console.print("[yellow]No listings found. Run `python -m shaked_wg_agent run` first.[/yellow]")
@@ -131,7 +140,7 @@ def cmd_list() -> None:
     table.add_column("Status", width=12)
     table.add_column("Price", width=8)
     table.add_column("District", width=14)
-    table.add_column("Tram", width=8)
+    table.add_column("Transit", width=8)
     table.add_column("Vegan", width=18)
     table.add_column("Title", min_width=30, no_wrap=False)
 
@@ -147,13 +156,18 @@ def cmd_list() -> None:
         score = lst.get("relevance_score", 0)
         status = lst.get("status", "")
         color = status_colors.get(status, "white")
-        price = f"CHF {lst['price_chf']}" if lst.get("price_chf") else "?"
+        status_label = locale.status_labels.get(status, status)
+        price_val = lst.get("price")
+        if price_val is None:
+            price_val = lst.get("price_chf")
+        currency = lst.get("currency", "CHF")
+        price = f"{currency} {price_val}" if price_val else "?"
         lines = lst.get("transit_match_lines") or lst.get("tram_match_lines") or []
         tram = ", ".join(lines)
         vegan = lst.get("vegan_signal", "")[:17]
         table.add_row(
             str(score),
-            f"[{color}]{status}[/{color}]",
+            f"[{color}]{status_label}[/{color}]",
             price,
             lst.get("district", "")[:13],
             tram,

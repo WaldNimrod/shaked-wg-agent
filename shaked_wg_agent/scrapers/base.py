@@ -10,6 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from shaked_wg_agent.config import CityDefinition
+from shaked_wg_agent.locale import get_locale
 
 _DEFAULT_HEADERS = {
     "User-Agent": (
@@ -17,7 +18,6 @@ _DEFAULT_HEADERS = {
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/122.0.0.0 Safari/537.36"
     ),
-    "Accept-Language": "de-CH,de;q=0.9,en;q=0.8",
 }
 
 _REQUEST_TIMEOUT = 20  # seconds
@@ -32,10 +32,12 @@ class ScrapedListing:
     source_listing_id: str
     source_search_url: str
     title: str
-    price_chf: int | None
+    price: int | None
     available_from: str | None
     location_text: str
     district: str
+    currency: str = "CHF"
+    country: str = "CH"
     transit_match_lines: list[str] = field(default_factory=list)
     roommate_signal: str = ""
     vegan_signal: str = ""
@@ -56,7 +58,9 @@ class ScrapedListing:
             "source_search_url": self.source_search_url,
             "title": self.title,
             "title_fragment": " ".join(self.title.split()[:6]),
-            "price_chf": self.price_chf,
+            "price": self.price,
+            "currency": self.currency,
+            "country": self.country,
             "available_from": self.available_from,
             "location_text": self.location_text,
             "district": self.district,
@@ -88,6 +92,7 @@ class BaseScraper(ABC):
         self.city = city
         self._session = requests.Session()
         self._session.headers.update(_DEFAULT_HEADERS)
+        self._session.headers["Accept-Language"] = get_locale(city.country).accept_language
 
     def _get(self, url: str, retries: int = 2) -> requests.Response:
         """HTTP GET with retry and polite delay."""

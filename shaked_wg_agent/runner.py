@@ -1,6 +1,7 @@
 """Run orchestrator — drives a full scan cycle and updates data files."""
 from __future__ import annotations
 
+import importlib
 import tempfile
 import uuid
 from dataclasses import asdict
@@ -25,43 +26,6 @@ from shaked_wg_agent.scrapers.base import BaseScraper
 _VERIFY_TIMEOUT = 6  # seconds per URL check
 
 
-def _verify_flatfox_via_api(listings: list[dict], city: CityDefinition) -> None:
-    """Verify flatfox listings using the pin API (not blocked by Cloudflare).
-
-    Fetches the current set of active PKs from the bbox search and marks
-    each stored flatfox listing as verified_active=True/False accordingly.
-    """
-    from shaked_wg_agent.scrapers.flatfox import PIN_URL, flatfox_pin_query_params
-
-    flatfox = [
-        row
-        for row in listings
-        if row.get("source") == "flatfox" and row.get("source_listing_id")
-    ]
-    if not flatfox:
-        return
-
-    try:
-        params = flatfox_pin_query_params(city)
-        resp = _requests.get(PIN_URL, params=params, timeout=20)
-        resp.raise_for_status()
-        active_pks = {str(item["pk"]) for item in resp.json() if "pk" in item}
-    except Exception:
-        return  # API unreachable — leave existing state unchanged
-
-    now = datetime.now(UTC).isoformat(timespec="seconds")
-    for lst in flatfox:
-        pk = str(lst["source_listing_id"])
-        if pk in active_pks:
-            lst["verified_active"] = True
-            lst["last_verified_at"] = now
-            if lst.get("url_status") == "broken_needs_recovery":
-                lst["url_status"] = "direct"
-        else:
-            lst["verified_active"] = False
-            lst["url_status"] = "broken_needs_recovery"
-
-
 def _verify_listings(listings: list[dict], city: CityDefinition) -> list[dict]:
     """Verify stored listings are still live.
 
@@ -70,7 +34,10 @@ def _verify_listings(listings: list[dict], city: CityDefinition) -> list[dict]:
     - others: HEAD request per URL (definitive 404 → broken, 200 → active, else → unchanged)
     """
     # flatfox: API-based presence check (reliable, CF-bypass)
-    _verify_flatfox_via_api(listings, city)
+    from shaked_wg_agent.scrapers.flatfox import verify_listings as _verify_flatfox
+
+    flatfox_listings = [row for row in listings if row.get("source") == "flatfox"]
+    _verify_flatfox(flatfox_listings, city)
 
     now = datetime.now(UTC).isoformat(timespec="seconds")
     for lst in listings:
@@ -110,20 +77,36 @@ def _verify_listings(listings: list[dict], city: CityDefinition) -> list[dict]:
     return listings
 
 
-def _build_scraper(source: ResolvedSource, city: CityDefinition) -> BaseScraper:
-    """Instantiate the correct scraper for a given source."""
-    from shaked_wg_agent.scrapers.flatfox import FlatfoxScraper
-    from shaked_wg_agent.scrapers.wg_gesucht import WgGesuchtScraper
-    from shaked_wg_agent.scrapers.wgzimmer_pw import WgzimmerPlaywrightScraper
+def _resolve_class(fqn: str) -> type:
+    """Resolve fully-qualified class name to class.
 
-    mapping = {
-        "wgzimmer": WgzimmerPlaywrightScraper,
-        "wg-gesucht": WgGesuchtScraper,
-        "flatfox": FlatfoxScraper,
-    }
-    cls = mapping.get(source.source_id)
-    if cls is None:
-        raise ValueError(f"No scraper registered for source id '{source.source_id}'")
+    Raises ValueError if FQN lacks a '.', ImportError if module can't be
+    imported, AttributeError if class is missing, or TypeError if the class
+    does not subclass BaseScraper.
+    """
+    if "." not in fqn:
+        raise ValueError(
+            f"Invalid FQN '{fqn}': must contain module path and class name separated by '.'"
+        )
+    module_path, class_name = fqn.rsplit(".", 1)
+    try:
+        module = importlib.import_module(module_path)
+    except ImportError as exc:
+        raise ImportError(
+            f"Cannot import module '{module_path}' for scraper class '{fqn}'"
+        ) from exc
+    if not hasattr(module, class_name):
+        raise AttributeError(f"Module '{module_path}' has no class '{class_name}'")
+    cls = getattr(module, class_name)
+    if not (isinstance(cls, type) and issubclass(cls, BaseScraper)):
+        raise TypeError(f"Class '{class_name}' is not a subclass of BaseScraper")
+    return cls
+
+
+def _build_scraper(source: ResolvedSource, city: CityDefinition) -> BaseScraper:
+    """Instantiate the correct scraper for a given source via FQN resolution."""
+    fqn = source.connector_class or source.scraper_class
+    cls = _resolve_class(fqn)
     return cls(source_id=source.source_id, search_url=source.search_url, city=city)
 
 
@@ -146,6 +129,7 @@ def _publish(cfg: ProjectConfig) -> str | None:
             runs=runs,
             profile_name=cfg.profile.profile_name,
             project_end=cfg.agent.project_end,
+            currency=cfg.city.currency,
         )
         tmp = Path(tempfile.mkdtemp()) / "index.html"
         tmp.write_text(html, encoding="utf-8")

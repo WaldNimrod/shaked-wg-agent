@@ -43,6 +43,7 @@ class CityDefinition:
     bounding_box: BoundingBox
     available_sources: list[str]
     country: str = "CH"
+    currency: str = "CHF"
     zip_filter: list[str] = field(default_factory=list)
 
 
@@ -90,8 +91,8 @@ class SearchProfile:
     profile_name: str
     city_id: str
     move_in_from: str
-    budget_min_chf: int
-    budget_max_chf: int
+    budget_min: int
+    budget_max: int
     preferred_roommate_age: str
     rental_duration: str
     diet: str = ""
@@ -118,6 +119,7 @@ class SourceDefinition:
     base_url: str
     scraper_class: str
     city_params: dict[str, CitySourceParams]
+    connector_class: str | None = None
     requires_playwright: bool = False
     notes: str = ""
 
@@ -132,6 +134,7 @@ class ResolvedSource:
     requires_playwright: bool
     priority: int
     notes: str
+    connector_class: str | None = None
 
 
 @dataclass
@@ -220,6 +223,7 @@ def _load_city(city_id: str) -> CityDefinition:
         ),
         available_sources=list(raw["available_sources"]),
         country=raw.get("country", "CH"),
+        currency=raw.get("currency", "CHF"),
         zip_filter=list(raw.get("zip_filter", [])),
     )
 
@@ -264,13 +268,24 @@ def _load_profile(profile_id: str) -> SearchProfile:
         None if notif_raw is None else _notification_from_dict(notif_raw)
     )
 
+    budget_min_val = raw.get("budget_min")
+    if budget_min_val is None:
+        budget_min_val = raw.get("budget_min_chf")
+    budget_max_val = raw.get("budget_max")
+    if budget_max_val is None:
+        budget_max_val = raw.get("budget_max_chf")
+    if budget_min_val is None or budget_max_val is None:
+        raise KeyError(
+            f"Profile '{profile_id}' missing budget_min/budget_max (or legacy budget_min_chf/budget_max_chf)"
+        )
+
     profile = SearchProfile(
         profile_id=raw["profile_id"],
         profile_name=raw["profile_name"],
         city_id=raw["city_id"],
         move_in_from=raw["move_in_from"],
-        budget_min_chf=raw["budget_min_chf"],
-        budget_max_chf=raw["budget_max_chf"],
+        budget_min=int(budget_min_val),
+        budget_max=int(budget_max_val),
         preferred_roommate_age=raw["preferred_roommate_age"],
         rental_duration=raw["rental_duration"],
         diet=raw.get("diet", ""),
@@ -307,6 +322,7 @@ def _load_sources() -> list[SourceDefinition]:
                 base_url=raw["base_url"],
                 scraper_class=raw["scraper_class"],
                 city_params=cparams,
+                connector_class=raw.get("connector_class"),
                 requires_playwright=raw.get("requires_playwright", False),
                 notes=raw.get("notes", ""),
             )
@@ -359,6 +375,7 @@ def load_config(profile_id: str | None = None) -> ProjectConfig:
                 requires_playwright=sd.requires_playwright,
                 priority=priority,
                 notes=sd.notes,
+                connector_class=sd.connector_class,
             )
         )
 
