@@ -303,7 +303,7 @@ class WgzimmerPlaywrightScraper(BaseScraper):
                         title=title[:100],
                         price=int(price_m.group(1)) if price_m else None,
                         currency=self.city.currency,
-                country=self.city.country,
+                        country=self.city.country,
                         available_from=None,
                         location_text=self.city.city_name,
                         district=self.city.city_name,
