@@ -1,0 +1,129 @@
+{
+  "_comment": "AOS Package Validator config for S005-P004-v7. package_root must be set to the actual mount path before running.",
+  "package_id": "S005-P004",
+  "version": "v7",
+  "package_root": "SET_BEFORE_RUN",
+  "source_root_label": "SOURCE_ROOT",
+  "source_root_rel": "assets",
+  "output_rel": "output",
+
+  "instruction_file": "S005-P004_INSTRUCTIONS.txt",
+  "prompt_file": "S005-P004_ACTIVATION_PROMPT.txt",
+  "doc_files": ["PACKAGE.md"],
+
+  "manifest": {
+    "specs/LOD400_S005-P004-WP001.md":          {"role": "read-only", "wp": "WP001"},
+    "specs/LOD400_S005-P004-WP002.md":          {"role": "read-only", "wp": "WP002"},
+    "specs/LOD400_S005-P004-WP003.md":          {"role": "read-only", "wp": "WP003"},
+    "specs/MANDATE_S005-P004-WP001_TEAM20.md":  {"role": "read-only", "wp": "WP001"},
+    "specs/MANDATE_S005-P004-WP002_TEAM20.md":  {"role": "read-only", "wp": "WP002"},
+    "specs/MANDATE_S005-P004-WP003_TEAM20.md":  {"role": "read-only", "wp": "WP003"},
+    "src/shaked_wg_agent/__init__.py":           {"role": "read-only"},
+    "src/shaked_wg_agent/__main__.py":           {"role": "modify", "wp": "WP001,WP003"},
+    "src/shaked_wg_agent/config.py":             {"role": "modify", "wp": "WP001,WP002"},
+    "src/shaked_wg_agent/runner.py":             {"role": "modify", "wp": "WP002"},
+    "src/shaked_wg_agent/scorer.py":             {"role": "modify", "wp": "WP001,WP003"},
+    "src/shaked_wg_agent/persistence.py":        {"role": "read-only"},
+    "src/shaked_wg_agent/scrapers/__init__.py":  {"role": "read-only"},
+    "src/shaked_wg_agent/scrapers/base.py":      {"role": "modify", "wp": "WP001,WP003"},
+    "src/shaked_wg_agent/scrapers/flatfox.py":   {"role": "modify", "wp": "WP001,WP002"},
+    "src/shaked_wg_agent/scrapers/wg_gesucht.py":{"role": "modify", "wp": "WP001"},
+    "src/shaked_wg_agent/scrapers/wgzimmer_pw.py":{"role": "modify", "wp": "WP001"},
+    "src/shaked_wg_agent/notifier/__init__.py":  {"role": "read-only"},
+    "src/shaked_wg_agent/notifier/base.py":      {"role": "read-only"},
+    "src/shaked_wg_agent/notifier/email_notifier.py": {"role": "modify", "wp": "WP001,WP003"},
+    "src/shaked_wg_agent/notifier/ntfy_notifier.py":  {"role": "modify", "wp": "WP001"},
+    "src/shaked_wg_agent/notifier/telegram_notifier.py": {"role": "modify", "wp": "WP001"},
+    "src/shaked_wg_agent/notifier/discord_notifier.py":  {"role": "modify", "wp": "WP001"},
+    "src/shaked_wg_agent/notifier/digest_builder.py":    {"role": "modify", "wp": "WP001"},
+    "src/shaked_wg_agent/notifier/orchestrator.py":      {"role": "read-only"},
+    "src/shaked_wg_agent/api/__init__.py":       {"role": "read-only"},
+    "src/shaked_wg_agent/api/schemas.py":        {"role": "modify", "wp": "WP001"},
+    "src/shaked_wg_agent/api/app.py":            {"role": "read-only"},
+    "src/shaked_wg_agent/api/routes.py":         {"role": "read-only"},
+    "src/shaked_wg_agent/publisher/__init__.py":  {"role": "read-only"},
+    "src/shaked_wg_agent/publisher/html_report.py": {"role": "modify", "wp": "WP001"},
+    "data/sources.json":                         {"role": "modify", "wp": "WP002"},
+    "data/profiles/default.json":                {"role": "modify", "wp": "WP001"},
+    "data/cities/basel.json":                    {"role": "read-only"},
+    "tests/__init__.py":                         {"role": "read-only"},
+    "tests/test_config.py":                      {"role": "modify", "wp": "WP001"},
+    "tests/test_scorer.py":                      {"role": "modify", "wp": "WP001"},
+    "tests/test_api.py":                         {"role": "modify", "wp": "WP001"},
+    "tests/test_persistence.py":                 {"role": "read-only"},
+    "tests/test_integration.py":                 {"role": "modify", "wp": "WP001"},
+    "tests/test_notifier.py":                    {"role": "modify", "wp": "WP001"}
+  },
+
+  "work_packages": [
+    {
+      "id": "WP001",
+      "spec_file": "specs/LOD400_S005-P004-WP001.md",
+      "mandate_file": "specs/MANDATE_S005-P004-WP001_TEAM20.md",
+      "modify_files": [
+        "src/shaked_wg_agent/config.py",
+        "src/shaked_wg_agent/scrapers/base.py",
+        "src/shaked_wg_agent/scrapers/flatfox.py",
+        "src/shaked_wg_agent/scrapers/wg_gesucht.py",
+        "src/shaked_wg_agent/scrapers/wgzimmer_pw.py",
+        "src/shaked_wg_agent/scorer.py",
+        "src/shaked_wg_agent/__main__.py",
+        "src/shaked_wg_agent/publisher/html_report.py",
+        "src/shaked_wg_agent/notifier/email_notifier.py",
+        "src/shaked_wg_agent/notifier/ntfy_notifier.py",
+        "src/shaked_wg_agent/notifier/telegram_notifier.py",
+        "src/shaked_wg_agent/notifier/discord_notifier.py",
+        "src/shaked_wg_agent/notifier/digest_builder.py",
+        "src/shaked_wg_agent/api/schemas.py",
+        "data/profiles/default.json"
+      ]
+    },
+    {
+      "id": "WP002",
+      "spec_file": "specs/LOD400_S005-P004-WP002.md",
+      "mandate_file": "specs/MANDATE_S005-P004-WP002_TEAM20.md",
+      "modify_files": [
+        "src/shaked_wg_agent/config.py",
+        "src/shaked_wg_agent/runner.py",
+        "src/shaked_wg_agent/scrapers/flatfox.py",
+        "data/sources.json"
+      ]
+    },
+    {
+      "id": "WP003",
+      "spec_file": "specs/LOD400_S005-P004-WP003.md",
+      "mandate_file": "specs/MANDATE_S005-P004-WP003_TEAM20.md",
+      "modify_files": [
+        "src/shaked_wg_agent/scorer.py",
+        "src/shaked_wg_agent/scrapers/base.py",
+        "src/shaked_wg_agent/__main__.py",
+        "src/shaked_wg_agent/notifier/email_notifier.py"
+      ],
+      "create_files": [
+        "src/shaked_wg_agent/locale.py"
+      ]
+    }
+  ],
+
+  "shell_variables": {
+    "SOURCE_ROOT": "mnt/S005-P004-v7/assets"
+  },
+
+  "field_renames": {
+    "price_chf": {"new_name": "price", "fallback_pattern": "\\.get\\([\"']price_chf[\"']"},
+    "budget_min_chf": {"new_name": "budget_min"},
+    "budget_max_chf": {"new_name": "budget_max"}
+  },
+
+  "path_references": {},
+
+  "cowork_capabilities": [
+    "Shell",
+    "Bash",
+    "Python",
+    "Read",
+    "Write",
+    "Edit",
+    "TodoList"
+  ]
+}

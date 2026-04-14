@@ -1,0 +1,69 @@
+# WORK_PLAN_S005-P004-WP001.yaml
+# Work Package: Data Field Generalization
+# Sprint: S005-P004
+# Authoring team: team_110 (shaked_arch / Claude Code)
+# Execution order: 1 of 3 (FIRST — field renames consumed by WP002/WP003)
+
+work_package_id: S005-P004-WP001
+title: "Data Field Generalization"
+lod400_ref: "_aos/work_packages/S005-P004-WP001/LOD400_S005-P004-WP001.md"
+lod400_version: v1.1.0
+execution_order: 1
+dependencies: []  # No upstream WP dependencies
+
+phases:
+  - phase: 1
+    team_id: team_20
+    role: builder
+    engine: Cursor Composer
+    scope: >
+      Implement all 10 components from LOD400 §2.1–§2.10:
+      CityDefinition.currency, ScrapedListing rename (price_chf→price + currency),
+      SearchProfile rename (budget_min_chf→budget_min, budget_max_chf→budget_max),
+      Scorer updates, CLI updates, HTML report dynamic currency,
+      Notifiers + digest builder, API schema, data files, verification.
+    inputs:
+      - "_aos/work_packages/S005-P004-WP001/LOD400_S005-P004-WP001.md"
+      - "shaked_wg_agent/config.py"
+      - "shaked_wg_agent/scrapers/base.py"
+      - "shaked_wg_agent/scorer.py"
+      - "shaked_wg_agent/__main__.py"
+      - "shaked_wg_agent/publisher/html_report.py"
+      - "shaked_wg_agent/notifier/email_notifier.py"
+      - "shaked_wg_agent/notifier/ntfy_notifier.py"
+      - "shaked_wg_agent/notifier/telegram_notifier.py"
+      - "shaked_wg_agent/notifier/discord_notifier.py"
+      - "shaked_wg_agent/notifier/digest_builder.py"
+      - "shaked_wg_agent/api/schemas.py"
+      - "shaked_wg_agent/scrapers/flatfox.py"
+      - "shaked_wg_agent/scrapers/wg_gesucht.py"
+      - "shaked_wg_agent/scrapers/wgzimmer_pw.py"
+      - "data/profiles/default.json"
+      - "data/sources.json"
+    outputs:
+      - "shaked_wg_agent/config.py"
+      - "shaked_wg_agent/scrapers/base.py"
+      - "shaked_wg_agent/scorer.py"
+      - "shaked_wg_agent/__main__.py"
+      - "shaked_wg_agent/publisher/html_report.py"
+      - "shaked_wg_agent/notifier/email_notifier.py"
+      - "shaked_wg_agent/notifier/ntfy_notifier.py"
+      - "shaked_wg_agent/notifier/telegram_notifier.py"
+      - "shaked_wg_agent/notifier/discord_notifier.py"
+      - "shaked_wg_agent/notifier/digest_builder.py"
+      - "shaked_wg_agent/api/schemas.py"
+      - "shaked_wg_agent/scrapers/flatfox.py"
+      - "shaked_wg_agent/scrapers/wg_gesucht.py"
+      - "shaked_wg_agent/scrapers/wgzimmer_pw.py"
+      - "data/profiles/default.json"
+
+validation_gate:
+  description: "Per-WP validation after implementation"
+  checks:
+    - "pytest tests/ -v — all tests pass (AC-24)"
+    - "grep -ri 'price_chf\\|budget_min_chf\\|budget_max_chf' shaked_wg_agent/ — zero hits on definitions/assignments (AC-22)"
+    - "grep -i '\"CHF\"' shaked_wg_agent/publisher/html_report.py — zero hits (AC-15)"
+    - "grep -i '\"CHF\"' shaked_wg_agent/__main__.py — zero hits in display strings (AC-23)"
+    - "Verify AC-01 through AC-24 per LOD400 spec"
+  pass_criteria: "ALL checks pass → proceed to WP002"
+  fail_action: "HALT — fix before proceeding"

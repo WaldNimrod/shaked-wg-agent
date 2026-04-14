@@ -6,7 +6,7 @@
 
 ## Revalidation (post-fix)
 
-**Revalidation run at:** 2026-04-12 10:05 IDT  
+**Revalidation run at:** 2026-04-12 15:20 IDT  
 
 Independent checks re-run:
 - `python3 -m pytest tests/ -q` → **81 passed**
@@ -23,7 +23,7 @@ Independent checks re-run:
 
 ## Evidence (independent)
 
-- `python3 -m pytest tests/ -v --tb=short` → **81 passed**  
+- `python3 -m pytest tests/ -q` → **81 passed**  
 - `ruff check shaked_wg_agent/ tests/` → **All checks passed**  
 - `bash _aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh .` → **12/12 PASS**
 
@@ -53,12 +53,10 @@ Independent checks re-run:
 ✅ **MATCH** for exact file contents:
 - `data/cities/basel.json`, `data/cities/zurich.json`, `data/cities/bern.json` — match spec JSON exactly.
 - `data/sources.json` — matches spec JSON exactly.
+- `data/sources.json.bak` — present (migration backup retained).
 - `data/profiles/default.json` — matches spec JSON exactly.
 - `data/agent.json` — matches spec JSON exactly.
 - `data/config.json.bak` — present (migration performed for `config.json`).
-
-❌ **MISSING (BLOCKER):**
-- `data/sources.json.bak` — **absent** while LOD400 §2.5 AC-30 requires it when old `data/sources.json` existed.
 
 ### WP003 — REST API Layer (S002-P002-WP001)
 ✅ **MATCH** across LOD400 v1.1.1 ACs, supported by:

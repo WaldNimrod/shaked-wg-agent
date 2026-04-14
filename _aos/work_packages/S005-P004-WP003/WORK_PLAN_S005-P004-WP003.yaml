@@ -1,0 +1,50 @@
+# WORK_PLAN_S005-P004-WP003.yaml
+# Work Package: Keyword and Label Locale Generalization
+# Sprint: S005-P004
+# Authoring team: team_110 (shaked_arch / Claude Code)
+# Execution order: 3 of 3 (AFTER WP001 — consumes renamed fields and currency)
+
+work_package_id: S005-P004-WP003
+title: "Keyword and Label Locale Generalization"
+lod400_ref: "_aos/work_packages/S005-P004-WP003/LOD400_S005-P004-WP003.md"
+lod400_version: v1.1.0
+execution_order: 3
+dependencies:
+  - S005-P004-WP001  # Field renames must be complete
+  - S005-P004-WP002  # Scraper registry must be in place (scraper instantiation)
+
+phases:
+  - phase: 1
+    team_id: team_20
+    role: builder
+    engine: Cursor Composer
+    scope: >
+      Implement all 6 components from LOD400 §2.1–§2.6:
+      New locale.py module (Locale frozen dataclass, LOCALE_CH, LOCALE_IL,
+      get_locale, EMAIL_STRINGS, get_email_strings),
+      scorer locale integration, ScrapedListing.country,
+      BaseScraper Accept-Language, CLI status labels, email notifier text.
+    inputs:
+      - "_aos/work_packages/S005-P004-WP003/LOD400_S005-P004-WP003.md"
+      - "shaked_wg_agent/scorer.py"
+      - "shaked_wg_agent/scrapers/base.py"
+      - "shaked_wg_agent/__main__.py"
+      - "shaked_wg_agent/notifier/email_notifier.py"
+    outputs:
+      - "shaked_wg_agent/locale.py"           # NEW file
+      - "shaked_wg_agent/scorer.py"
+      - "shaked_wg_agent/scrapers/base.py"
+      - "shaked_wg_agent/__main__.py"
+      - "shaked_wg_agent/notifier/email_notifier.py"
+
+validation_gate:
+  description: "Per-WP validation after implementation"
+  checks:
+    - "pytest tests/ -v — all tests pass"
+    - "grep -n '_VEGAN_STRONG\\|_VEGAN_PARTIAL\\|_VEGAN_WEAK' shaked_wg_agent/scorer.py — zero hits (AC-11)"
+    - "grep -n 'de-CH' shaked_wg_agent/scrapers/base.py — zero hits (AC-21)"
+    - "grep -n '\"neue Angebote\\|Preis nicht angegeben\\|Generiert von\"' shaked_wg_agent/notifier/email_notifier.py — zero hits (AC-26)"
+    - "Verify Locale has exactly 10 fields (AC-29)"
+    - "Verify AC-01 through AC-29 per LOD400 spec"
+  pass_criteria: "ALL checks pass → proceed to final comprehensive validation"
+  fail_action: "HALT — fix before proceeding"
