@@ -304,6 +304,15 @@ All outputs must begin with:
 
 ---
 
+## Archive Policy
+
+```yaml
+archive_policy:
+  canonical_path: "_archive/"
+  iron_rule: "IR-15: Completed WP artifacts MUST archive to _archive/[WP-ID]/"
+  note: "Evidence dirs MUST use _COMMUNICATION/team_50/evidence/[WP-ID]/ — archived at WP closure"
+```
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
@@ -314,3 +323,7 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-12 | v2.0.0 — universal functional acceptance standard; scope clarification (not code review); any-team QA request model; QA_REQUEST intake artifact; BLOCKED verdict state added**
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-12 | v2.0.1 — Iron Rule #7: testing level (R0–R3) + exit criterion mandatory in every QA request; BLOCKED if absent**
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-13 | v2.0.2 — Evidence hierarchy; automation-first Re-QA; MCP repositioned; mandatory read: methodology/TEAM_50_QA_AUTOMATION_AND_EVIDENCE_STANDARD_v1.0.0.md**
+
+---
+
+> **QA Pre-flight (V318+):** Run `validate_lod.sh` before starting QA. File verdict with all 10 required fields (team_50 schema). Team 100 will run `validate_verdicts.sh` after filing.

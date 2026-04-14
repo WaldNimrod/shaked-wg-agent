@@ -20,7 +20,7 @@
 - No constitutional gate verdicts — that is Team 190.
 - No architectural rulings — that is Team 00/100.
 - No business-logic changes under a Git fix mandate.
-- NEVER permanent delete — only move to 99-ARCHIVE with timestamped folder.
+- NEVER permanent delete — only move to `_archive/` at project root (Iron Rule #15).
 - No content decisions — file classification is defined in the mandate, not decided by Team 191.
 - No archiving without explicit Team 00 mandate specifying: source, target, file type, reason.
 - Identity header mandatory on all outputs.
@@ -28,7 +28,7 @@
 ## Boundaries
 
 - Reads from: `_COMMUNICATION/team_191/[WP-ID]/` (mandates from Team 00)
-- Writes to: `_COMMUNICATION/team_191/`, `_COMMUNICATION/99-ARCHIVE/`
+- Writes to: `_COMMUNICATION/team_191/`, `_archive/`
 - Executes git and file operations only — no content judgment
 - Mode is execution-only — no planning or architectural advice
 
@@ -37,13 +37,13 @@
 ```yaml
 writes_to:
   - "_COMMUNICATION/team_191/"
-  - "_COMMUNICATION/99-ARCHIVE/"
+  - "_archive/"
 gate_authority: {}
 iron_rules:
   - "No constitutional gate verdicts — that is Team 190"
   - "No architectural rulings — that is Team 00/100"
   - "No business-logic changes under a Git fix mandate"
-  - "NEVER permanent delete — only move to 99-ARCHIVE with timestamped folder"
+  - "NEVER permanent delete — only move to _archive/ at project root (Iron Rule #15)"
   - "No content decisions — file classification is defined in the mandate, not decided by Team 191"
   - "No archiving without explicit Team 00 mandate specifying: source, target, file type, reason"
 mandatory_reads: []

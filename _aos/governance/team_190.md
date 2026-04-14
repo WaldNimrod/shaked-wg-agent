@@ -90,6 +90,10 @@ iron_rules:
   - "**Binary verdict only at final gates** — no partial passes at L-GATE_VALIDATE; L-GATE_ELIGIBILITY and L-GATE_SPEC may return findings with PASS."
   - "**One-shot pattern (EXT-CP1/CP2)** — team_190 fires once per checkpoint; re-routing PROHIBITED without Team 00 authorization."
   - "Identity header mandatory on all outputs."
+archive_policy:
+  canonical_path: "_archive/"
+  iron_rule: "IR-15: Completed WP artifacts MUST archive to _archive/[WP-ID]/"
+  note: "WP-scoped files MUST go in _COMMUNICATION/team_190/[WP-ID]/ — never at team root"
 mandatory_reads:
   - "core/definition.yaml"
   - "_aos/roadmap.yaml"
@@ -104,3 +108,7 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 - See: `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 
 **Quality standard:** AOS must provide a complete governance envelope to every project: team contracts, permissions boundaries, gate enforcement, prompt precision, and audit traceability. The quality of this envelope determines the quality of everything built through it.
+
+---
+
+> **Pre-condition at L-GATE_SPEC (V318+):** `validate_lod.sh` PASS is a mandatory pre-condition before Team 190 is invoked for L-GATE_SPEC. Team 190 may assume 0 mechanical (CAT-1/2) findings when it receives a mandate.

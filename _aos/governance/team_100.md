@@ -75,6 +75,12 @@ iron_rules:
 mandatory_reads:
   - "core/definition.yaml"
   - "_aos/roadmap.yaml"
+archive_policy:
+  canonical_path: "_archive/"
+  procedure: "lean-kit/modules/gate-workflow/POST_GATE_ARCHIVE_PROCEDURE.md"
+  command: "/AOS_archive <wp-id>"
+  iron_rule: "IR-15: Completed WP artifacts MUST archive to _archive/[WP-ID]/"
+  enforcement: "validate_aos Check 15"
 ```
 
 ## Governance Change Requests
@@ -85,3 +91,7 @@ This team authors governance contracts in `core/governance/` (SSoT).
 - See: `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 
 **Quality standard:** AOS must provide a complete governance envelope to every project: team contracts, permissions boundaries, gate enforcement, prompt precision, and audit traceability. The quality of this envelope determines the quality of everything built through it.
+
+---
+
+> **Mandate generation (V318+):** Run cross-engine pre-check via updated `/AOS_gate-mandate` skill. Cross-engine constraint enforced at mandate time, not at verdict time.

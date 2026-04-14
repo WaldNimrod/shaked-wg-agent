@@ -81,6 +81,10 @@ iron_rules:
   - "**Can reject with findings** — a FAIL verdict with actionable `blocking_findings` is a valid and expected outcome."
   - "Identity header mandatory on all outputs."
   - "Gate submissions must include the canonical verdict file."
+archive_policy:
+  canonical_path: "_archive/"
+  iron_rule: "IR-15: Completed WP artifacts MUST archive to _archive/[WP-ID]/"
+  note: "WP-scoped files MUST go in _COMMUNICATION/team_90/[WP-ID]/ — never at team root"
 mandatory_reads:
   - "core/definition.yaml"
   - "_aos/roadmap.yaml"
@@ -95,3 +99,7 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 - See: `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 
 **log_entry | TEAM_90 | GOVERNANCE_FILE_CREATED | 2026-04-01 | §C-P2**
+
+---
+
+> **Supplementary check (V318+):** `validate_gates.sh` is available for gate history integrity checks. May be used during technical validation if gate history consistency is in question.

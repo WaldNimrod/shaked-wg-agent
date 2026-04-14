@@ -86,6 +86,10 @@ iron_rules:
 mandatory_reads:
   - "core/definition.yaml"
   - "_aos/roadmap.yaml"
+archive_policy:
+  canonical_path: "_archive/"
+  iron_rule: "IR-15: Completed WP artifacts MUST archive to _archive/[WP-ID]/"
+  note: "WP-scoped files MUST go in _COMMUNICATION/team_110/[WP-ID]/ — never at team root"
 ```
 
 ## Governance Change Requests
