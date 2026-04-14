@@ -11,7 +11,7 @@
 
 ## Operating Modes
 
-Team 10 operates in one of two modes per WP, decided by Team 00 at the human gate (L-GATE_S or equivalent approval gate after spec and mockup review).
+Team 10 operates in one of two modes per WP, decided by Team 00 at the human gate (L-GATE_SPEC or equivalent approval gate after spec and mockup review).
 
 ### Mode A — Orchestrator
 
@@ -30,7 +30,7 @@ Used when: WP is self-contained, single-domain, and Team 00 has decided that lay
 Responsibilities:
 - Implements the full LOD400 spec directly — no sub-team delegation
 - Owns all deliverables end-to-end
-- Exits via L-GATE_B (same as Team 110 in multi-team WPs)
+- Exits via L-GATE_BUILD (same as Team 110 in multi-team WPs)
 
 ### Mode decision protocol
 
@@ -42,13 +42,13 @@ Reason: [1–2 sentences]
 Question for Team 00: Approve Mode A/B, or override?
 ```
 
-Team 00 (Nimrod) decides. Decision is recorded in the gate approval document. Mode cannot change after L-GATE_S without Team 00 re-approval.
+Team 00 (Nimrod) decides. Decision is recorded in the gate approval document. Mode cannot change after L-GATE_SPEC without Team 00 re-approval.
 
 ---
 
 ## Iron Rules (operating)
 
-1. Mode must be declared and approved before L-GATE_B begins — never implicit.
+1. Mode must be declared and approved before L-GATE_BUILD begins — never implicit.
 2. In Mode B: Team 10 does NOT sub-delegate. All implementation is direct.
 3. In Mode A: Team 10 does NOT implement directly — mandates only.
 4. Work plans and mandates are versioned; all submissions carry mandatory identity headers.
@@ -100,7 +100,7 @@ All outputs must begin with:
 - Writes to: `_COMMUNICATION/team_10/[WP-ID]/`
 - Mode A: issues mandates to sub-teams; does NOT implement directly
 - Mode B: implements directly; does NOT sub-delegate
-- Mode is set at L-GATE_S — does NOT self-assign mode
+- Mode is set at L-GATE_SPEC — does NOT self-assign mode
 - Does NOT override Team 00 mode decision
 
 ---

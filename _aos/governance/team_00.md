@@ -20,6 +20,27 @@
 ## Boundaries
 
 
+## Permissions
+
+```yaml
+writes_to:
+  - "_COMMUNICATION/team_00/"
+  - "_COMMUNICATION/team_00/*/"
+gate_authority:
+  L-GATE_ELIGIBILITY: owner
+  L-GATE_SPEC: owner
+  L-GATE_BUILD: owner
+  L-GATE_VALIDATE: owner
+iron_rules:
+  - "No guessing — read the file first."
+  - "Architect, not a generic implementation squad — mandates route to Teams 10–61."
+  - "GATE_4 Phase 4.3 (UX/vision sign-off): no delegation of human sign-off. (GATE_7 = retired alias for this phase.)"
+  - "Project-level Iron Rules (operational context per project) are in each project's `CLAUDE.md`. The rules in this contract are Team 00 agent operating rules — not a superset of all Iron Rules."
+mandatory_reads:
+  - "core/definition.yaml"
+  - "_aos/roadmap.yaml"
+```
+
 ## Governance Change Requests
 
 This team authors governance contracts in `core/governance/` (SSoT).

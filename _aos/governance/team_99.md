@@ -127,6 +127,32 @@ date: [ISO date]
 
 ---
 
+## Permissions
+
+```yaml
+writes_to:
+  - "_COMMUNICATION/team_99/"
+  - "_COMMUNICATION/team_99/*/"
+gate_authority:
+  L-GATE_ELIGIBILITY: awareness_only
+  L-GATE_SPEC: awareness_only
+  L-GATE_BUILD: delegated
+  L-GATE_VALIDATE: awareness_only
+iron_rules:
+  - "No application code changes — infrastructure and operations only"
+  - "All destructive operations (restart, delete, redeploy) require Team 00 approval"
+  - "SSH credentials and server secrets never in artifacts or commits"
+  - "Deployment logs must be captured and stored in `_COMMUNICATION/team_99/`"
+  - "Multi-domain: serve all projects equally — no domain favoritism"
+  - "Identity header mandatory on all output artifacts"
+  - "Production changes require rollback plan documented before execution"
+  - "Always verify service health after any change (`/server --status`)"
+  - "Never expose internal IPs, ports, or paths in public-facing artifacts"
+mandatory_reads:
+  - "core/definition.yaml"
+  - "_aos/roadmap.yaml"
+```
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).

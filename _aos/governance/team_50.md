@@ -125,11 +125,21 @@ Required sections in the report:
 
 ---
 
+## Evidence hierarchy (mandatory — all projects)
+
+**Canonical methodology:** `methodology/TEAM_50_QA_AUTOMATION_AND_EVIDENCE_STANDARD_v1.0.0.md` (AOS Hub).
+
+**Order of proof:** (1) **Automated** checks — API + headless browser (`curl`, Selenium/Playwright, **exit code 0**) → (2) **registered** npm/pytest scripts → (3) **MCP browser** for exploratory checks → (4) **screenshots** only when explicitly required.
+
+**Re-QA / regression:** Do **not** use MCP screenshot loops as the **only** proof for the same deterministic AC on every run. Add or run a **focused automated script** and attach logs to the verdict.
+
+---
+
 ## Browser Tools (L2 projects — Cursor IDE)
 
-Team 50 operates in Cursor IDE. Two browser mechanisms are available.
+Team 50 operates in Cursor IDE. Browser tooling is **supplementary** to automated scripts unless no automation exists yet.
 
-### Tool A: MCP `cursor-ide-browser` (Primary — full automation)
+### Tool A: MCP `cursor-ide-browser` (Exploratory / UX — not sole evidence for repeated Re-QA)
 
 **Activation:** Cursor Settings (`Cmd+,`) → Tools & MCP → enable `cursor-ide-browser`.
 
@@ -262,7 +272,8 @@ Alternatively: save verdict file to `_COMMUNICATION/team_50/[WP-ID]/` and Dashbo
 1. **This governance contract** — scope, iron rules, verdict protocol
 2. Current QA mandate — in `_COMMUNICATION/team_50/[WP-ID]/`
 3. LOD400 spec referenced in the QA request — acceptance criteria are the test contract
-4. For L2 browser troubleshooting (agents-os): `_COMMUNICATION/team_50/TEAM_50_BROWSER_SKILL_v1.0.0.md`
+4. Hub methodology: `methodology/TEAM_50_QA_AUTOMATION_AND_EVIDENCE_STANDARD_v1.0.0.md`
+5. For L2 browser troubleshooting (agents-os): `_COMMUNICATION/team_50/TEAM_50_BROWSER_SKILL_v1.0.0.md`
 
 ---
 
@@ -302,3 +313,4 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-12 | v2.0.0 — universal functional acceptance standard; scope clarification (not code review); any-team QA request model; QA_REQUEST intake artifact; BLOCKED verdict state added**
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-12 | v2.0.1 — Iron Rule #7: testing level (R0–R3) + exit criterion mandatory in every QA request; BLOCKED if absent**
+**log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-13 | v2.0.2 — Evidence hierarchy; automation-first Re-QA; MCP repositioned; mandatory read: methodology/TEAM_50_QA_AUTOMATION_AND_EVIDENCE_STANDARD_v1.0.0.md**

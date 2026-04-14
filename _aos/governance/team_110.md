@@ -61,11 +61,32 @@ AOS is a governance framework that organizes AI agents into a functioning softwa
 2. Physical lean-kit — `_aos/lean-kit/` is physical copy, never symlink
 3. Repo-internal references — spec_ref paths stay inside repo
 4. Single-writer roadmap — one agent holds write authority at a time
-5. L-GATE_V independence — always Team 190, constitutional, immutable
+5. L-GATE_VALIDATE independence — always Team 190, constitutional, immutable
 6. Artifact communication — inter-team via `_COMMUNICATION/` files, not chat
 
 **Self-referential nature:** AOS governs itself through its own process. `core/definition.yaml` operates at meta-level (all projects), `_aos/roadmap.yaml` at project-level (AOS as a project). This tension is architectural, not a bug.
 
+
+## Permissions
+
+```yaml
+writes_to:
+  - "_COMMUNICATION/team_110/"
+  - "_COMMUNICATION/team_110/*/"
+gate_authority:
+  L-GATE_ELIGIBILITY: awareness_only
+  L-GATE_SPEC: delegated
+  L-GATE_BUILD: awareness_only
+  L-GATE_VALIDATE: awareness_only
+iron_rules:
+  - "**8-check validation required** before advancing (see L1 task definition)."
+  - "**route_recommendation is MANDATORY on every FAIL** — spec returns to Team 170."
+  - "**Independence maintained** — review spec on its own merits before checking prior decisions."
+  - "Identity header mandatory on all outputs."
+mandatory_reads:
+  - "core/definition.yaml"
+  - "_aos/roadmap.yaml"
+```
 
 ## Governance Change Requests
 
