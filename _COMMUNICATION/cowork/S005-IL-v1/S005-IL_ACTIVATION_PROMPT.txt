@@ -1,0 +1,170 @@
+Execute S005-IL: Israel Deployment — first Israeli city, scraper, and profile.
+3 work packages, linear order. This is a Track A (pattern-following) initiative.
+
+First, set up your working root:
+  export SOURCE_ROOT="mnt/S005-IL-v1/assets"
+  mkdir -p "$SOURCE_ROOT/output/data/cities" "$SOURCE_ROOT/output/data/profiles" "$SOURCE_ROOT/output/src/shaked_wg_agent/scrapers"
+
+Create a TodoList with WP001, WP002, WP003 as top-level tasks, then begin.
+
+══════════════════════════════════════════════
+PHASE 1: WP001 — Pardes Hanna Region City Definition (12 ACs)
+══════════════════════════════════════════════
+
+Step 1 — Read scope:
+  • Read $SOURCE_ROOT/specs/MANDATE_S005-IL-WP001_TEAM20.md
+  • Read $SOURCE_ROOT/specs/LOD400_S005-IL-WP001.md
+
+Step 2 — Read reference:
+  • Read $SOURCE_ROOT/data/cities/basel.json (pattern to follow exactly)
+
+Step 3 — Create city definition:
+  Write $SOURCE_ROOT/output/data/cities/pardes-hanna-region.json
+  Content is specified exactly in LOD400 §2.1.
+
+Step 4 — Verification gate (run in shell):
+  python3 -c "
+  import json, os
+  with open(os.environ['SOURCE_ROOT']+'/output/data/cities/pardes-hanna-region.json') as f:
+      c = json.load(f)
+  assert c['city_id'] == 'pardes-hanna-region', f'city_id: {c[\"city_id\"]}'
+  assert c['country'] == 'IL', f'country: {c[\"country\"]}'
+  assert c['currency'] == 'ILS', f'currency: {c[\"currency\"]}'
+  assert c['bounding_box']['south'] == 32.42
+  assert c['bounding_box']['north'] == 32.60
+  assert c['bounding_box']['west'] == 34.87
+  assert c['bounding_box']['east'] == 35.00
+  assert c['zip_filter'] == []
+  assert 'homeless' in c['available_sources']
+  print('WP001 city definition PASS')
+  "
+
+If verification fails → fix and re-verify before proceeding.
+
+══════════════════════════════════════════════
+PHASE 2: WP002 — Homeless.co.il Scraper (15 ACs)
+══════════════════════════════════════════════
+
+Step 1 — Read scope:
+  • Read $SOURCE_ROOT/specs/MANDATE_S005-IL-WP002_TEAM20.md
+  • Read $SOURCE_ROOT/specs/LOD400_S005-IL-WP002.md
+
+Step 2 — Read reference files:
+  • Read $SOURCE_ROOT/src/shaked_wg_agent/scrapers/base.py (BaseScraper + ScrapedListing)
+  • Read $SOURCE_ROOT/src/shaked_wg_agent/scrapers/flatfox.py (reference implementation)
+
+Step 3 — Install Playwright + Research homeless.co.il:
+  pip install playwright && playwright install chromium
+  IMPORTANT: Plain HTTP requests return 403 (Cloudflare). Use Playwright to fetch pages.
+  Use Playwright to load https://www.homeless.co.il/rent/ and inspect the HTML.
+  Confirm the table structure described in LOD400 §2.2.
+  Identify the correct area ID (inumber1) for Pardes Hanna / Hadera region.
+
+Step 4 — Implement scraper:
+  Write $SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/homeless.py
+  Follow LOD400 §2.3 for class structure and field mappings.
+
+Step 5 — Verification gate:
+  python3 -c "
+  import ast, os
+  with open(os.environ['SOURCE_ROOT']+'/output/src/shaked_wg_agent/scrapers/homeless.py') as f:
+      tree = ast.parse(f.read())
+  classes = [n.name for n in ast.walk(tree) if isinstance(n, ast.ClassDef)]
+  assert 'HomelessScraper' in classes, f'HomelessScraper not found, got: {classes}'
+  for node in ast.walk(tree):
+      if isinstance(node, ast.ClassDef) and node.name == 'HomelessScraper':
+          bases = [getattr(b, 'id', getattr(b, 'attr', '')) for b in node.bases]
+          assert 'BaseScraper' in bases, f'Does not inherit BaseScraper: {bases}'
+          methods = [n.name for n in node.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+          assert 'fetch_listings' in methods, f'fetch_listings not found: {methods}'
+  print('WP002 scraper structure PASS')
+  "
+
+  # Import check (syntax + class hierarchy)
+  PYTHONPATH="$SOURCE_ROOT/output/src:$SOURCE_ROOT/src" python3 -c "
+  from shaked_wg_agent.scrapers.homeless import HomelessScraper
+  from shaked_wg_agent.scrapers.base import BaseScraper
+  assert issubclass(HomelessScraper, BaseScraper), 'Not a BaseScraper subclass'
+  print('HomelessScraper import + subclass check PASS')
+  "
+
+══════════════════════════════════════════════
+PHASE 3: WP003 — Profile + Sources Integration (15 ACs)
+══════════════════════════════════════════════
+
+Step 1 — Read scope:
+  • Read $SOURCE_ROOT/specs/MANDATE_S005-IL-WP003_TEAM20.md
+  • Read $SOURCE_ROOT/specs/LOD400_S005-IL-WP003.md
+
+Step 2 — Read reference files:
+  • Read $SOURCE_ROOT/data/sources.json (existing 3 Swiss sources — keep all)
+  • Read $SOURCE_ROOT/data/profiles/default.json (profile pattern to follow)
+
+Step 3 — Update sources.json:
+  Read existing $SOURCE_ROOT/data/sources.json (3 entries).
+  Append the homeless entry as specified in LOD400 §2.1.
+  Write to $SOURCE_ROOT/output/data/sources.json (must contain all 4 entries).
+  IMPORTANT: Set search_url based on the area ID you discovered in WP002.
+
+Step 4 — Create profile:
+  Write $SOURCE_ROOT/output/data/profiles/pardes-hanna.json
+  Content is specified exactly in LOD400 §2.2.
+
+Step 5 — Verification gate:
+  python3 -c "
+  import json, os
+  with open(os.environ['SOURCE_ROOT']+'/output/data/sources.json') as f:
+      sources = json.load(f)
+  homeless = [s for s in sources if s['source_id'] == 'homeless']
+  assert len(homeless) == 1, 'homeless source not found'
+  assert '.' in homeless[0]['scraper_class'], 'scraper_class not FQN'
+  assert 'pardes-hanna-region' in homeless[0]['city_params'], 'no pardes-hanna-region city_params'
+  assert len(sources) == 4, f'Expected 4 sources, got {len(sources)}'
+  print(f'sources.json: {len(sources)} entries, homeless present — PASS')
+  "
+
+  python3 -c "
+  import json, os
+  with open(os.environ['SOURCE_ROOT']+'/output/data/profiles/pardes-hanna.json') as f:
+      p = json.load(f)
+  assert p['profile_id'] == 'pardes-hanna'
+  assert p['city_id'] == 'pardes-hanna-region'
+  assert p['budget_min'] >= 1000, f'budget_min too low: {p[\"budget_min\"]}'
+  assert p['budget_max'] <= 10000, f'budget_max too high: {p[\"budget_max\"]}'
+  assert p['language_policy']['primary_listing_language'] == 'he'
+  assert p['enabled_sources'] == ['homeless']
+  print('Profile pardes-hanna PASS')
+  "
+
+══════════════════════════════════════════════
+FINAL VERIFICATION
+══════════════════════════════════════════════
+
+Run comprehensive check — all must pass:
+  # City
+  python3 -c "import json,os; c=json.load(open(os.environ['SOURCE_ROOT']+'/output/data/cities/pardes-hanna-region.json')); assert c['country']=='IL' and c['currency']=='ILS'; print('City OK')"
+
+  # Scraper
+  PYTHONPATH="$SOURCE_ROOT/output/src:$SOURCE_ROOT/src" python3 -c "from shaked_wg_agent.scrapers.homeless import HomelessScraper; print('Scraper import OK')"
+
+  # Sources
+  python3 -c "import json,os; s=json.load(open(os.environ['SOURCE_ROOT']+'/output/data/sources.json')); assert len(s)==4; assert any(x['source_id']=='homeless' for x in s); print('Sources OK')"
+
+  # Profile
+  python3 -c "import json,os; p=json.load(open(os.environ['SOURCE_ROOT']+'/output/data/profiles/pardes-hanna.json')); assert p['city_id']=='pardes-hanna-region'; print('Profile OK')"
+
+Summarize: list all files written to output/, total ACs addressed per WP, and any issues encountered.
+
+OUTPUT CHAINING:
+  WP001 creates data/cities/pardes-hanna-region.json — no code modified.
+  WP002 creates src/shaked_wg_agent/scrapers/homeless.py — new file, reads base.py and flatfox.py from $SOURCE_ROOT/src/ (unmodified).
+  WP003 reads sources.json from $SOURCE_ROOT/data/ (unmodified by previous WPs), appends homeless entry, writes to output/.
+  Note: No WP needs to read from output/ of previous WPs — all source files are unmodified. Each WP creates new files only.
+
+IRON RULES:
+1. Linear execution: WP001 → WP002 → WP003
+2. Gate discipline: all verifications must pass before next phase
+3. Spec is law: LOD400 is authoritative, Mandate scopes your work
+4. Use Edit tool for changes, Write for new files, shell for verification
+5. Never paste complete file contents into chat — write files to output/
+6. WP002 requires live HTTP research — fetch homeless.co.il to discover area IDs

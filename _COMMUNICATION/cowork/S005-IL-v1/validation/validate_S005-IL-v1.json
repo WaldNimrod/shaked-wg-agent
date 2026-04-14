@@ -1,0 +1,84 @@
+{
+  "_comment": "AOS Package Validator config for S005-IL-v1. package_root must be set to the actual mount path before running.",
+  "package_id": "S005-IL",
+  "version": "v1",
+  "package_root": "SET_BEFORE_RUN",
+  "source_root_label": "SOURCE_ROOT",
+  "source_root_rel": "assets",
+  "output_rel": "output",
+
+  "instruction_file": "S005-IL_INSTRUCTIONS.txt",
+  "prompt_file": "S005-IL_ACTIVATION_PROMPT.txt",
+  "doc_files": ["PACKAGE.md"],
+
+  "manifest": {
+    "specs/LOD400_S005-IL-WP001.md":          {"role": "read-only", "wp": "WP001"},
+    "specs/LOD400_S005-IL-WP002.md":          {"role": "read-only", "wp": "WP002"},
+    "specs/LOD400_S005-IL-WP003.md":          {"role": "read-only", "wp": "WP003"},
+    "specs/MANDATE_S005-IL-WP001_TEAM20.md":  {"role": "read-only", "wp": "WP001"},
+    "specs/MANDATE_S005-IL-WP002_TEAM20.md":  {"role": "read-only", "wp": "WP002"},
+    "specs/MANDATE_S005-IL-WP003_TEAM20.md":  {"role": "read-only", "wp": "WP003"},
+    "src/shaked_wg_agent/__init__.py":         {"role": "read-only"},
+    "src/shaked_wg_agent/__main__.py":         {"role": "read-only"},
+    "src/shaked_wg_agent/config.py":           {"role": "read-only", "wp": "WP001"},
+    "src/shaked_wg_agent/locale.py":           {"role": "read-only", "wp": "WP002"},
+    "src/shaked_wg_agent/runner.py":           {"role": "read-only", "wp": "WP003"},
+    "src/shaked_wg_agent/scorer.py":           {"role": "read-only", "wp": "WP003"},
+    "src/shaked_wg_agent/scrapers/__init__.py": {"role": "read-only"},
+    "src/shaked_wg_agent/scrapers/base.py":    {"role": "read-only", "wp": "WP002"},
+    "src/shaked_wg_agent/scrapers/flatfox.py": {"role": "read-only", "wp": "WP002"},
+    "src/shaked_wg_agent/scrapers/wgzimmer_pw.py": {"role": "read-only", "wp": "WP002"},
+    "data/cities/basel.json":                  {"role": "read-only", "wp": "WP001"},
+    "data/profiles/default.json":              {"role": "read-only", "wp": "WP003"},
+    "data/sources.json":                       {"role": "modify", "wp": "WP003"},
+    "tests/test_config.py":                    {"role": "read-only", "wp": "WP001"}
+  },
+
+  "work_packages": [
+    {
+      "id": "WP001",
+      "spec_file": "specs/LOD400_S005-IL-WP001.md",
+      "mandate_file": "specs/MANDATE_S005-IL-WP001_TEAM20.md",
+      "create_files": [
+        "data/cities/pardes-hanna-region.json"
+      ]
+    },
+    {
+      "id": "WP002",
+      "spec_file": "specs/LOD400_S005-IL-WP002.md",
+      "mandate_file": "specs/MANDATE_S005-IL-WP002_TEAM20.md",
+      "create_files": [
+        "src/shaked_wg_agent/scrapers/homeless.py"
+      ]
+    },
+    {
+      "id": "WP003",
+      "spec_file": "specs/LOD400_S005-IL-WP003.md",
+      "mandate_file": "specs/MANDATE_S005-IL-WP003_TEAM20.md",
+      "modify_files": [
+        "data/sources.json"
+      ],
+      "create_files": [
+        "data/profiles/pardes-hanna.json"
+      ]
+    }
+  ],
+
+  "shell_variables": {
+    "SOURCE_ROOT": "mnt/S005-IL-v1/assets"
+  },
+
+  "field_renames": {},
+
+  "path_references": {},
+
+  "cowork_capabilities": [
+    "Shell",
+    "Bash",
+    "Python",
+    "Read",
+    "Write",
+    "Edit",
+    "TodoList"
+  ]
+}

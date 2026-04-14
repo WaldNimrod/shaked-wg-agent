@@ -1,0 +1,26 @@
+{
+  "profile_id": "default",
+  "profile_name": "Shaked Basel WG Search",
+  "city_id": "basel",
+  "move_in_from": "2026-06-01",
+  "budget_min": 200,
+  "budget_max": 1000,
+  "preferred_roommate_age": "young",
+  "rental_duration": "permanent",
+  "diet": "vegan",
+  "smoking_policy": "non_smoking",
+  "transit_lines": ["2", "3", "8", "16"],
+  "custom_tags": [],
+  "language_policy": {
+    "primary_listing_language": "de",
+    "translation_required": false,
+    "preserve_source_text": true
+  },
+  "retention_days": 30,
+  "enabled_sources": ["wgzimmer", "flatfox"],
+  "notifications": {
+    "digest_max_listings": 5,
+    "min_score_threshold": 40,
+    "channels": []
+  }
+}
