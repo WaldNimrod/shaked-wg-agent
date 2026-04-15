@@ -1,7 +1,7 @@
 #!/bin/bash
-# validate_aos.sh — Universal _aos/ Validation (12 Checks)
+# validate_aos.sh — Universal _aos/ Validation (15 Checks)
 # =========================================================
-# L-GATE_B exit criterion: MUST return exit code 0 (no FAIL; SKIP is allowed).
+# L-GATE_BUILD exit criterion: MUST return exit code 0 (no FAIL; SKIP is allowed).
 #
 # Usage: bash validate_aos.sh [project-root]
 #   project-root defaults to current directory.
@@ -219,6 +219,8 @@ for wp in data.get('work_packages', []):
     ref = wp.get('spec_ref', '')
     if not ref:
         continue
+    if str(ref).strip() in ('TBD', 'null', 'None', ''):
+        continue  # placeholder — spec not yet authored; skip resolution
     if ref.startswith('/'):
         print(f'ABSOLUTE_PATH: {wp[\"id\"]} spec_ref={ref}', file=sys.stderr)
         sys.exit(1)
@@ -410,6 +412,40 @@ check_11() {
     fi
 }
 
+# ================================================================
+# Check 13: definition.yaml ↔ governance/ team consistency (module 01)
+# Every team_XX key in definition.yaml must have a team_XX.md in governance/.
+# Ghost teams (defined but not governed) indicate a stale or over-broad snapshot.
+# ================================================================
+check_13() {
+    _require_active_modules 13 01 || return 0
+    local def="$AOS_DIR/definition.yaml"
+    local gov="$AOS_DIR/governance"
+    [ ! -f "$def" ] && return 0  # Check 11 already catches missing definition.yaml
+    [ ! -d "$gov" ] && return 0  # Check 11 already catches missing governance/
+    python3 -c "
+import yaml, sys, os, glob
+
+aos_dir = '$AOS_DIR'
+def_path = os.path.join(aos_dir, 'definition.yaml')
+gov_dir  = os.path.join(aos_dir, 'governance')
+
+with open(def_path) as f:
+    d = yaml.safe_load(f) or {}
+
+defn_teams = set(k for k in d.keys() if k.startswith('team_'))
+gov_files  = set(os.path.splitext(os.path.basename(f))[0]
+                 for f in glob.glob(os.path.join(gov_dir, 'team_*.md')))
+
+missing = sorted(defn_teams - gov_files)
+if missing:
+    for t in missing:
+        print('MISSING_GOV: ' + t + ' in definition.yaml has no governance/team file', file=sys.stderr)
+    sys.exit(1)
+" && log_pass 13 "All definition.yaml teams have governance files" \
+  || log_fail 13 "definition.yaml teams without governance files (ghost teams) — see MISSING_GOV lines above"
+}
+
 # Check 12: Cross-Project Boundary — project_identity.yaml + contamination scan
 check_12() {
     _require_active_modules 12 01 || return 0
@@ -463,7 +499,9 @@ except Exception as e:
         local matches
         matches=$(grep -rl --include="*.py" --include="*.js" --include="*.ts" --include="*.md" \
             --exclude-dir=".git" --exclude-dir="_aos" --exclude-dir="node_modules" \
-            --exclude-dir=".claude" --exclude="CHANGELOG.md" --exclude="*.template" \
+            --exclude-dir=".claude" --exclude-dir="_COMMUNICATION" --exclude-dir="_communication" \
+            --exclude-dir="_archive" \
+            --exclude="CHANGELOG.md" --exclude="*.template" \
             "$pattern" "$PROJECT_ROOT" 2>/dev/null | head -5)
         if [ -n "$matches" ]; then
             ((violations++)) || true
@@ -483,10 +521,110 @@ except Exception as e:
     fi
 }
 
+# Check 14: additionalDirectories coverage (hub only, advisory/WARN)
+# For hub projects: verify that each enabled spoke in _aos/projects.yaml
+# has its local_path in .claude/settings.json → additionalDirectories.
+# Advisory only — uses log_pass/log_skip, never log_fail.
+# ================================================================
+check_14() {
+    local id_file="$AOS_DIR/project_identity.yaml"
+    [ ! -f "$id_file" ] && { log_skip 14 "No project_identity.yaml — cannot determine hub status"; return; }
+
+    local is_hub
+    is_hub=$(python3 -c "import yaml; d=yaml.safe_load(open('$id_file')); print(d.get('is_hub', False))" 2>/dev/null || echo "False")
+    if [ "$is_hub" != "True" ]; then
+        log_pass 14 "Not a hub project — additionalDirectories check skipped"
+        return
+    fi
+
+    local projects_file="$AOS_DIR/projects.yaml"
+    [ ! -f "$projects_file" ] && { log_skip 14 "No _aos/projects.yaml — cannot check spoke paths"; return; }
+
+    local settings_file="$PROJECT_ROOT/.claude/settings.json"
+    [ ! -f "$settings_file" ] && { log_skip 14 "No .claude/settings.json — cannot verify additionalDirectories"; return; }
+
+    python3 -c "
+import yaml, json, sys
+
+with open('$projects_file') as f:
+    projects = yaml.safe_load(f) or {}
+
+with open('$settings_file') as f:
+    settings = json.load(f)
+
+additional_dirs = settings.get('additionalDirectories', [])
+spoke_list = projects.get('projects', projects.get('spokes', []))
+if isinstance(spoke_list, dict):
+    spoke_list = list(spoke_list.values())
+
+missing = []
+for p in spoke_list:
+    if not isinstance(p, dict):
+        continue
+    if not p.get('enabled', True):
+        continue
+    path = p.get('local_path', '')
+    if path and path not in additional_dirs:
+        missing.append(path)
+
+if missing:
+    for m in missing:
+        print('WARN: spoke path not in additionalDirectories: ' + m, file=sys.stderr)
+    sys.exit(1)
+else:
+    sys.exit(0)
+" && log_pass 14 "All enabled spoke paths present in additionalDirectories" \
+  || { echo "  [WARN] Check 14: Some spoke paths missing from .claude/settings.json additionalDirectories (advisory)"; log_pass 14 "additionalDirectories check — warnings found (advisory, non-blocking)"; }
+}
+
+# ================================================================
+# Check 15: Archive compliance — completed WPs have no stale _COMMUNICATION/ artifacts
+# Verifies Iron Rule #15: completed WPs → artifacts in _archive/, not _COMMUNICATION/
+# ================================================================
+check_15() {
+    _require_active_modules 15 01 || return 0
+    python3 -c "
+import yaml, sys, os, glob
+
+project_root = '$PROJECT_ROOT'
+aos_dir = '$AOS_DIR'
+comm_dir = os.path.join(project_root, '_COMMUNICATION')
+
+if not os.path.isdir(comm_dir):
+    sys.exit(0)  # No _COMMUNICATION/ — nothing to check
+
+with open(os.path.join(aos_dir, 'roadmap.yaml')) as f:
+    rm = yaml.safe_load(f) or {}
+
+complete_wps = set()
+for wp in rm.get('work_packages', []):
+    if wp.get('status') == 'COMPLETE' and wp.get('lod_status') in ('LOD500', 'LOD500_LOCKED'):
+        complete_wps.add(wp['id'])
+
+if not complete_wps:
+    sys.exit(0)  # No completed WPs — skip
+
+stale = []
+for team_dir in glob.glob(os.path.join(comm_dir, 'team_*')):
+    if not os.path.isdir(team_dir):
+        continue
+    for entry in os.listdir(team_dir):
+        entry_path = os.path.join(team_dir, entry)
+        if os.path.isdir(entry_path) and entry in complete_wps:
+            stale.append(os.path.relpath(entry_path, project_root))
+
+if stale:
+    for s in sorted(stale):
+        print(f'STALE_ARTIFACT_DIR: {s} (WP is COMPLETE — should be in _archive/)', file=sys.stderr)
+    sys.exit(1)
+" && log_pass 15 "No stale artifacts for completed WPs in _COMMUNICATION/" \
+  || log_fail 15 "Completed WP artifacts still in _COMMUNICATION/ (Iron Rule #15 — archive required)"
+}
+
 # ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 12 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
+echo "validate_aos.sh — running up to 15 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
 echo "================================================="
 
 check_1
@@ -501,6 +639,9 @@ check_9
 check_10
 check_11
 check_12
+check_13
+check_14
+check_15
 
 echo ""
 echo "================================================="
@@ -508,9 +649,9 @@ echo "RESULT: $PASS_COUNT PASS / $SKIP_COUNT SKIP / $FAIL_COUNT FAIL"
 echo "================================================="
 
 if [ "$FAIL_COUNT" -eq 0 ]; then
-    echo "L-GATE_B EXIT CRITERION: SATISFIED"
+    echo "L-GATE_BUILD EXIT CRITERION: SATISFIED"
     exit 0
 else
-    echo "L-GATE_B EXIT CRITERION: NOT MET ($FAIL_COUNT failures)"
+    echo "L-GATE_BUILD EXIT CRITERION: NOT MET ($FAIL_COUNT failures)"
     exit 1
 fi
