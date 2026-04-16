@@ -92,7 +92,7 @@ L-GATE_V for S001-P001-WP001 has not been executed. This is the only remaining g
 - Test results: `pytest tests/ -v` (current: all tests pass)
 - Deployed output: `https://www.nimrod.bio/agents/shaked-wg/index.html`
 
-**Expected output:** `_COMMUNICATION/team_190/S001-P001-WP001/L-GATE_V_result.md`
+**Expected output:** `_archive/S001-P001-WP001/team_190/L-GATE_V_result.md`
 
 ---
 
@@ -242,4 +242,4 @@ grep "3.1.3" _aos/metadata.yaml    # ✅
 
 ---
 
-*Submitted for domain review. Reply via `_COMMUNICATION/team_100/S001-P002-WP001/` or `_COMMUNICATION/team_190/S001-P002-WP001/`.*
+*Submitted for domain review. Canonization artifacts archived at `_archive/S001-P002-WP001/` (Team 100 / Team 190 subtrees).*

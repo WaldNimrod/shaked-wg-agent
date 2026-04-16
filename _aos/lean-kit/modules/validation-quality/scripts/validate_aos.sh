@@ -1,5 +1,5 @@
 #!/bin/bash
-# validate_aos.sh — Universal _aos/ Validation (15 Checks)
+# validate_aos.sh — Universal _aos/ Validation (16 Checks)
 # =========================================================
 # L-GATE_BUILD exit criterion: MUST return exit code 0 (no FAIL; SKIP is allowed).
 #
@@ -622,9 +622,170 @@ if stale:
 }
 
 # ================================================================
+# Check 16: AOS slash commands vs manifest (module 08 — hub only)
+# Runs validate_aos_commands.sh when project is hub and .claude/commands exists.
+# ================================================================
+check_16() {
+    _require_active_modules 16 08 || return 0
+    local idf="$AOS_DIR/project_identity.yaml"
+    if [ ! -f "$idf" ]; then
+        log_skip 16 "no project_identity.yaml — AOS command validation skipped"
+        return 0
+    fi
+    local is_hub
+    is_hub=$(python3 -c "import yaml; d=yaml.safe_load(open('$idf')); print('yes' if d.get('is_hub') else 'no')" 2>/dev/null || echo no)
+    if [ "$is_hub" != "yes" ]; then
+        log_skip 16 "not hub — validate_aos_commands.sh skipped (spoke/minimal)"
+        return 0
+    fi
+    if [ ! -d "$PROJECT_ROOT/.claude/commands" ]; then
+        log_skip 16 "no .claude/commands/ — AOS command validation skipped"
+        return 0
+    fi
+    local cmdv="$PROJECT_ROOT/lean-kit/modules/validation-quality/validate_aos_commands.sh"
+    if [ ! -f "$cmdv" ]; then
+        cmdv="$PROJECT_ROOT/_aos/lean-kit/modules/validation-quality/validate_aos_commands.sh"
+    fi
+    if [ ! -f "$cmdv" ]; then
+        log_fail 16 "validate_aos_commands.sh not found under lean-kit"
+        return
+    fi
+    if bash "$cmdv" "$PROJECT_ROOT"; then
+        log_pass 16 "AOS slash commands (validate_aos_commands.sh / manifest) PASS"
+    else
+        log_fail 16 "AOS slash commands (validate_aos_commands.sh / manifest) FAIL"
+    fi
+}
+
+# ================================================================
+# Check 17: PROJECT_CONTEXT.md schema (Directory Canon Part 1a)
+# ================================================================
+check_17() {
+    _require_active_modules 17 01 || return 0
+    local idf="$AOS_DIR/project_identity.yaml"
+    local is_hub
+    is_hub=$(python3 -c "import yaml; d=yaml.safe_load(open('$idf')); print('yes' if d.get('is_hub') else 'no')" 2>/dev/null || echo no)
+    if [ "$is_hub" != "yes" ]; then
+        log_skip 17 "not hub — PROJECT_CONTEXT schema check skipped (roll out per spoke)"
+        return 0
+    fi
+    local pc="$PROJECT_ROOT/_aos/context/PROJECT_CONTEXT.md"
+    if [ ! -f "$pc" ]; then
+        log_skip 17 "no _aos/context/PROJECT_CONTEXT.md — schema check skipped"
+        return 0
+    fi
+    python3 -c "
+import sys, pathlib
+p = pathlib.Path(r'$pc')
+t = p.read_text(encoding='utf-8')
+needed = [
+    '## AOS environment (read first)',
+    '## Team entry',
+    '## Domain profile',
+]
+missing = [h for h in needed if h not in t]
+if missing:
+    print('PROJECT_CONTEXT missing required headings: ' + ', '.join(missing), file=sys.stderr)
+    sys.exit(1)
+sys.exit(0)
+" && log_pass 17 "PROJECT_CONTEXT.md has Part 1a headings (AOS / Team entry / Domain)" \
+  || log_fail 17 "PROJECT_CONTEXT.md missing required headings (see methodology/AOS_DIRECTORY_CANON Part 1a)"
+}
+
+# ================================================================
+# Check 18: _aos/ write authority compliance
+# Verify that no non-governance team contract lists _aos/ writes
+# Authorized teams: team_00, team_100, team_110, team_191
+# ================================================================
+check_18() {
+    _require_active_modules 18 01 || return 0
+    local gov_dir="$AOS_DIR/governance"
+    if [ ! -d "$gov_dir" ]; then
+        log_skip 18 "no _aos/governance/ — write authority check skipped"
+        return 0
+    fi
+    python3 -c "
+import sys, pathlib, re
+
+AUTHORIZED = {'team_00', 'team_100', 'team_110', 'team_191'}
+gov_dir = pathlib.Path(r'$gov_dir')
+violations = []
+
+for f in sorted(gov_dir.glob('team_*.md')):
+    team_id = f.stem  # e.g. team_20
+    if team_id in AUTHORIZED:
+        continue
+    text = f.read_text(encoding='utf-8')
+    # Find writes_to: YAML block lines
+    in_writes = False
+    for line in text.splitlines():
+        if re.match(r'\s*writes_to\s*:', line):
+            in_writes = True
+            continue
+        if in_writes:
+            # End of YAML list block (new key or empty)
+            if line and not re.match(r'\s+[-\s]', line) and ':' in line:
+                in_writes = False
+                continue
+            # Detect _aos/ path in a writes_to entry
+            m = re.search(r'[\"\']\s*_aos/', line)
+            if m:
+                violations.append(f'{f.name}: writes_to contains _aos/ path: {line.strip()}')
+    # Also check inline Boundaries section for explicit _aos/ write grants
+    if re.search(r'Write to:.*_aos/', text):
+        # Exclude lines that say 'do NOT' or 'NEVER'
+        for line in text.splitlines():
+            if re.search(r'Write to:.*_aos/', line) and not re.search(r'NOT|NEVER|never|read.only', line):
+                violations.append(f'{f.name}: prose \"Write to\" mentions _aos/: {line.strip()}')
+
+if violations:
+    print('CHECK 18 VIOLATIONS (_aos/ write authority):', file=sys.stderr)
+    for v in violations:
+        print('  ' + v, file=sys.stderr)
+    sys.exit(1)
+sys.exit(0)
+" && log_pass 18 "_aos/ write authority: all non-governance team contracts correctly restrict _aos/ writes" \
+  || log_fail 18 "_aos/ write authority: non-governance team contract(s) improperly grant _aos/ write access (see errors above)"
+}
+
+# ================================================================
+# Check 19: API-only mutations — Iron Rule #7 enforcement
+# Verify that all team contracts include the API-only mutations clause
+# (added in V320 DB Full Migration)
+# ================================================================
+check_19() {
+    _require_active_modules 19 01 || return 0
+    local gov_dir="$AOS_DIR/governance"
+    if [ ! -d "$gov_dir" ]; then
+        log_skip 19 "no _aos/governance/ — API-only mutations check skipped"
+        return 0
+    fi
+    python3 -c "
+import sys, pathlib
+
+gov_dir = pathlib.Path(r'$gov_dir')
+missing = []
+
+for f in sorted(gov_dir.glob('team_*.md')):
+    text = f.read_text(encoding='utf-8')
+    # Every contract must acknowledge Iron Rule #7 / API-only mutations
+    if 'API-only' not in text and 'Iron Rule #7' not in text:
+        missing.append(f.name)
+
+if missing:
+    print('CHECK 19 VIOLATIONS (API-only mutations clause missing):', file=sys.stderr)
+    for m in missing:
+        print('  ' + m, file=sys.stderr)
+    sys.exit(1)
+sys.exit(0)
+" && log_pass 19 "API-only mutations: all team contracts include Iron Rule #7 API-only clause" \
+  || log_fail 19 "API-only mutations: one or more team contracts missing Iron Rule #7 API-only clause (see errors above)"
+}
+
+# ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 15 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
+echo "validate_aos.sh — running up to 19 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
 echo "================================================="
 
 check_1
@@ -642,6 +803,10 @@ check_12
 check_13
 check_14
 check_15
+check_16
+check_17
+check_18
+check_19
 
 echo ""
 echo "================================================="

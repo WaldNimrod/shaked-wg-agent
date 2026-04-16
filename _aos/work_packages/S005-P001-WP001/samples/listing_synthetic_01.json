@@ -1,0 +1,47 @@
+{
+  "_provenance": "synthetic_schema_example",
+  "yad2_style_item": {
+    "token": "REDACTED-TOKEN-001",
+    "category_id": 2,
+    "address": {
+      "city_text": "פרדס חנה-כרכור",
+      "neighborhood_text": "מרכז",
+      "house_number": "12",
+      "street_text": "הרצל"
+    },
+    "price": 4200,
+    "currency": "ILS",
+    "price_period": "monthly",
+    "rooms": 4.0,
+    "square_meter": 95,
+    "floor": 3,
+    "description_text_he": "דירה מרווחת, שקטה, קרובה לתחבורה.",
+    "images": [
+      "https://img.yad2.co.il/Pic/REDACTED/nadlan/1.jpg"
+    ],
+    "coordinates": {
+      "lat": 32.474,
+      "lon": 34.981
+    },
+    "updated_at": "2026-04-10T08:00:00+03:00"
+  },
+  "scraped_listing_projection": {
+    "source": "yad2",
+    "source_listing_id": "REDACTED-TOKEN-001",
+    "source_search_url": "https://www.yad2.co.il/realestate/rent?...",
+    "title": "דירה 4 חדרים בפרדס חנה-כרכור",
+    "price_chf": null,
+    "price_note": "Map NIS monthly to project currency field in normalizer (S005-P001-WP002); do not misuse price_chf for ILS.",
+    "available_from": null,
+    "location_text": "פרדס חנה-כרכור, הרצל 12",
+    "district": "מרכז",
+    "transit_match_lines": [],
+    "roommate_signal": "",
+    "vegan_signal": "",
+    "summary": "דירה מרווחת, שקטה, קרובה לתחבורה.",
+    "direct_url": "https://www.yad2.co.il/item/REDACTED-TOKEN-001",
+    "url_status": "direct",
+    "recovery_query": "",
+    "posted_date": "2026-04-10"
+  }
+}

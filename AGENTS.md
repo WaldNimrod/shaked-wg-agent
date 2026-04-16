@@ -13,6 +13,7 @@
 2. Read `_aos/context/PROJECT_CONTEXT.md` — project background
 3. Read `_aos/context/ACTIVATION_ARCH.md` — if acting as architecture agent
 4. Confirm with System Designer (Nimrod / Team 00) before beginning work on gated items
+5. ADR034 awareness: if connected to AOS DB-backed governance flows, structured AOS state changes go through API + `deploy_cascade()`
 
 ---
 
@@ -85,6 +86,7 @@ S001 application WP (S001-P001-WP001) and canonization WP (S001-P002-WP001) are 
 3. All `spec_ref` paths are repo-internal
 4. Single writer on `roadmap.yaml` at any time
 5. L-GATE_V is always `shaked_val` — immutable, constitutional
+6. API-only mutation path for structured AOS state when DB is online (ADR034 / Iron Rule #7)
 
 ---
 

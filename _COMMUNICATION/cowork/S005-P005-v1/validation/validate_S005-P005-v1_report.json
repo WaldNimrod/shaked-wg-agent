@@ -1,0 +1,102 @@
+{
+  "package_id": "S005-P005",
+  "version": "v1",
+  "timestamp": "2026-04-15T04:36:35.332906",
+  "summary": {
+    "total_checks": 68,
+    "passed": 68,
+    "failed": 0,
+    "score_pct": 100.0,
+    "overall_verdict": "PASS",
+    "findings_by_severity": {
+      "INFO": 1
+    },
+    "total_findings": 1
+  },
+  "results": [
+    {
+      "category": "FILE_EXISTS",
+      "total_checks": 18,
+      "passed": 18,
+      "failed": 0
+    },
+    {
+      "category": "PATH_RESOLUTION",
+      "total_checks": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "category": "SOURCE_ROOT_CONSISTENCY",
+      "total_checks": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "category": "SHELL_SYNTAX",
+      "total_checks": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    {
+      "category": "CROSS_REFERENCE",
+      "total_checks": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "category": "WORK_PACKAGE_COMPLETENESS",
+      "total_checks": 13,
+      "passed": 13,
+      "failed": 0
+    },
+    {
+      "category": "OUTPUT_STRUCTURE",
+      "total_checks": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "category": "COWORK_CAPABILITIES",
+      "total_checks": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "category": "FIELD_RENAMES",
+      "total_checks": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "category": "VERIFICATION_GATES",
+      "total_checks": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "category": "WP_DEPENDENCY_CHAIN",
+      "total_checks": 2,
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "category": "MOUNT_PATH_ALIGNMENT",
+      "total_checks": 2,
+      "passed": 2,
+      "failed": 0
+    }
+  ],
+  "findings": [
+    {
+      "check_id": "VERIFY_GATE_COUNT",
+      "severity": "INFO",
+      "category": "COMMAND",
+      "title": "Found 13 verification commands (5 grep, 8 python)",
+      "detail": "Verification gates are present in the activation prompt.",
+      "file": "",
+      "line": 0,
+      "suggestion": ""
+    }
+  ]
+}

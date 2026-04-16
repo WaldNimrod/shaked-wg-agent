@@ -1,0 +1,26 @@
+{
+  "profile_id": "pardes-hanna",
+  "profile_name": "Pardes Hanna Region Search",
+  "city_id": "pardes-hanna-region",
+  "move_in_from": "2026-09-01",
+  "budget_min": 1500,
+  "budget_max": 5000,
+  "preferred_roommate_age": "any",
+  "rental_duration": "permanent",
+  "diet": "",
+  "smoking_policy": "",
+  "transit_lines": [],
+  "custom_tags": [],
+  "language_policy": {
+    "primary_listing_language": "he",
+    "translation_required": false,
+    "preserve_source_text": true
+  },
+  "retention_days": 30,
+  "enabled_sources": ["homeless", "facebook-manual", "facebook-email"],
+  "notifications": {
+    "digest_max_listings": 10,
+    "min_score_threshold": 0,
+    "channels": []
+  }
+}

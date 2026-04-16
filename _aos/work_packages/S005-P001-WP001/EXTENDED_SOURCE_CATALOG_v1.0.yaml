@@ -1,0 +1,329 @@
+# Extended source / channel catalog — Phase 2 seed (v1.0.0)
+# Baseline 11 platforms: see ../S002-RND-WP001/LOD200_S002-RND-WP001.md — do not duplicate full rows here.
+# Each entry here is either net-new OR explicitly "extends" a baseline platform via vendor/wrapper.
+
+meta:
+  version: "1.0.0"
+  date: "2026-04-12"
+  count_note: "Seed list for breadth; quality_tier and legal_notes require review per row."
+
+entries:
+  - id: vendor_apify_yad2_actors
+    name: "Apify marketplace — Yad2-related actors"
+    category: commercial_scraper_marketplace
+    url: "https://apify.com/store"
+    relation_to_baseline: extends_yad2
+    data_mode: unknown
+    legal_notes: "Depends on actor author ToS; not a substitute for site ToS review."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: vendor_bright_data_yad2
+    name: "Bright Data — web datasets / scraper products (Yad2 mentioned in marketing)"
+    category: commercial_proxy_dataset
+    url: "https://brightdata.com"
+    relation_to_baseline: extends_yad2
+    data_mode: unknown
+    legal_notes: "Enterprise contracts; verify permitted use for personal agent scope."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: vendor_oxylabs
+    name: "Oxylabs — residential proxies + scraping stack"
+    category: commercial_proxy_dataset
+    url: "https://oxylabs.io"
+    relation_to_baseline: new
+    data_mode: unknown
+    legal_notes: "Infrastructure only; target site ToS still applies to end user."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: vendor_zyte
+    name: "Zyte — scraping API / automation"
+    category: commercial_scraper_marketplace
+    url: "https://www.zyte.com"
+    relation_to_baseline: new
+    data_mode: api
+    legal_notes: "TBD — compliance program review."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: vendor_smartproxy
+    name: "Smartproxy — residential IPs"
+    category: commercial_proxy_dataset
+    url: "https://smartproxy.com"
+    relation_to_baseline: new
+    data_mode: unknown
+    legal_notes: "Same as Oxylabs — proxy does not grant content rights."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: community_github_yad2_scrapers
+    name: "GitHub — community Yad2 scraper repos (various)"
+    category: open_source_reference
+    url: "https://github.com/search?q=yad2+scraper"
+    relation_to_baseline: extends_yad2
+    data_mode: unknown
+    legal_notes: "Reference only; license and ToS not uniform."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: channel_telegram_rent_israel_generic
+    name: "Telegram — Israeli rental alert channels (discover by search)"
+    category: social_messaging
+    url: "https://telegram.org"
+    relation_to_baseline: new
+    data_mode: manual
+    legal_notes: "Public channel policy varies; bot ingestion = separate WP (S005-P003)."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: channel_whatsapp_groups_observation
+    name: "WhatsApp — local housing groups (invite-only)"
+    category: social_messaging
+    url: null
+    relation_to_baseline: new
+    data_mode: manual
+    legal_notes: "ToS restricts automation; likely manual/curation only."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: aggregator_nadlan_newsletters
+    name: "Email newsletters / local realtor digests (regional)"
+    category: email_digest
+    url: null
+    relation_to_baseline: new
+    data_mode: manual
+    legal_notes: "Copyright in newsletter text; partnership preferred."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: niche_reva_reference
+    name: "Reva / regional classifieds (verify current URL & volume)"
+    category: classifieds
+    url: "https://www.reva.co.il"
+    relation_to_baseline: new
+    data_mode: unknown
+    legal_notes: "Independent ToS review required."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: niche_alljobs_housing
+    name: "AllJobs / community boards with housing subsections (if active)"
+    category: forum
+    url: "https://www.alljobs.co.il"
+    relation_to_baseline: new
+    data_mode: unknown
+    legal_notes: "Often employment-focused; housing sporadic."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: gov_data_cbs_geography
+    name: "CBS Israel — statistical / geographic boundaries (not listings)"
+    category: government_open_data
+    url: "https://www.cbs.gov.il"
+    relation_to_baseline: new
+    data_mode: api
+    legal_notes: "Use for bbox/settlement validation (S005-P002), not listings."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: osm_overpass_settlements
+    name: "OpenStreetMap / Overpass — settlement polygons"
+    category: open_data_geo
+    url: "https://www.openstreetmap.org"
+    relation_to_baseline: new
+    data_mode: api
+    legal_notes: "ODbL; attribution requirements."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: aggregator_i18n_hebrew_listing_sites
+    name: "Russian-language Israel housing Facebook/Telegram ecosystems (parallel)"
+    category: social_messaging
+    url: null
+    relation_to_baseline: new
+    data_mode: manual
+    legal_notes: "Language mix; same scraping/legal constraints as RND social sources."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: vendor_scraperapi
+    name: "ScraperAPI — managed rendering / proxy API"
+    category: commercial_scraper_marketplace
+    url: "https://www.scraperapi.com"
+    relation_to_baseline: new
+    data_mode: api
+    legal_notes: "Compliance policy on target sites — read vendor + target ToS."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: vendor_nimbleway
+    name: "Nimbleway — web data platform"
+    category: commercial_scraper_marketplace
+    url: "https://nimbleway.com"
+    relation_to_baseline: new
+    data_mode: unknown
+    legal_notes: "TBD"
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: vendor_decodo
+    name: "Decodo (ex-ScraperAPI sibling brands — verify)"
+    category: commercial_scraper_marketplace
+    url: null
+    relation_to_baseline: new
+    data_mode: unknown
+    legal_notes: "Consolidate vendor research to avoid duplicate billing."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: partnership_local_proptech
+    name: "Israeli proptech startups — partnership / API (unnamed placeholder)"
+    category: partnership_pipeline
+    url: null
+    relation_to_baseline: new
+    data_mode: api
+    legal_notes: "BD track — no scraping until contract permits."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: user_manual_curation
+    name: "User-submitted listing URLs (clipboard paste into agent)"
+    category: product_feature
+    url: null
+    relation_to_baseline: new
+    data_mode: manual
+    legal_notes: "Lowest legal surface if user obtained URL legitimately."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: yad2_referral_deep_link_only
+    name: "Yad2 — deep link out with minimal UI card (no bulk scrape)"
+    category: referral_ux
+    url: "https://www.yad2.co.il"
+    relation_to_baseline: extends_yad2
+    data_mode: manual
+    legal_notes: "Requires counsel on title/price display from non-scraped sources only."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: sitemap_seo_discovery
+    name: "Yad2 sitemap URLs as human discovery aids (not automated bulk download)"
+    category: referral_ux
+    url: "https://www.yad2.co.il/sitemaps/sitemap-index.xml"
+    relation_to_baseline: extends_yad2
+    data_mode: manual
+    legal_notes: "robots disallows many query patterns; sitemap use for indexing ≠ unlimited reuse."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: competitor_data_thefinder
+    name: "TheFinder — Telegram-based alerts (competitor from RND) — integration?"
+    category: competitor_or_partner
+    url: null
+    relation_to_baseline: extends_rnd_competitor
+    data_mode: unknown
+    legal_notes: "See RND competitor table; partnership vs scrape."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: competitor_data_jeremy
+    name: "Jeremy — paid weekly alerts (competitor)"
+    category: competitor_or_partner
+    url: null
+    relation_to_baseline: extends_rnd_competitor
+    data_mode: unknown
+    legal_notes: "Commercial product; not a data source for scraping."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: university_housing_ext_netanya
+    name: "Netanya / Emek Hefer academic housing boards (verify URLs)"
+    category: university_board
+    url: null
+    relation_to_baseline: extends_baseline_university
+    data_mode: manual
+    legal_notes: "Often low volume; Pardes Hanna region relevance."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: university_housing_haifa_tech
+    name: "Technion / Haifa area student housing groups (cross-region)"
+    category: university_board
+    url: null
+    relation_to_baseline: extends_baseline_university
+    data_mode: manual
+    legal_notes: "Geography may be outside D3 region — filter later."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: municipal_housing_facebook_pages
+    name: "Municipal / local council housing announcement pages"
+    category: government_social
+    url: null
+    relation_to_baseline: new
+    data_mode: manual
+    legal_notes: "Low frequency; official announcements."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: short_term_airbnb_sublets
+    name: "Airbnb — short-term / sublet (baseline RND) — policy for long-term filter"
+    category: marketplace
+    url: "https://www.airbnb.com"
+    relation_to_baseline: extends_baseline_airbnb
+    data_mode: unknown
+    legal_notes: "API terms strict; mostly out of scope for WG search."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: niche_drushim_additional
+    name: "Drushim / additional classifieds verticals (verify overlap with Yad2)"
+    category: classifieds
+    url: "https://www.drushim.co.il"
+    relation_to_baseline: new
+    data_mode: unknown
+    legal_notes: "Separate ToS; may overlap listings with Yad2."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: aliyah_forums_nbn
+    name: "Nefesh B'Nefesh / aliyah forums — housing sections"
+    category: forum
+    url: null
+    relation_to_baseline: new
+    data_mode: manual
+    legal_notes: "Community norms; manual monitoring."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: expat_facebook_groups_meta
+    name: "English-language expat housing groups (Facebook) — meta entry"
+    category: social_facebook
+    url: null
+    relation_to_baseline: extends_baseline_facebook
+    data_mode: manual
+    legal_notes: "S005-P003 Facebook agent eval."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: rss_podcast_housing_content
+    name: "Podcasts / YouTube — housing market commentary (not listings)"
+    category: media_reference
+    url: null
+    relation_to_baseline: new
+    data_mode: manual
+    legal_notes: "No structured listings; context only."
+    quality_tier: TBD
+    last_reviewed: null
+
+  - id: legal_counsel_israel_scraping
+    name: "External legal counsel — Israel tech/ToS review (service provider)"
+    category: professional_service
+    url: null
+    relation_to_baseline: new
+    data_mode: manual
+    legal_notes: "Budget line; not a data source."
+    quality_tier: TBD
+    last_reviewed: null

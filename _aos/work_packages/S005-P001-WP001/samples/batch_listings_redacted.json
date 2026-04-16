@@ -1,0 +1,52 @@
+{
+  "_note": "Aggregated `scraped_listing_projection` objects from listing_synthetic_01..06.json for quick review.",
+  "meta": {
+    "work_package": "S005-P001-WP001",
+    "provenance": "synthetic_schema_examples",
+    "date": "2026-04-12"
+  },
+  "listings": [
+    {
+      "source": "yad2",
+      "source_listing_id": "REDACTED-TOKEN-001",
+      "title": "דירה 4 חדרים בפרדס חנה-כרכור",
+      "location_text": "פרדס חנה-כרכור, הרצל 12",
+      "direct_url": "https://www.yad2.co.il/item/REDACTED-TOKEN-001"
+    },
+    {
+      "source": "yad2",
+      "source_listing_id": "REDACTED-TOKEN-002",
+      "title": "חדר בדירת שותפים בחדרה",
+      "location_text": "חדרה, אלונים",
+      "direct_url": "https://www.yad2.co.il/item/REDACTED-TOKEN-002"
+    },
+    {
+      "source": "yad2",
+      "source_listing_id": "REDACTED-TOKEN-003",
+      "title": "דירת 5 חדרים — מתווך",
+      "location_text": "זיכרון יעקב, גבעה",
+      "direct_url": "https://www.yad2.co.il/item/REDACTED-TOKEN-003"
+    },
+    {
+      "source": "yad2",
+      "source_listing_id": "REDACTED-TOKEN-004",
+      "title": "דירת 3.5 חדרים באור עקיבא",
+      "location_text": "אור עקיבא",
+      "direct_url": "https://www.yad2.co.il/item/REDACTED-TOKEN-004"
+    },
+    {
+      "source": "yad2",
+      "source_listing_id": "REDACTED-TOKEN-005",
+      "title": "דירה חדשה בבנימינה — 4.5 חדרים",
+      "location_text": "בנימינה",
+      "direct_url": "https://www.yad2.co.il/item/REDACTED-TOKEN-005"
+    },
+    {
+      "source": "yad2",
+      "source_listing_id": "REDACTED-TOKEN-006",
+      "title": "סאבלט בקיסריה — 2 חדרים",
+      "location_text": "קיסריה",
+      "direct_url": "https://www.yad2.co.il/item/REDACTED-TOKEN-006"
+    }
+  ]
+}

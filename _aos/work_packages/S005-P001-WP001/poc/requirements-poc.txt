@@ -1,0 +1,5 @@
+# Optional POC-only dependencies (install in a separate venv: python -m venv .venv-poc && pip install -r requirements-poc.txt)
+# Core project already provides: playwright, requests, beautifulsoup4
+playwright-stealth>=1.0.6
+undetected-chromedriver>=3.5.5
+selenium>=4.15.0

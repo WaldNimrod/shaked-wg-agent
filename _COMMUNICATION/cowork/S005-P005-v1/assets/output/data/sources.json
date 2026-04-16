@@ -1,0 +1,122 @@
+[
+  {
+    "source_id": "wgzimmer",
+    "label": "wgzimmer.ch",
+    "base_url": "https://www.wgzimmer.ch",
+    "scraper_class": "shaked_wg_agent.scrapers.wgzimmer_pw.WgzimmerPlaywrightScraper",
+    "requires_playwright": true,
+    "notes": "Hauptquelle. Canton-basierte Suche.",
+    "city_params": {
+      "basel": {
+        "search_url": "https://www.wgzimmer.ch/en/wgzimmer/search/mate/ch/baselstadt.html",
+        "connection_method": "canton",
+        "enabled": true
+      },
+      "zurich": {
+        "search_url": "https://www.wgzimmer.ch/en/wgzimmer/search/mate/ch/zuerich.html",
+        "connection_method": "canton",
+        "enabled": true
+      },
+      "bern": {
+        "search_url": "https://www.wgzimmer.ch/en/wgzimmer/search/mate/ch/bern.html",
+        "connection_method": "canton",
+        "enabled": true
+      }
+    }
+  },
+  {
+    "source_id": "flatfox",
+    "label": "flatfox.ch",
+    "base_url": "https://flatfox.ch",
+    "scraper_class": "shaked_wg_agent.scrapers.flatfox.FlatfoxScraper",
+    "requires_playwright": false,
+    "notes": "Schweizer Plattform. Bbox-basierte REST API.",
+    "city_params": {
+      "basel": {
+        "search_url": "https://flatfox.ch/de/search/?west=7.5147&east=7.6559&south=47.5176&north=47.5956",
+        "connection_method": "bbox",
+        "enabled": true
+      },
+      "zurich": {
+        "search_url": "https://flatfox.ch/de/search/?west=8.4680&east=8.6160&south=47.3400&north=47.4200",
+        "connection_method": "bbox",
+        "enabled": true
+      },
+      "bern": {
+        "search_url": "https://flatfox.ch/de/search/?west=7.3900&east=7.4900&south=46.9200&north=46.9700",
+        "connection_method": "bbox",
+        "enabled": true
+      }
+    }
+  },
+  {
+    "source_id": "wg-gesucht",
+    "label": "wg-gesucht.de",
+    "base_url": "https://www.wg-gesucht.de",
+    "scraper_class": "shaked_wg_agent.scrapers.wg_gesucht.WgGesuchtScraper",
+    "requires_playwright": false,
+    "notes": "DISABLED: requires login/CAPTCHA for Swiss cities.",
+    "city_params": {
+      "basel": {
+        "search_url": "",
+        "connection_method": "city_id_param",
+        "enabled": false
+      },
+      "zurich": {
+        "search_url": "",
+        "connection_method": "city_id_param",
+        "enabled": false
+      },
+      "bern": {
+        "search_url": "",
+        "connection_method": "city_id_param",
+        "enabled": false
+      }
+    }
+  },
+  {
+    "source_id": "homeless",
+    "label": "homeless.co.il",
+    "base_url": "https://www.homeless.co.il",
+    "scraper_class": "shaked_wg_agent.scrapers.homeless.HomelessScraper",
+    "requires_playwright": true,
+    "notes": "Israeli rental classifieds. Playwright required — Cloudflare managed challenge blocks plain HTTP. Pardes Hanna region via area ID/search params.",
+    "city_params": {
+      "pardes-hanna-region": {
+        "search_url": "https://www.homeless.co.il/rent/inumber1=41",
+        "connection_method": "search_params",
+        "enabled": true
+      }
+    }
+  },
+  {
+    "source_id": "facebook-manual",
+    "label": "Facebook Groups (manual)",
+    "base_url": "https://www.facebook.com",
+    "scraper_class": "shaked_wg_agent.scrapers.facebook_manual.ManualFacebookScraper",
+    "requires_playwright": false,
+    "notes": "Manual input from FB groups. LLM parsing. No automated scraping.",
+    "city_params": {
+      "pardes-hanna-region": {
+        "search_url": "data/facebook/pardes-hanna-posts.json",
+        "connection_method": "manual_file",
+        "enabled": true
+      }
+    }
+  },
+  {
+    "source_id": "facebook-email",
+    "label": "Facebook Groups (email)",
+    "base_url": "https://www.facebook.com",
+    "scraper_class": "shaked_wg_agent.scrapers.facebook_email.EmailFacebookScraper",
+    "requires_playwright": false,
+    "notes": "Parses FB group notification emails. Passive acquisition. Requires IMAP config.",
+    "city_params": {
+      "pardes-hanna-region": {
+        "search_url": "imap://env/INBOX",
+        "connection_method": "email_imap",
+        "enabled": true
+      }
+    }
+  }
+]

@@ -1,0 +1,13 @@
+# .cursorrules — shaked-wg-agent
+
+## Session startup
+1. Read `_aos/roadmap.yaml`
+2. Read `_aos/context/PROJECT_CONTEXT.md`
+3. Read `_aos/context/ACTIVATION_ARCH.md`
+
+## Data authority
+- Local domain data remains in app/data files.
+- For DB-backed AOS governance workflows, structured AOS state mutates via API + `deploy_cascade()` (ADR034).
+
+## Validation
+- Run `bash _aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh .` before gate claims.

@@ -1,0 +1,16 @@
+{
+  "work_package": "S005-P001-WP001",
+  "date": "2026-04-12",
+  "live_fetch_status": "During automated POC runs from this environment, listing HTML/JSON was often replaced by ShieldSquare / hCaptcha validation flows (see YAD2_FEASIBILITY_REPORT.md). Representative JSON objects were therefore authored for schema-mapping exercises and are not asserted as verbatim API responses from Yad2.",
+  "files": {
+    "listing_synthetic_01.json": "synthetic",
+    "listing_synthetic_02.json": "synthetic",
+    "listing_synthetic_03.json": "synthetic",
+    "listing_synthetic_04.json": "synthetic",
+    "listing_synthetic_05.json": "synthetic",
+    "listing_synthetic_06.json": "synthetic",
+    "extraction_meta.json": "POC script output from extract_samples.py (may show zero items when bot wall active)",
+    "network_observation_excerpt.json": "summarized network observation from poc/network_capture.py",
+    "batch_listings_redacted.json": "aggregated synthetic projections for quick review"
+  }
+}

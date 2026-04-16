@@ -1,0 +1,35 @@
+{
+  "_provenance": "synthetic_schema_example",
+  "yad2_style_item": {
+    "token": "REDACTED-TOKEN-005",
+    "asset_type": "apartment",
+    "price": 6100,
+    "currency": "ILS",
+    "rooms": 4.5,
+    "square_meter": 102,
+    "floor": 8,
+    "building_floors": 9,
+    "elevator": true,
+    "parking": 1,
+    "address": {
+      "city_text": "בנימינה",
+      "geojson": {
+        "type": "Point",
+        "coordinates": [
+          34.947,
+          32.517
+        ]
+      }
+    }
+  },
+  "scraped_listing_projection": {
+    "source": "yad2",
+    "source_listing_id": "REDACTED-TOKEN-005",
+    "title": "דירה חדשה בבנימינה — 4.5 חדרים",
+    "location_text": "בנימינה",
+    "district": "",
+    "summary": "מעלית וחניה; קומה 8 מתוך 9.",
+    "transit_match_lines": [],
+    "geo_note": "Store coordinates outside ScrapedListing today — extend in WP002 or sidecar JSON."
+  }
+}

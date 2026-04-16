@@ -1,0 +1,26 @@
+{
+  "_provenance": "synthetic_schema_example",
+  "yad2_style_item": {
+    "token": "REDACTED-TOKEN-006",
+    "price": 2800,
+    "currency": "ILS",
+    "listing_age_hours": 6,
+    "rooms": 2.0,
+    "address": {
+      "city_text": "קיסריה"
+    },
+    "description_text_he": "סאבלט לחודשיים; נדרש פיקדון.",
+    "transaction_type": "sublet"
+  },
+  "scraped_listing_projection": {
+    "source": "yad2",
+    "source_listing_id": "REDACTED-TOKEN-006",
+    "title": "סאבלט בקיסריה — 2 חדרים",
+    "available_from": "תאריך גמיש",
+    "location_text": "קיסריה",
+    "summary": "סאבלט לחודשיים; נדרש פיקדון.",
+    "roommate_signal": "",
+    "posted_date": "2026-04-12",
+    "freshness_note": "Map listing_age_hours or server timestamps to posted_date string in normalizer."
+  }
+}

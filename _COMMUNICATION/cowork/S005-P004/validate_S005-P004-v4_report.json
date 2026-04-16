@@ -1,0 +1,313 @@
+{
+  "package_id": "S005-P004",
+  "version": "v4",
+  "timestamp": "2026-04-13T11:19:45.960884",
+  "summary": {
+    "total_checks": 125,
+    "passed": 103,
+    "failed": 22,
+    "score_pct": 82.4,
+    "overall_verdict": "FAIL",
+    "findings_by_severity": {
+      "CRITICAL": 16,
+      "MEDIUM": 5,
+      "LOW": 1,
+      "INFO": 1
+    },
+    "total_findings": 23
+  },
+  "results": [
+    {
+      "category": "FILE_EXISTS",
+      "total_checks": 43,
+      "passed": 43,
+      "failed": 0
+    },
+    {
+      "category": "PATH_RESOLUTION",
+      "total_checks": 16,
+      "passed": 1,
+      "failed": 15
+    },
+    {
+      "category": "SOURCE_ROOT_CONSISTENCY",
+      "total_checks": 2,
+      "passed": 1,
+      "failed": 1
+    },
+    {
+      "category": "CROSS_REFERENCE",
+      "total_checks": 3,
+      "passed": 0,
+      "failed": 3
+    },
+    {
+      "category": "WORK_PACKAGE_COMPLETENESS",
+      "total_checks": 29,
+      "passed": 29,
+      "failed": 0
+    },
+    {
+      "category": "OUTPUT_STRUCTURE",
+      "total_checks": 2,
+      "passed": 1,
+      "failed": 1
+    },
+    {
+      "category": "COWORK_CAPABILITIES",
+      "total_checks": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    {
+      "category": "FIELD_RENAMES",
+      "total_checks": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "category": "VERIFICATION_GATES",
+      "total_checks": 14,
+      "passed": 12,
+      "failed": 2
+    },
+    {
+      "category": "WP_DEPENDENCY_CHAIN",
+      "total_checks": 2,
+      "passed": 2,
+      "failed": 0
+    }
+  ],
+  "findings": [
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 28: grep -rn \"price_chf\" SOURCE_ROOT/output/src/ --include=\"*.py\" | grep -v \"\\.get\\(\"",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 28,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 31: grep -rn '\"CHF\"' SOURCE_ROOT/output/src/shaked_wg_agent/publisher/html_report.py",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 31,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 34: grep -n \"Tram lines\" SOURCE_ROOT/output/src/shaked_wg_agent/__main__.py",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 34,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 37: grep -n \"budget_min_chf\\|budget_max_chf\" SOURCE_ROOT/output/data/profiles/default.json",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 37,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 56: grep -n \"mapping\\s*=\" SOURCE_ROOT/output/src/shaked_wg_agent/runner.py",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 56,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 59: grep -n \"_verify_flatfox_via_api\" SOURCE_ROOT/output/src/shaked_wg_agent/runner.py",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 59,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_STRING",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in string literal",
+      "detail": "Line 62: python3 -c \"import json; d=json.load(open('SOURCE_ROOT/output/data/sources.json')); print(len(d)); assert len(d)==3; ass",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 62,
+      "suggestion": "Use f-string or variable expansion instead of literal 'SOURCE_ROOT' in Python strings."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 78: grep -n \"_VEGAN_STRONG\\|_VEGAN_PARTIAL\\|_VEGAN_WEAK\" SOURCE_ROOT/output/src/shaked_wg_agent/scorer.py",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 78,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 81: grep -n \"de-CH\" SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/base.py",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 81,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 84: grep -n '\"neue Angebote\\|Preis nicht angegeben\\|Generiert von\"' SOURCE_ROOT/output/src/shaked_wg_agent/notifier/email_no",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 84,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_STRING",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in string literal",
+      "detail": "Line 88: import sys; sys.path.insert(0, 'SOURCE_ROOT/output/src')",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 88,
+      "suggestion": "Use f-string or variable expansion instead of literal 'SOURCE_ROOT' in Python strings."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 103: grep -rn \"price_chf\" SOURCE_ROOT/output/src/ --include=\"*.py\" | grep -v \"\\.get\\(\"",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 103,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 104: grep -rn '\"CHF\"' SOURCE_ROOT/output/src/shaked_wg_agent/publisher/html_report.py",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 104,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 105: grep -n \"mapping\\s*=\" SOURCE_ROOT/output/src/shaked_wg_agent/runner.py",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 105,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "PATH_LITERAL_IN_SHELL",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "Unresolved 'SOURCE_ROOT' in shell command",
+      "detail": "Line 106: grep -n \"_VEGAN_STRONG\" SOURCE_ROOT/output/src/shaked_wg_agent/scorer.py",
+      "file": "S005-P004_ACTIVATION_PROMPT.txt",
+      "line": 106,
+      "suggestion": "Replace literal 'SOURCE_ROOT' with a resolved shell variable: $SOURCE_ROOT (defined via export at session start), or use absolute paths."
+    },
+    {
+      "check_id": "SOURCE_ROOT_NOT_EXPORTED",
+      "severity": "CRITICAL",
+      "category": "COMMAND",
+      "title": "SOURCE_ROOT defined conceptually but never exported as shell variable",
+      "detail": "Value 'mnt/S005-P004/assets' in instruction_file is a relative path shown as documentation, but shell commands use it literally. No 'export SOURCE_ROOT=...' or equivalent found in activation prompt.",
+      "file": "",
+      "line": 0,
+      "suggestion": "Add at the start of the activation prompt:\n  First, set up your working root:\n    export SOURCE_ROOT=\"/sessions/*/mnt/.../assets\"\n  Then all subsequent commands can use $SOURCE_ROOT/..."
+    },
+    {
+      "check_id": "CROSS_REF_INVALID",
+      "severity": "MEDIUM",
+      "category": "CROSS_REF",
+      "title": "Document references non-existent path: _aos/work_packages/S005-P004-WP001/LOD400_S005-P004-WP001.md",
+      "detail": "This path is referenced in spec/mandate documents but does not exist in the package.",
+      "file": "",
+      "line": 0,
+      "suggestion": "Update the reference to match actual package structure."
+    },
+    {
+      "check_id": "CROSS_REF_INVALID",
+      "severity": "MEDIUM",
+      "category": "CROSS_REF",
+      "title": "Document references non-existent path: _aos/work_packages/S005-P004-WP002/LOD400_S005-P004-WP002.md",
+      "detail": "This path is referenced in spec/mandate documents but does not exist in the package.",
+      "file": "",
+      "line": 0,
+      "suggestion": "Update the reference to match actual package structure."
+    },
+    {
+      "check_id": "CROSS_REF_INVALID",
+      "severity": "MEDIUM",
+      "category": "CROSS_REF",
+      "title": "Document references non-existent path: _aos/work_packages/S005-P004-WP003/LOD400_S005-P004-WP003.md",
+      "detail": "This path is referenced in spec/mandate documents but does not exist in the package.",
+      "file": "",
+      "line": 0,
+      "suggestion": "Update the reference to match actual package structure."
+    },
+    {
+      "check_id": "OUTPUT_DIR_NO_MKDIR",
+      "severity": "LOW",
+      "category": "STRUCTURE",
+      "title": "No explicit mkdir instruction for output directory",
+      "detail": "Agent may fail if output subdirectories don't exist.",
+      "file": "",
+      "line": 0,
+      "suggestion": "Add: mkdir -p $SOURCE_ROOT/output/src/shaked_wg_agent/{scrapers,notifier,api,publisher} $SOURCE_ROOT/output/data/profiles $SOURCE_ROOT/output/tests"
+    },
+    {
+      "check_id": "VERIFY_GATE_COUNT",
+      "severity": "INFO",
+      "category": "COMMAND",
+      "title": "Found 15 verification commands (13 grep, 2 python)",
+      "detail": "Verification gates are present in the activation prompt.",
+      "file": "",
+      "line": 0,
+      "suggestion": ""
+    },
+    {
+      "check_id": "VERIFY_GATE_CMD_ISSUE",
+      "severity": "MEDIUM",
+      "category": "COMMAND",
+      "title": "Grep command issue: Recursive grep without --include filter",
+      "detail": "Line 31: grep -rn '\"CHF\"' SOURCE_ROOT/output/src/shaked_wg_agent/publisher/html_report.py",
+      "file": "",
+      "line": 31,
+      "suggestion": "Add --include='*.py' for recursive Python source searches."
+    },
+    {
+      "check_id": "VERIFY_GATE_CMD_ISSUE",
+      "severity": "MEDIUM",
+      "category": "COMMAND",
+      "title": "Grep command issue: Recursive grep without --include filter",
+      "detail": "Line 104: grep -rn '\"CHF\"' SOURCE_ROOT/output/src/shaked_wg_agent/publisher/html_report.py",
+      "file": "",
+      "line": 104,
+      "suggestion": "Add --include='*.py' for recursive Python source searches."
+    }
+  ]
+}

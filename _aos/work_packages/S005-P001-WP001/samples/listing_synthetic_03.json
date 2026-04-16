@@ -1,0 +1,32 @@
+{
+  "_provenance": "synthetic_schema_example",
+  "yad2_style_item": {
+    "token": "REDACTED-TOKEN-003",
+    "mediation": true,
+    "agency_name": "REDACTED-AGENCY",
+    "price": 5500,
+    "currency": "ILS",
+    "rooms": 5.0,
+    "square_meter": 110,
+    "address": {
+      "city_text": "זיכרון יעקב",
+      "neighborhood_text": "גבעה"
+    },
+    "contact": {
+      "phone_masked": "05*-***-****"
+    }
+  },
+  "scraped_listing_projection": {
+    "source": "yad2",
+    "source_listing_id": "REDACTED-TOKEN-003",
+    "title": "דירת 5 חדרים — מתווך",
+    "price_chf": null,
+    "location_text": "זיכרון יעקב, גבעה",
+    "district": "גבעה",
+    "summary": "מודעה באמצעות מתווך; פרטי קשר מאחורי לחיצה באתר.",
+    "roommate_signal": "",
+    "vegan_signal": "",
+    "direct_url": "https://www.yad2.co.il/item/REDACTED-TOKEN-003",
+    "note": "Strip PII in normalizer; store only what policy allows."
+  }
+}

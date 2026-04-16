@@ -1,0 +1,14 @@
+{
+  "city_id": "pardes-hanna-region",
+  "city_name": "Pardes Hanna Region",
+  "country": "IL",
+  "currency": "ILS",
+  "bounding_box": {
+    "west": 34.87,
+    "east": 35.00,
+    "south": 32.42,
+    "north": 32.60
+  },
+  "zip_filter": [],
+  "available_sources": ["homeless", "facebook-manual", "facebook-email"]
+}

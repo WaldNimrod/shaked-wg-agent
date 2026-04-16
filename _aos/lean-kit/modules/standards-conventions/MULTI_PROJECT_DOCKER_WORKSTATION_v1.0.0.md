@@ -41,8 +41,10 @@ All known port assignments for AOS-managed projects. This table is the single so
 | SmallFarmsAgents | PostgreSQL | **5433** | `oma-postgres` | Clean |
 | SmallFarmsAgents | Admin UI (Flask) | **5001** | — | Clean |
 | SmallFarmsAgents | Static viewer | **8081** | — | Moved from 8080 (TikTrack conflict, 2026-04-09) |
+| HobbitHome | WordPress (Apache) | **8083** | `hobbithome-wp` | Hebrew / uPress spoke; do not use 8080 (TikTrack) |
+| HobbitHome | MySQL 8 (host bind) | **3308** | `hobbithome-db` | Host port for `mysql` CLI / SQL import (3307 used elsewhere on workstation) |
 
-**Reserved / do not use:** 5432 (TikTrack PG), 8080 (TikTrack frontend), 8082 (TikTrack API), 8090 (AOS API).
+**Reserved / do not use:** 5432 (TikTrack PG), 8080 (TikTrack frontend), 8081 (SmallFarmsAgents static), 8082 (TikTrack API), 8090 (AOS API).
 
 ## Per-Project Requirements
 
@@ -99,6 +101,7 @@ Each project maintains its own instance of this standard, aligned with the canon
 | SmallFarmsAgents | `documentation/08-troubleshooting/DOCKER_SHARED_WORKSTATION.md` |
 | TikTrack | `AGENTS.md` §Multi-Project Docker Workstation Protocol |
 | agents-os | `docker-compose.yml` comments + this document |
+| HobbitHome | `docs/DOCKER_PORTS.md` |
 
 ---
 

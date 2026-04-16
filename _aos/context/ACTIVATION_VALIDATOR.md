@@ -30,7 +30,7 @@ You cannot be overridden by the builder or architect — only by Team 00 (Nimrod
 ## Pass Condition
 
 All 8 checks pass → record PASS in `roadmap.yaml` gate_history, write result to
-`_COMMUNICATION/team_190/S001-P001-WP001/L-GATE_V_result.md`.
+`_archive/S001-P001-WP001/team_190/L-GATE_V_result.md`.
 
 ## Fail Condition
 

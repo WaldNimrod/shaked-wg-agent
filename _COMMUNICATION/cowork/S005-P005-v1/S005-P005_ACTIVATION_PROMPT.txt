@@ -1,0 +1,255 @@
+Execute S005-P005: Data Source Expansion — reCAPTCHA bypass, Facebook manual parser, Facebook email parser.
+3 work packages, linear order. Track A (pattern-following).
+
+First, set up your working root:
+  export SOURCE_ROOT="mnt/S005-P005-v1/assets"
+  mkdir -p "$SOURCE_ROOT/output/src/shaked_wg_agent/scrapers" \
+           "$SOURCE_ROOT/output/src/shaked_wg_agent/parsers" \
+           "$SOURCE_ROOT/output/data/facebook" \
+           "$SOURCE_ROOT/output/data/cities" \
+           "$SOURCE_ROOT/output/data/profiles" \
+           "$SOURCE_ROOT/output/tests/fixtures"
+
+Create a TodoList with WP001, WP002, WP003 as top-level tasks, then begin.
+
+======================================================
+PHASE 1: WP001 — wgzimmer.ch reCAPTCHA v3 Bypass (15 ACs)
+======================================================
+
+Step 1 — Read scope:
+  Read $SOURCE_ROOT/specs/MANDATE_S005-P005-WP001_TEAM20.md
+  Read $SOURCE_ROOT/specs/LOD400_S005-P005-WP001.md
+
+Step 2 — Install dependencies:
+  pip install patchright && patchright install chromium
+
+Step 3 — Read reference:
+  Read $SOURCE_ROOT/src/shaked_wg_agent/scrapers/wgzimmer_pw.py (file to modify)
+  Read $SOURCE_ROOT/src/shaked_wg_agent/scrapers/base.py (BaseScraper interface)
+
+Step 4 — Implement per LOD400 sections 2.1-2.5:
+  - Replace playwright import with patchright (with ImportError guard)
+  - Switch to launch_persistent_context with SHAKED_BROWSER_PROFILE_DIR env var
+  - Add randomized human-like delays
+  - Wrap fetch_listings() in try/except Exception -> return []
+  - Preserve ALL parsing methods unchanged
+  Write modified file to $SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/wgzimmer_pw.py
+
+Step 5 — Verification gate:
+  grep -q "from patchright.sync_api" "$SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/wgzimmer_pw.py" && echo "AC-01 PASS" || echo "AC-01 FAIL"
+  grep -c "from playwright.sync_api" "$SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/wgzimmer_pw.py" | grep -q "^0$" && echo "AC-02 PASS" || echo "AC-02 FAIL"
+  grep -q "launch_persistent_context" "$SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/wgzimmer_pw.py" && echo "AC-04 PASS" || echo "AC-04 FAIL"
+  grep -q "SHAKED_BROWSER_PROFILE_DIR" "$SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/wgzimmer_pw.py" && echo "AC-06 PASS" || echo "AC-06 FAIL"
+
+  python3 -c "
+  import ast, os
+  with open(os.environ['SOURCE_ROOT']+'/output/src/shaked_wg_agent/scrapers/wgzimmer_pw.py') as f:
+      tree = ast.parse(f.read())
+  for node in ast.walk(tree):
+      if isinstance(node, ast.ClassDef) and 'Wgzimmer' in node.name:
+          methods = [n.name for n in node.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+          assert 'fetch_listings' in methods, f'fetch_listings missing: {methods}'
+          assert '_parse_api_item' in methods, f'_parse_api_item missing: {methods}'
+          assert '_dom_fallback' in methods, f'_dom_fallback missing: {methods}'
+          print('WP001 structure + parsing preserved PASS')
+          break
+  "
+
+If verification fails -> fix and re-verify before proceeding.
+
+======================================================
+PHASE 2: WP002 — Facebook Manual Listing Parser (38 ACs)
+======================================================
+
+Step 1 — Read scope:
+  Read $SOURCE_ROOT/specs/MANDATE_S005-P005-WP002_TEAM20.md
+  Read $SOURCE_ROOT/specs/LOD400_S005-P005-WP002.md
+
+Step 2 — Install dependencies:
+  pip install anthropic openai
+
+Step 3 — Read reference:
+  Read $SOURCE_ROOT/src/shaked_wg_agent/scrapers/base.py (BaseScraper + ScrapedListing)
+  Read $SOURCE_ROOT/src/shaked_wg_agent/scrapers/homeless.py (IL scraper pattern)
+  Read $SOURCE_ROOT/data/sources.json (current entries — will append)
+  Read $SOURCE_ROOT/data/cities/pardes-hanna-region.json (will add facebook-manual)
+  Read $SOURCE_ROOT/data/profiles/pardes-hanna.json (will add facebook-manual)
+
+Step 4 — Implement per LOD400 sections 2.1-2.7:
+  4a. Create parsers module:
+      Write $SOURCE_ROOT/output/src/shaked_wg_agent/parsers/__init__.py
+      Write $SOURCE_ROOT/output/src/shaked_wg_agent/parsers/llm_listing_parser.py
+
+  4b. Create scraper:
+      Write $SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/facebook_manual.py
+
+  4c. Register source + update config:
+      Read $SOURCE_ROOT/data/sources.json -> add facebook-manual -> write to $SOURCE_ROOT/output/data/sources.json
+      Read $SOURCE_ROOT/data/cities/pardes-hanna-region.json -> add facebook-manual to available_sources -> write to $SOURCE_ROOT/output/data/cities/pardes-hanna-region.json
+      Read $SOURCE_ROOT/data/profiles/pardes-hanna.json -> add facebook-manual to enabled_sources -> write to $SOURCE_ROOT/output/data/profiles/pardes-hanna.json
+
+  4d. Create data template:
+      Write $SOURCE_ROOT/output/data/facebook/pardes-hanna-posts.json (containing [])
+
+  4e. Create test fixtures:
+      Write $SOURCE_ROOT/output/tests/fixtures/hebrew_posts.json (>=13 entries per LOD400 section 2.6)
+
+  4f. Create test files:
+      Write $SOURCE_ROOT/output/tests/test_facebook_manual.py
+      Write $SOURCE_ROOT/output/tests/test_llm_parser.py
+      Write $SOURCE_ROOT/output/tests/test_facebook_manual_dedup.py
+      Write $SOURCE_ROOT/output/tests/test_facebook_manual_validation.py
+      Write $SOURCE_ROOT/output/tests/test_llm_parser_modes.py
+
+Step 5 — Verification gate:
+  python3 -c "
+  import sys, os
+  sys.path.insert(0, os.environ['SOURCE_ROOT']+'/output/src')
+  sys.path.insert(0, os.environ['SOURCE_ROOT']+'/src')
+  from shaked_wg_agent.parsers.llm_listing_parser import parse_rental_post, check_llm_config
+  from shaked_wg_agent.scrapers.facebook_manual import ManualFacebookScraper
+  from shaked_wg_agent.scrapers.base import BaseScraper
+  assert issubclass(ManualFacebookScraper, BaseScraper), 'Not a BaseScraper subclass'
+  assert callable(parse_rental_post), 'parse_rental_post not callable'
+  assert callable(check_llm_config), 'check_llm_config not callable'
+  print('WP002 import + subclass PASS')
+  "
+
+  python3 -c "
+  import json, os
+  sr = os.environ['SOURCE_ROOT']
+  s = json.load(open(sr+'/output/data/sources.json'))
+  fb = [x for x in s if x['source_id'] == 'facebook-manual']
+  assert len(fb) == 1, 'facebook-manual not in sources.json'
+  assert '.' in fb[0]['scraper_class'], 'scraper_class not FQN'
+  c = json.load(open(sr+'/output/data/cities/pardes-hanna-region.json'))
+  assert 'facebook-manual' in c['available_sources'], 'not in city available_sources'
+  p = json.load(open(sr+'/output/data/profiles/pardes-hanna.json'))
+  assert 'facebook-manual' in p['enabled_sources'], 'not in profile enabled_sources'
+  print('WP002 registration PASS')
+  "
+
+  python3 -c "
+  import json, os
+  posts = json.load(open(os.environ['SOURCE_ROOT']+'/output/tests/fixtures/hebrew_posts.json'))
+  assert len(posts) >= 13, f'Expected >=13, got {len(posts)}'
+  assert all('post_id' in p and 'text' in p for p in posts), 'Missing required fields'
+  print('WP002 fixtures PASS')
+  "
+
+======================================================
+PHASE 3: WP003 — Facebook Email Parser (34 ACs)
+======================================================
+
+IMPORTANT: This phase reads WP002 output. Data files come from output/, not assets/.
+
+Step 1 — Read scope:
+  Read $SOURCE_ROOT/specs/MANDATE_S005-P005-WP003_TEAM20.md
+  Read $SOURCE_ROOT/specs/LOD400_S005-P005-WP003.md
+
+Step 2 — Read reference (from WP002 output):
+  Read $SOURCE_ROOT/output/src/shaked_wg_agent/parsers/llm_listing_parser.py
+  Read $SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/facebook_manual.py (pattern)
+  Read $SOURCE_ROOT/output/data/sources.json (WP002 modified — will append facebook-email)
+  Read $SOURCE_ROOT/src/shaked_wg_agent/scrapers/base.py
+
+Step 3 — Install dependencies:
+  pip install imapclient
+
+Step 4 — Implement per LOD400 sections 2.1-2.8:
+  4a. Create scraper:
+      Write $SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/facebook_email.py
+
+  4b. Create state file:
+      Write $SOURCE_ROOT/output/data/facebook/processed_email_ids.json (containing {})
+
+  4c. Register source (READ FROM output/, WRITE TO output/):
+      Read $SOURCE_ROOT/output/data/sources.json -> add facebook-email -> write to $SOURCE_ROOT/output/data/sources.json
+      Read $SOURCE_ROOT/output/data/cities/pardes-hanna-region.json -> add facebook-email -> write to $SOURCE_ROOT/output/data/cities/pardes-hanna-region.json
+      Read $SOURCE_ROOT/output/data/profiles/pardes-hanna.json -> add facebook-email -> write to $SOURCE_ROOT/output/data/profiles/pardes-hanna.json
+
+  4d. Create test fixtures:
+      Write $SOURCE_ROOT/output/tests/fixtures/fb_email_single.eml
+      Write $SOURCE_ROOT/output/tests/fixtures/fb_email_digest.eml
+      Write $SOURCE_ROOT/output/tests/fixtures/fb_email_popular.eml
+
+  4e. Create test file:
+      Write $SOURCE_ROOT/output/tests/test_facebook_email.py
+
+Step 5 — Verification gate:
+  python3 -c "
+  import sys, os
+  sys.path.insert(0, os.environ['SOURCE_ROOT']+'/output/src')
+  sys.path.insert(0, os.environ['SOURCE_ROOT']+'/src')
+  from shaked_wg_agent.scrapers.facebook_email import EmailFacebookScraper
+  from shaked_wg_agent.scrapers.base import BaseScraper
+  assert issubclass(EmailFacebookScraper, BaseScraper), 'Not a BaseScraper subclass'
+  print('WP003 import PASS')
+  "
+
+  python3 -c "
+  import json, os
+  sr = os.environ['SOURCE_ROOT']
+  s = json.load(open(sr+'/output/data/sources.json'))
+  ids = [x['source_id'] for x in s]
+  assert 'facebook-email' in ids, 'facebook-email not in sources'
+  assert 'facebook-manual' in ids, 'facebook-manual missing (WP002 entry lost!)'
+  c = json.load(open(sr+'/output/data/cities/pardes-hanna-region.json'))
+  assert 'facebook-email' in c['available_sources'], 'facebook-email not in city'
+  assert 'facebook-manual' in c['available_sources'], 'facebook-manual lost from city'
+  p = json.load(open(sr+'/output/data/profiles/pardes-hanna.json'))
+  assert 'facebook-email' in p['enabled_sources'], 'facebook-email not in profile'
+  print('WP003 registration PASS (WP002 entries preserved)')
+  "
+
+  python3 -c "
+  import os
+  sr = os.environ['SOURCE_ROOT']
+  for f in ['fb_email_single.eml', 'fb_email_digest.eml', 'fb_email_popular.eml']:
+      assert os.path.exists(sr+'/output/tests/fixtures/'+f), f+' missing'
+  print('WP003 fixtures PASS')
+  "
+
+======================================================
+FINAL VERIFICATION
+======================================================
+
+Run comprehensive check — all 3 WPs must pass:
+  # WP001 — Patchright
+  grep -q "from patchright.sync_api" "$SOURCE_ROOT/output/src/shaked_wg_agent/scrapers/wgzimmer_pw.py" && echo "WP001 OK" || echo "WP001 FAIL"
+
+  # WP002 — Parser + Scraper
+  PYTHONPATH="$SOURCE_ROOT/output/src:$SOURCE_ROOT/src" python3 -c "from shaked_wg_agent.parsers.llm_listing_parser import parse_rental_post; from shaked_wg_agent.scrapers.facebook_manual import ManualFacebookScraper; print('WP002 OK')"
+
+  # WP003 — Email Scraper
+  PYTHONPATH="$SOURCE_ROOT/output/src:$SOURCE_ROOT/src" python3 -c "from shaked_wg_agent.scrapers.facebook_email import EmailFacebookScraper; print('WP003 OK')"
+
+  # Data integrity
+  python3 -c "
+  import json, os
+  sr = os.environ['SOURCE_ROOT']
+  s = json.load(open(sr+'/output/data/sources.json'))
+  ids = sorted([x['source_id'] for x in s])
+  assert 'facebook-email' in ids and 'facebook-manual' in ids, f'Missing FB sources: {ids}'
+  c = json.load(open(sr+'/output/data/cities/pardes-hanna-region.json'))
+  assert 'facebook-manual' in c['available_sources'] and 'facebook-email' in c['available_sources']
+  p = json.load(open(sr+'/output/data/profiles/pardes-hanna.json'))
+  assert 'facebook-manual' in p['enabled_sources'] and 'facebook-email' in p['enabled_sources']
+  print('Data integrity OK')
+  "
+
+Summarize: list all files written to output/, total ACs addressed per WP, and any issues encountered.
+
+OUTPUT CHAINING:
+  WP001 modifies wgzimmer_pw.py only — no data files touched, no chaining impact.
+  WP002 creates parsers/ module + facebook_manual.py + modifies data files -> WP003 reads all from output/.
+  WP003 MUST read sources.json, pardes-hanna-region.json, pardes-hanna.json from $SOURCE_ROOT/output/data/ (NOT $SOURCE_ROOT/data/).
+  WP003 imports parse_rental_post from $SOURCE_ROOT/output/src/shaked_wg_agent/parsers/.
+
+IRON RULES:
+1. Linear execution: WP001 -> WP002 -> WP003
+2. Gate discipline: all verifications must pass before next phase
+3. Spec is law: LOD400 is authoritative, Mandate scopes your work
+4. Use Edit tool for changes, Write for new files, shell for verification
+5. Never paste complete file contents into chat — write files to output/
+6. WP003 reads from output/ (WP002 artifacts) — never from original assets/data/ for modified files

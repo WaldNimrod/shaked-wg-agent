@@ -1,0 +1,20 @@
+name: AOS Governance Integrity
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  aos-governance-integrity:
+    runs-on: ubuntu-latest
+    env:
+      AOS_V3_DATABASE_URL: ${{ secrets.AOS_V3_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate AOS governance integrity
+        run: |
+          if [ ! -f "_aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh" ]; then
+            echo "Missing validate_aos.sh; canonicalization incomplete."
+            exit 1
+          fi
+          bash _aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh .

@@ -215,8 +215,8 @@ CONDITIONAL APPROVALS (items approved pending specific action):
 ### Output Files
 
 File your results as:
-- `_COMMUNICATION/team_190/S001-P001-WP001/L-GATE_V_result.md`
-- `_COMMUNICATION/team_190/S001-P002-WP001/CONST_REVIEW_result.md`
+- `_archive/S001-P001-WP001/team_190/L-GATE_V_result.md`
+- `_archive/S001-P002-WP001/team_190/CONST_REVIEW_2026-04-11.md`
 - `_COMMUNICATION/team_190/REQUIREMENTS_LIST_2026-04-11.md`
 
 Report to Team 00 (Nimrod): final verdict + requirements list summary.

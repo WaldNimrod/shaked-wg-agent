@@ -1,0 +1,8 @@
+{
+  "source_url": "https://www.yad2.co.il/realestate/rent?mobile=1&topArea=2&area=3&property=1&rooms=1-5.5&price=1-10000",
+  "page_title": "ShieldSquare Captcha",
+  "html_bytes": 19027,
+  "next_data_found": false,
+  "items_extracted": 0,
+  "notes": "items from embedded JSON heuristics; verify fields against live UI"
+}

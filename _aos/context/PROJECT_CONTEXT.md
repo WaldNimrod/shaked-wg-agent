@@ -46,6 +46,12 @@ shaked_wg_agent/
 - **Tests:** 53 passing
 - **CLI:** `python -m shaked_wg_agent [run|status|list]`
 
+## Data Authority (ADR034)
+
+- Project/domain data remains in this repo (JSON/app files) per local L0 operation.
+- If this project participates in DB-backed AOS governance workflows, structured AOS state changes are API-first with `deploy_cascade()` snapshots.
+- Avoid stale manual canonical-field edits in `_aos/*.yaml` when DB-owned governance fields are active.
+
 ## Key Paths
 
 | Path | Content |

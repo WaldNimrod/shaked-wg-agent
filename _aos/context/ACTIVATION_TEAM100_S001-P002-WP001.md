@@ -131,7 +131,7 @@ Provide a ruling on each:
 ## OUTPUT FORMAT
 
 File your output as:
-`_COMMUNICATION/team_100/S001-P002-WP001/ARCH_REVIEW_2026-04-11.md`
+`_archive/S001-P002-WP001/team_100/ARCH_REVIEW_2026-04-11.md`
 
 Structure:
 

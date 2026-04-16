@@ -1,0 +1,36 @@
+{
+  "_provenance": "synthetic_schema_example",
+  "yad2_style_item": {
+    "token": "REDACTED-TOKEN-002",
+    "subcategory": "room_in_shared",
+    "price": 2100,
+    "currency": "ILS",
+    "rooms": 1.0,
+    "square_meter": 12,
+    "address": {
+      "city_text": "חדרה",
+      "street_text": "אלונים"
+    },
+    "description_text_he": "חדר בשותפות, שותפים צעירים, ללא בעלי חיים.",
+    "flags": {
+      "pets_allowed": false,
+      "immediate": true
+    }
+  },
+  "scraped_listing_projection": {
+    "source": "yad2",
+    "source_listing_id": "REDACTED-TOKEN-002",
+    "source_search_url": "https://www.yad2.co.il/realestate/rent?...",
+    "title": "חדר בדירת שותפים בחדרה",
+    "price_chf": null,
+    "available_from": "מיידי",
+    "location_text": "חדרה, אלונים",
+    "district": "",
+    "roommate_signal": "שותפים צעירים",
+    "vegan_signal": "",
+    "summary": "חדר בשותפות, שותפים צעירים, ללא בעלי חיים.",
+    "direct_url": "https://www.yad2.co.il/item/REDACTED-TOKEN-002",
+    "url_status": "direct",
+    "posted_date": null
+  }
+}

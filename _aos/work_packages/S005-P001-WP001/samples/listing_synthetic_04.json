@@ -1,0 +1,25 @@
+{
+  "_provenance": "synthetic_schema_example",
+  "yad2_style_item": {
+    "token": "REDACTED-TOKEN-004",
+    "price": 3800,
+    "currency": "ILS",
+    "price_includes_arnona": false,
+    "price_includes_vaad_bayit": true,
+    "rooms": 3.5,
+    "square_meter": 78,
+    "address": {
+      "city_text": "אור עקיבא"
+    },
+    "description_text_he": "Mixed Hebrew עברית and English text for encoding tests — מזגן בכל חדר."
+  },
+  "scraped_listing_projection": {
+    "source": "yad2",
+    "source_listing_id": "REDACTED-TOKEN-004",
+    "title": "דירת 3.5 חדרים באור עקיבא",
+    "price_chf": null,
+    "location_text": "אור עקיבא",
+    "summary": "Mixed Hebrew עברית and English text for encoding tests — מזגן בכל חדר.",
+    "encoding_note": "UTF-8; preserve RTL display in UI; normalize spaces and bidi marks if present in DOM."
+  }
+}

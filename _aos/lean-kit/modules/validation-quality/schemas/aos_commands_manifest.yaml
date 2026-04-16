@@ -1,0 +1,28 @@
+# =============================================================================
+# AOS slash commands — machine-readable inventory (SSoT)
+# =============================================================================
+# Authority: Team 100 (hub). Team 00 approves structural changes via directives.
+# Consumers: validate_aos_commands.sh; ADR031 / GATE_REGISTRY are narrative mirrors.
+#
+# Every file listed MUST exist at: <project-root>/.claude/commands/<file>
+# =============================================================================
+version: "1.0.0"
+last_reviewed: "2026-04-15"
+description: "Canonical list of Claude Code AOS methodology command files (AOS_*.md)"
+
+expected_command_files:
+  - AOS_archive.md
+  - AOS_decide.md
+  - AOS_domain-health.md
+  - AOS_gate-mandate.md
+  - AOS_gate-status.md
+  - AOS_gov-sync.md
+  - AOS_gov-update.md
+  - AOS_handoff.md
+  - AOS_help.md
+  - AOS_mail.md
+  - AOS_project-init.md
+  - AOS_qa.md
+  - AOS_send.md
+  - AOS_server.md
+  - AOS_validate.md

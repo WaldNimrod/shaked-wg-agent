@@ -1,0 +1,101 @@
+{
+  "_comment": "AOS Package Validator config for S005-P005-v1. Set package_root before running.",
+  "package_id": "S005-P005",
+  "version": "v1",
+  "package_root": "/Users/nimrod/Documents/shaked-wg-agent/_COMMUNICATION/cowork/S005-P005-v1",
+  "source_root_label": "SOURCE_ROOT",
+  "source_root_rel": "assets",
+  "output_rel": "output",
+
+  "instruction_file": "S005-P005_INSTRUCTIONS.txt",
+  "prompt_file": "S005-P005_ACTIVATION_PROMPT.txt",
+  "doc_files": ["PACKAGE.md"],
+
+  "manifest": {
+    "specs/LOD400_S005-P005-WP001.md":          {"role": "read-only", "wp": "WP001"},
+    "specs/LOD400_S005-P005-WP002.md":          {"role": "read-only", "wp": "WP002"},
+    "specs/LOD400_S005-P005-WP003.md":          {"role": "read-only", "wp": "WP003"},
+    "specs/MANDATE_S005-P005-WP001_TEAM20.md":  {"role": "read-only", "wp": "WP001"},
+    "specs/MANDATE_S005-P005-WP002_TEAM20.md":  {"role": "read-only", "wp": "WP002"},
+    "specs/MANDATE_S005-P005-WP003_TEAM20.md":  {"role": "read-only", "wp": "WP003"},
+    "src/shaked_wg_agent/__init__.py":           {"role": "read-only"},
+    "src/shaked_wg_agent/config.py":             {"role": "read-only", "wp": "WP002,WP003"},
+    "src/shaked_wg_agent/scrapers/__init__.py":  {"role": "read-only"},
+    "src/shaked_wg_agent/scrapers/base.py":      {"role": "read-only", "wp": "WP001,WP002,WP003"},
+    "src/shaked_wg_agent/scrapers/wgzimmer_pw.py": {"role": "modify", "wp": "WP001"},
+    "src/shaked_wg_agent/scrapers/flatfox.py":   {"role": "read-only", "wp": "WP002"},
+    "src/shaked_wg_agent/scrapers/homeless.py":  {"role": "read-only", "wp": "WP002"},
+    "data/sources.json":                         {"role": "modify", "wp": "WP002,WP003"},
+    "data/cities/pardes-hanna-region.json":      {"role": "modify", "wp": "WP002,WP003"},
+    "data/profiles/pardes-hanna.json":           {"role": "modify", "wp": "WP002,WP003"}
+  },
+
+  "work_packages": [
+    {
+      "id": "WP001",
+      "spec_file": "specs/LOD400_S005-P005-WP001.md",
+      "mandate_file": "specs/MANDATE_S005-P005-WP001_TEAM20.md",
+      "modify_files": [
+        "src/shaked_wg_agent/scrapers/wgzimmer_pw.py"
+      ]
+    },
+    {
+      "id": "WP002",
+      "spec_file": "specs/LOD400_S005-P005-WP002.md",
+      "mandate_file": "specs/MANDATE_S005-P005-WP002_TEAM20.md",
+      "modify_files": [
+        "data/sources.json",
+        "data/cities/pardes-hanna-region.json",
+        "data/profiles/pardes-hanna.json"
+      ],
+      "create_files": [
+        "src/shaked_wg_agent/parsers/__init__.py",
+        "src/shaked_wg_agent/parsers/llm_listing_parser.py",
+        "src/shaked_wg_agent/scrapers/facebook_manual.py",
+        "data/facebook/pardes-hanna-posts.json",
+        "tests/fixtures/hebrew_posts.json",
+        "tests/test_facebook_manual.py",
+        "tests/test_llm_parser.py",
+        "tests/test_facebook_manual_dedup.py",
+        "tests/test_facebook_manual_validation.py",
+        "tests/test_llm_parser_modes.py"
+      ]
+    },
+    {
+      "id": "WP003",
+      "spec_file": "specs/LOD400_S005-P005-WP003.md",
+      "mandate_file": "specs/MANDATE_S005-P005-WP003_TEAM20.md",
+      "modify_files": [
+        "data/sources.json",
+        "data/cities/pardes-hanna-region.json",
+        "data/profiles/pardes-hanna.json"
+      ],
+      "create_files": [
+        "src/shaked_wg_agent/scrapers/facebook_email.py",
+        "data/facebook/processed_email_ids.json",
+        "tests/fixtures/fb_email_single.eml",
+        "tests/fixtures/fb_email_digest.eml",
+        "tests/fixtures/fb_email_popular.eml",
+        "tests/test_facebook_email.py"
+      ]
+    }
+  ],
+
+  "shell_variables": {
+    "SOURCE_ROOT": "mnt/S005-P005-v1/assets"
+  },
+
+  "field_renames": {},
+
+  "path_references": {},
+
+  "cowork_capabilities": [
+    "Shell",
+    "Bash",
+    "Python",
+    "Read",
+    "Write",
+    "Edit",
+    "TodoList"
+  ]
+}

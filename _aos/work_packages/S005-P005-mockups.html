@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S005-P005 System Design Mockups | shaked-wg-agent</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
+    --border: #30363d; --text: #c9d1d9; --text-muted: #8b949e;
+    --accent: #58a6ff; --green: #3fb950; --red: #f85149;
+    --orange: #d29922; --purple: #bc8cff; --cyan: #39d353;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+  /* Header */
+  .header { text-align: center; padding: 40px 0 30px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+  .header h1 { font-size: 2em; color: var(--accent); margin-bottom: 8px; }
+  .header .subtitle { color: var(--text-muted); font-size: 1.1em; }
+  .header .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8em; margin: 10px 4px 0; }
+  .badge-pass { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .badge-wp { background: rgba(88,166,255,0.15); color: var(--accent); border: 1px solid rgba(88,166,255,0.3); }
+
+  /* Navigation */
+  .nav { display: flex; gap: 8px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; }
+  .nav a { padding: 10px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); text-decoration: none; transition: all 0.2s; font-size: 0.9em; }
+  .nav a:hover, .nav a.active { background: var(--surface2); border-color: var(--accent); color: var(--accent); }
+
+  /* Sections */
+  .wp-section { margin-bottom: 60px; scroll-margin-top: 20px; }
+  .wp-section h2 { font-size: 1.5em; color: var(--accent); border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px; }
+  .wp-section h3 { font-size: 1.2em; color: var(--purple); margin: 25px 0 15px; }
+
+  /* Diagram containers */
+  .diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 30px; margin: 20px 0; overflow-x: auto; }
+  .diagram-title { color: var(--text-muted); font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
+
+  /* Flow diagrams via CSS */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: center; padding: 10px 0; }
+  .flow-item { padding: 12px 20px; border-radius: 8px; font-size: 0.85em; text-align: center; min-width: 120px; position: relative; }
+  .flow-arrow { color: var(--text-muted); font-size: 1.5em; padding: 0 8px; }
+  .flow-input { background: rgba(88,166,255,0.12); border: 1px solid rgba(88,166,255,0.3); color: var(--accent); }
+  .flow-process { background: rgba(188,140,255,0.12); border: 1px solid rgba(188,140,255,0.3); color: var(--purple); }
+  .flow-output { background: rgba(63,185,80,0.12); border: 1px solid rgba(63,185,80,0.3); color: var(--green); }
+  .flow-decision { background: rgba(210,153,34,0.12); border: 1px solid rgba(210,153,34,0.3); color: var(--orange); transform: rotate(0deg); }
+  .flow-error { background: rgba(248,81,73,0.12); border: 1px solid rgba(248,81,73,0.3); color: var(--red); }
+
+  /* Architecture boxes */
+  .arch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin: 20px 0; }
+  .arch-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .arch-box h4 { color: var(--accent); margin-bottom: 8px; font-size: 0.95em; }
+  .arch-box .path { color: var(--cyan); font-family: monospace; font-size: 0.8em; margin-bottom: 8px; display: block; }
+  .arch-box ul { padding-left: 16px; font-size: 0.85em; color: var(--text-muted); }
+  .arch-box ul li { margin: 4px 0; }
+  .arch-box.new { border-left: 3px solid var(--green); }
+  .arch-box.modify { border-left: 3px solid var(--orange); }
+
+  /* Code mockups */
+  .code-block { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.82em; overflow-x: auto; line-height: 1.7; margin: 12px 0; }
+  .code-block .comment { color: #8b949e; }
+  .code-block .keyword { color: #ff7b72; }
+  .code-block .string { color: #a5d6ff; }
+  .code-block .func { color: #d2a8ff; }
+  .code-block .class { color: #ffa657; }
+  .code-block .param { color: #79c0ff; }
+  .code-block .type { color: #ff7b72; }
+
+  /* Data tables */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.85em; margin: 12px 0; }
+  .data-table th { background: var(--surface2); color: var(--accent); padding: 10px 14px; text-align: left; border: 1px solid var(--border); }
+  .data-table td { padding: 8px 14px; border: 1px solid var(--border); color: var(--text); }
+  .data-table tr:hover td { background: rgba(88,166,255,0.05); }
+
+  /* CLI mockup */
+  .cli { background: #000; border-radius: 10px; overflow: hidden; margin: 15px 0; font-family: 'SF Mono', monospace; font-size: 0.82em; }
+  .cli-titlebar { background: #2d2d2d; padding: 8px 12px; display: flex; gap: 6px; align-items: center; }
+  .cli-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .cli-dot.red { background: #ff5f57; }
+  .cli-dot.yellow { background: #febc2e; }
+  .cli-dot.green { background: #28c840; }
+  .cli-body { padding: 16px; line-height: 1.7; }
+  .cli-prompt { color: #3fb950; }
+  .cli-cmd { color: #c9d1d9; }
+  .cli-out { color: #8b949e; }
+  .cli-success { color: #3fb950; }
+  .cli-warn { color: #d29922; }
+  .cli-err { color: #f85149; }
+  .cli-info { color: #58a6ff; }
+
+  /* Sequence diagram */
+  .seq-diagram { display: flex; flex-direction: column; gap: 0; margin: 15px 0; }
+  .seq-row { display: grid; grid-template-columns: 120px 1fr 120px 1fr 120px; align-items: center; min-height: 40px; }
+  .seq-actor { text-align: center; padding: 8px; background: rgba(88,166,255,0.12); border: 1px solid rgba(88,166,255,0.3); border-radius: 6px; color: var(--accent); font-size: 0.8em; font-weight: 600; }
+  .seq-line { height: 2px; background: var(--border); position: relative; }
+  .seq-msg { font-size: 0.75em; padding: 4px 8px; color: var(--text-muted); text-align: center; position: relative; }
+  .seq-msg::before { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 1px; background: var(--accent); }
+  .seq-msg.right::before { background: var(--green); }
+
+  /* JSON mockup */
+  .json-block { background: #0d1117; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: monospace; font-size: 0.8em; line-height: 1.6; overflow-x: auto; }
+  .json-key { color: #79c0ff; }
+  .json-str { color: #a5d6ff; }
+  .json-num { color: #ffa657; }
+  .json-bool { color: #ff7b72; }
+  .json-null { color: #8b949e; }
+
+  /* Status indicators */
+  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 0.8em; padding: 3px 10px; border-radius: 12px; }
+  .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; }
+  .status-pass::before { background: var(--green); }
+  .status-pass { color: var(--green); background: rgba(63,185,80,0.1); }
+
+  /* Vertical flow */
+  .vflow { display: flex; flex-direction: column; align-items: center; gap: 0; margin: 15px 0; }
+  .vflow-item { padding: 10px 24px; border-radius: 8px; font-size: 0.85em; text-align: center; min-width: 200px; z-index: 1; }
+  .vflow-arrow { color: var(--text-muted); font-size: 1.2em; padding: 4px 0; }
+  .vflow-branch { display: flex; gap: 20px; align-items: flex-start; }
+  .vflow-label { font-size: 0.7em; color: var(--text-muted); margin-top: 2px; }
+
+  /* Env var table */
+  .env-table td:first-child { font-family: monospace; color: var(--cyan); font-size: 0.85em; }
+
+  /* Footer */
+  .footer { text-align: center; padding: 30px 0; border-top: 1px solid var(--border); margin-top: 40px; color: var(--text-muted); font-size: 0.8em; }
+
+  @media (max-width: 768px) {
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); }
+    .arch-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Header -->
+<div class="header">
+  <h1>S005-P005 System Design Mockups</h1>
+  <div class="subtitle">shaked-wg-agent | Israel + Swiss Market Expansion | LOD200 &rarr; LOD400</div>
+  <div>
+    <span class="badge badge-wp">WP001 wgzimmer reCAPTCHA</span>
+    <span class="badge badge-wp">WP002 Facebook Manual</span>
+    <span class="badge badge-wp">WP003 Facebook Email</span>
+  </div>
+  <div style="margin-top: 10px;">
+    <span class="badge badge-pass">WP001 PASS_WITH_FINDINGS</span>
+    <span class="badge badge-pass">WP002 PASS</span>
+    <span class="badge badge-pass">WP003 PASS_WITH_FINDINGS</span>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="nav">
+  <a href="#overview">Overview</a>
+  <a href="#wp001">WP001 wgzimmer</a>
+  <a href="#wp002">WP002 FB Manual</a>
+  <a href="#wp003">WP003 FB Email</a>
+  <a href="#data-flow">Data Flow</a>
+  <a href="#env-vars">Environment</a>
+  <a href="#cli">CLI Output</a>
+</div>
+
+<!-- ==================== OVERVIEW ==================== -->
+<div class="wp-section" id="overview">
+  <h2>Architecture Overview</h2>
+
+  <div class="diagram">
+    <div class="diagram-title">Complete System Architecture — S005-P005</div>
+    <div class="arch-grid">
+      <div class="arch-box modify">
+        <h4>wgzimmer Scraper (WP001)</h4>
+        <span class="path">scrapers/wgzimmer_pw.py</span>
+        <ul>
+          <li>Patchright (replaces Playwright)</li>
+          <li>Persistent browser profile</li>
+          <li>reCAPTCHA v3 bypass</li>
+          <li>API interception + DOM fallback</li>
+        </ul>
+      </div>
+      <div class="arch-box new">
+        <h4>Facebook Manual Scraper (WP002)</h4>
+        <span class="path">scrapers/facebook_manual.py</span>
+        <ul>
+          <li>Reads JSON input file</li>
+          <li>LLM-based Hebrew parsing</li>
+          <li>Privacy-safe PII stripping</li>
+          <li>Deduplication pipeline</li>
+        </ul>
+      </div>
+      <div class="arch-box new">
+        <h4>Facebook Email Scraper (WP003)</h4>
+        <span class="path">scrapers/facebook_email.py</span>
+        <ul>
+          <li>IMAP / file input modes</li>
+          <li>FB notification HTML parsing</li>
+          <li>Reuses WP002 LLM parser</li>
+          <li>Cross-source dedup</li>
+        </ul>
+      </div>
+      <div class="arch-box new">
+        <h4>LLM Listing Parser (WP002)</h4>
+        <span class="path">parsers/llm_listing_parser.py</span>
+        <ul>
+          <li>Claude / OpenAI provider</li>
+          <li>Hebrew free-text extraction</li>
+          <li>Structured JSON output</li>
+          <li>Shared by WP002 + WP003</li>
+        </ul>
+      </div>
+      <div class="arch-box modify">
+        <h4>Source Registry</h4>
+        <span class="path">data/sources.json</span>
+        <ul>
+          <li>+facebook-manual source</li>
+          <li>+facebook-email source</li>
+          <li>city_params per source</li>
+        </ul>
+      </div>
+      <div class="arch-box modify">
+        <h4>City Config</h4>
+        <span class="path">data/cities/pardes-hanna-region.json</span>
+        <ul>
+          <li>available_sources += facebook-manual</li>
+          <li>available_sources += facebook-email</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dependency Graph -->
+  <div class="diagram">
+    <div class="diagram-title">WP Dependency Graph</div>
+    <div style="display: flex; justify-content: center; gap: 40px; align-items: center; flex-wrap: wrap; padding: 20px;">
+      <div style="text-align: center;">
+        <div class="flow-item flow-process" style="margin-bottom: 8px;">WP001<br><small>wgzimmer fix</small></div>
+        <div style="color: var(--text-muted); font-size: 0.75em;">Independent</div>
+      </div>
+      <div style="text-align: center;">
+        <div class="flow-item flow-process" style="margin-bottom: 8px;">WP002<br><small>FB Manual + LLM</small></div>
+        <div style="color: var(--text-muted); font-size: 0.75em;">Independent</div>
+      </div>
+      <div style="color: var(--text-muted); font-size: 2em;">&larr;</div>
+      <div style="text-align: center;">
+        <div class="flow-item flow-decision" style="margin-bottom: 8px;">WP003<br><small>FB Email</small></div>
+        <div style="color: var(--orange); font-size: 0.75em;">depends_on: WP002</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== WP001 ==================== -->
+<div class="wp-section" id="wp001">
+  <h2>WP001 — wgzimmer.ch reCAPTCHA v3 Bypass</h2>
+
+  <h3>Current vs. Proposed Architecture</h3>
+  <div class="diagram">
+    <div class="diagram-title">BEFORE (current &mdash; blocked by reCAPTCHA)</div>
+    <div class="flow">
+      <div class="flow-item flow-input">cron trigger<br><small>3x/day</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-process">Playwright<br><small>headless=True</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-process">Ephemeral context<br><small>no cookies</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-decision">reCAPTCHA v3<br><small>score: 0.1-0.3</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-error">BLOCKED<br><small>0 results</small></div>
+    </div>
+  </div>
+
+  <div class="diagram">
+    <div class="diagram-title">AFTER (WP001 &mdash; Patchright + persistent profile)</div>
+    <div class="flow">
+      <div class="flow-item flow-input">cron trigger<br><small>3x/day</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-output">Patchright<br><small>no automation flags</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-output">Persistent context<br><small>Google cookies</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-decision">reCAPTCHA v3<br><small>score: 0.7-0.9</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-output">20-40 listings<br><small>restored</small></div>
+    </div>
+  </div>
+
+  <h3>Code Change Mockup</h3>
+  <div class="code-block">
+<span class="comment"># wgzimmer_pw.py — BEFORE</span>
+<span class="keyword">from</span> <span class="param">playwright.sync_api</span> <span class="keyword">import</span> sync_playwright
+
+<span class="keyword">with</span> sync_playwright() <span class="keyword">as</span> pw:
+    browser = pw.chromium.<span class="func">launch</span>(<span class="param">headless</span>=<span class="keyword">True</span>)
+    context = browser.<span class="func">new_context</span>(
+        <span class="param">user_agent</span>=<span class="string">"Mozilla/5.0 ..."</span>,
+        <span class="param">viewport</span>={<span class="string">"width"</span>: 1920, <span class="string">"height"</span>: 1080}
+    )
+    page = context.<span class="func">new_page</span>()
+  </div>
+
+  <div class="code-block">
+<span class="comment"># wgzimmer_pw.py — AFTER (WP001)</span>
+<span class="keyword">import</span> os
+<span class="keyword">from</span> <span class="param">patchright.sync_api</span> <span class="keyword">import</span> sync_playwright
+
+PROFILE_DIR = os.environ.<span class="func">get</span>(
+    <span class="string">"SHAKED_BROWSER_PROFILE_DIR"</span>,
+    os.path.<span class="func">expanduser</span>(<span class="string">"~/.shaked-wg/browser-profile/wgzimmer"</span>)
+)
+
+<span class="keyword">with</span> sync_playwright() <span class="keyword">as</span> pw:
+    context = pw.chromium.<span class="func">launch_persistent_context</span>(
+        <span class="param">user_data_dir</span>=PROFILE_DIR,
+        <span class="param">headless</span>=<span class="keyword">True</span>,
+        <span class="param">user_agent</span>=<span class="string">"Mozilla/5.0 ..."</span>,
+        <span class="param">viewport</span>={<span class="string">"width"</span>: 1920, <span class="string">"height"</span>: 1080}
+    )
+    page = context.pages[0] <span class="keyword">if</span> context.pages <span class="keyword">else</span> context.<span class="func">new_page</span>()
+  </div>
+
+  <h3>Browser Profile Seeding Flow</h3>
+  <div class="diagram">
+    <div class="diagram-title">One-time setup (server, non-headless)</div>
+    <div class="vflow">
+      <div class="vflow-item flow-input">Server SSH session</div>
+      <div class="vflow-arrow">&darr;</div>
+      <div class="vflow-item flow-process">Launch browser headless=False<br><small>SHAKED_BROWSER_PROFILE_DIR</small></div>
+      <div class="vflow-arrow">&darr;</div>
+      <div class="vflow-item flow-process">Navigate to wgzimmer.ch<br><small>Manual search + interact</small></div>
+      <div class="vflow-arrow">&darr;</div>
+      <div class="vflow-item flow-output">Google cookies persisted<br><small>NID, CONSENT, 1P_JAR</small></div>
+      <div class="vflow-arrow">&darr;</div>
+      <div class="vflow-item flow-output">Profile ready for headless use<br><small>Valid for 6-12 months</small></div>
+    </div>
+  </div>
+
+  <h3>File Changes Summary</h3>
+  <table class="data-table">
+    <thead><tr><th>File</th><th>Action</th><th>Lines Changed (est.)</th></tr></thead>
+    <tbody>
+      <tr><td><code>scrapers/wgzimmer_pw.py</code></td><td style="color:var(--orange)">MODIFY</td><td>~15 lines (import + context)</td></tr>
+      <tr><td><code>pyproject.toml</code></td><td style="color:var(--orange)">MODIFY</td><td>+1 line (patchright dep)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== WP002 ==================== -->
+<div class="wp-section" id="wp002">
+  <h2>WP002 — Facebook Manual Listing Parser</h2>
+
+  <h3>Data Pipeline</h3>
+  <div class="diagram">
+    <div class="diagram-title">End-to-end flow: manual input &rarr; structured listings</div>
+    <div class="flow">
+      <div class="flow-item flow-input">User copies<br>FB posts<br><small>Hebrew free-text</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-input">JSON input file<br><small>posts.json</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-process">ManualFacebook<br>Scraper<br><small>fetch_listings()</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-process">LLM Parser<br><small>Claude / GPT</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-decision">Privacy<br>Filter<br><small>strip PII</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-decision">Dedup<br><small>fuzzy match</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-output">Scraped<br>Listing[]<br><small>structured</small></div>
+    </div>
+  </div>
+
+  <h3>Input Schema (Normative)</h3>
+  <div class="json-block">
+[
+  {
+    <span class="json-key">"post_id"</span>: <span class="json-str">"fb_12345"</span>,           <span class="comment">// REQUIRED: unique ID</span>
+    <span class="json-key">"group_name"</span>: <span class="json-str">"&#1491;&#1497;&#1512;&#1493;&#1514; &#1500;&#1492;&#1513;&#1499;&#1512;&#1492; &#1489;&#1508;&#1512;&#1491;&#1505; &#1495;&#1504;&#1492;"</span>,   <span class="comment">// optional</span>
+    <span class="json-key">"group_url"</span>: <span class="json-str">"https://facebook.com/groups/..."</span>,  <span class="comment">// optional</span>
+    <span class="json-key">"text"</span>: <span class="json-str">"&#1491;&#1497;&#1512;&#1514; 3 &#1495;&#1491;&#1512;&#1497;&#1501; &#1489;&#1512;&#1495;&#1493;&#1489; &#1492;&#1512;&#1510;&#1500; 15, 4500 &#1513;\"&#1495;..."</span>,  <span class="comment">// REQUIRED: min 10 chars</span>
+    <span class="json-key">"author_name"</span>: <span class="json-str">""</span>,              <span class="comment">// optional, NEVER in output</span>
+    <span class="json-key">"posted_at"</span>: <span class="json-str">"2026-04-15T10:30:00"</span>,   <span class="comment">// optional, ISO 8601</span>
+    <span class="json-key">"has_images"</span>: <span class="json-bool">true</span>,               <span class="comment">// optional, default: false</span>
+    <span class="json-key">"raw_url"</span>: <span class="json-str">"https://facebook.com/groups/.../posts/..."</span>  <span class="comment">// optional</span>
+  }
+]
+  </div>
+
+  <h3>LLM Extraction Prompt &rarr; Response Mockup</h3>
+  <div class="diagram">
+    <div class="diagram-title">LLM Request / Response Contract</div>
+    <div style="display: grid; grid-template-columns: 1fr 40px 1fr; gap: 0; align-items: start;">
+      <!-- Input -->
+      <div>
+        <div style="color: var(--accent); font-size: 0.85em; margin-bottom: 8px; font-weight: 600;">INPUT (to LLM)</div>
+        <div class="json-block" style="font-size: 0.78em;">
+<span class="json-key">"text"</span>: <span class="json-str">"&#1491;&#1497;&#1512;&#1514; 3 &#1495;&#1491;&#1512;&#1497;&#1501; &#1500;&#1492;&#1513;&#1499;&#1512;&#1492;
+&#1489;&#1508;&#1512;&#1491;&#1505; &#1495;&#1504;&#1492;, &#1512;&#1495;&#1493;&#1489; &#1492;&#1512;&#1510;&#1500; 15
+4500 &#1513;\"&#1495; &#1500;&#1495;&#1493;&#1491;&#1513;
+&#1511;&#1493;&#1502;&#1492; 2, &#1502;&#1512;&#1508;&#1505;&#1514;
+&#1500;&#1500;&#1488; &#1489;&#1506;&#1500;&#1497; &#1495;&#1497;&#1497;&#1501;
+&#1508;&#1504;&#1493;&#1497;&#1492; &#1502;-1.5.2026
+&#1500;&#1508;&#1512;&#1496;&#1497;&#1501; 054-XXXXXXX"</span>
+        </div>
+      </div>
+      <!-- Arrow -->
+      <div style="text-align: center; padding-top: 60px; color: var(--accent); font-size: 1.5em;">&rarr;</div>
+      <!-- Output -->
+      <div>
+        <div style="color: var(--green); font-size: 0.85em; margin-bottom: 8px; font-weight: 600;">OUTPUT (from LLM)</div>
+        <div class="json-block" style="font-size: 0.78em;">
+{
+  <span class="json-key">"is_rental_offer"</span>: <span class="json-bool">true</span>,
+  <span class="json-key">"price_ils"</span>: <span class="json-num">4500</span>,
+  <span class="json-key">"rooms"</span>: <span class="json-num">3.0</span>,
+  <span class="json-key">"city"</span>: <span class="json-str">"&#1508;&#1512;&#1491;&#1505; &#1495;&#1504;&#1492;"</span>,
+  <span class="json-key">"neighborhood"</span>: <span class="json-str">""</span>,
+  <span class="json-key">"street"</span>: <span class="json-str">"&#1492;&#1512;&#1510;&#1500; 15"</span>,
+  <span class="json-key">"available_from"</span>: <span class="json-str">"2026-05-01"</span>,
+  <span class="json-key">"property_type"</span>: <span class="json-str">"apartment"</span>,
+  <span class="json-key">"floor"</span>: <span class="json-num">2</span>,
+  <span class="json-key">"area_sqm"</span>: <span class="json-null">null</span>,
+  <span class="json-key">"key_features"</span>: [<span class="json-str">"balcony"</span>, <span class="json-str">"no-pets"</span>],
+  <span class="json-key">"contact_method"</span>: <span class="json-str">"phone"</span>
+}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>LLM Failure Behavior Matrix</h3>
+  <table class="data-table">
+    <thead><tr><th>Failure Mode</th><th>Scope</th><th>Behavior</th><th>Log Level</th></tr></thead>
+    <tbody>
+      <tr><td>No API key</td><td style="color:var(--red)">RUN</td><td>return [] immediately</td><td>WARNING</td></tr>
+      <tr><td>No provider set</td><td style="color:var(--red)">RUN</td><td>return [] immediately</td><td>WARNING</td></tr>
+      <tr><td>API timeout</td><td style="color:var(--orange)">POST</td><td>skip post, continue batch</td><td>WARNING</td></tr>
+      <tr><td>Rate limit (429)</td><td style="color:var(--orange)">POST</td><td>retry 1x, then skip</td><td>WARNING</td></tr>
+      <tr><td>Malformed response</td><td style="color:var(--orange)">POST</td><td>skip post, continue</td><td>WARNING</td></tr>
+      <tr><td>API error (500)</td><td style="color:var(--orange)">POST</td><td>skip post, continue</td><td>ERROR</td></tr>
+      <tr><td>All posts fail</td><td style="color:var(--red)">RUN</td><td>return []</td><td>ERROR</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Class Hierarchy</h3>
+  <div class="code-block">
+<span class="comment"># scrapers/facebook_manual.py</span>
+
+<span class="keyword">class</span> <span class="class">ManualFacebookScraper</span>(<span class="class">BaseScraper</span>):
+    <span class="string">"""Facebook manual listing scraper with LLM-based Hebrew extraction."""</span>
+
+    <span class="keyword">def</span> <span class="func">__init__</span>(<span class="param">self</span>, source_id: <span class="type">str</span>, search_url: <span class="type">str</span>, city: <span class="type">str</span>):
+        <span class="keyword">super</span>().<span class="func">__init__</span>(source_id, search_url, city)
+        self.input_path = Path(search_url)  <span class="comment"># search_url = file path</span>
+
+    <span class="keyword">def</span> <span class="func">fetch_listings</span>(<span class="param">self</span>) -> <span class="type">list</span>[<span class="class">ScrapedListing</span>]:
+        <span class="comment"># 1. Validate LLM config</span>
+        <span class="keyword">if not</span> self.<span class="func">_check_llm_config</span>():
+            <span class="keyword">return</span> []
+
+        <span class="comment"># 2. Read + validate input file</span>
+        posts = self.<span class="func">_read_input_file</span>()
+        <span class="keyword">if not</span> posts:
+            <span class="keyword">return</span> []
+
+        <span class="comment"># 3. Parse each post via LLM</span>
+        listings = []
+        <span class="keyword">for</span> post <span class="keyword">in</span> posts:
+            parsed = <span class="func">parse_rental_post</span>(post[<span class="string">"text"</span>], post.<span class="func">get</span>(<span class="string">"group_name"</span>, <span class="string">""</span>))
+            <span class="keyword">if</span> parsed <span class="keyword">and</span> parsed[<span class="string">"is_rental_offer"</span>]:
+                listing = self.<span class="func">_to_scraped_listing</span>(post, parsed)
+                listings.<span class="func">append</span>(listing)
+
+        <span class="comment"># 4. Deduplicate</span>
+        <span class="keyword">return</span> self.<span class="func">_deduplicate</span>(listings)
+  </div>
+
+  <h3>File Changes Summary</h3>
+  <table class="data-table">
+    <thead><tr><th>File</th><th>Action</th><th>Lines (est.)</th></tr></thead>
+    <tbody>
+      <tr><td><code>scrapers/facebook_manual.py</code></td><td style="color:var(--green)">CREATE</td><td>~150</td></tr>
+      <tr><td><code>parsers/__init__.py</code></td><td style="color:var(--green)">CREATE</td><td>~5</td></tr>
+      <tr><td><code>parsers/llm_listing_parser.py</code></td><td style="color:var(--green)">CREATE</td><td>~120</td></tr>
+      <tr><td><code>data/sources.json</code></td><td style="color:var(--orange)">MODIFY</td><td>+15</td></tr>
+      <tr><td><code>data/cities/pardes-hanna-region.json</code></td><td style="color:var(--orange)">MODIFY</td><td>+1</td></tr>
+      <tr><td><code>data/profiles/pardes-hanna.json</code></td><td style="color:var(--orange)">MODIFY</td><td>+1</td></tr>
+      <tr><td><code>data/facebook/pardes-hanna-posts.json</code></td><td style="color:var(--green)">CREATE</td><td>1 (empty [])</td></tr>
+      <tr><td><code>pyproject.toml</code></td><td style="color:var(--orange)">MODIFY</td><td>+2 (optional deps)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== WP003 ==================== -->
+<div class="wp-section" id="wp003">
+  <h2>WP003 — Facebook Email Notification Parser</h2>
+
+  <h3>Email Processing Pipeline</h3>
+  <div class="diagram">
+    <div class="diagram-title">Passive acquisition flow: email &rarr; structured listings</div>
+    <div class="flow">
+      <div class="flow-item flow-input">Facebook<br>sends email<br><small>automatic</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-input">IMAP<br>mailbox<br><small>or .eml files</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-process">Email<br>Facebook<br>Scraper</div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-process">HTML<br>Parser<br><small>extract snippets</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-process">WP002 LLM<br>Parser<br><small>reused</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-decision">4-layer<br>Dedup<br><small>ordered</small></div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-item flow-output">Scraped<br>Listing[]</div>
+    </div>
+  </div>
+
+  <h3>Facebook Email Notification Formats</h3>
+  <div class="diagram">
+    <div class="diagram-title">Three notification types to parse</div>
+    <div class="arch-grid">
+      <div class="arch-box" style="border-left: 3px solid var(--accent);">
+        <h4>Single Post</h4>
+        <span class="path">Subject: "New post in [Group]"</span>
+        <ul>
+          <li>1 post per email</li>
+          <li>Full snippet (200-300 chars)</li>
+          <li>Direct post URL</li>
+          <li>Author display name</li>
+        </ul>
+      </div>
+      <div class="arch-box" style="border-left: 3px solid var(--purple);">
+        <h4>Digest</h4>
+        <span class="path">Subject: "N new posts in [Group]"</span>
+        <ul>
+          <li>Multiple posts per email</li>
+          <li>Shorter snippets per post</li>
+          <li>Individual post URLs</li>
+          <li>Grouped by time period</li>
+        </ul>
+      </div>
+      <div class="arch-box" style="border-left: 3px solid var(--orange);">
+        <h4>Popular Posts</h4>
+        <span class="path">Subject: "Popular posts in [Group]"</span>
+        <ul>
+          <li>Algorithmic selection</li>
+          <li>May include older posts</li>
+          <li>Higher engagement posts</li>
+          <li>Engagement metrics shown</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <h3>Deduplication Pipeline (Ordered)</h3>
+  <div class="diagram">
+    <div class="diagram-title">4-layer deterministic dedup (evaluated in order)</div>
+    <div class="vflow">
+      <div class="vflow-item flow-input" style="min-width: 320px;">Incoming listing from email</div>
+      <div class="vflow-arrow">&darr;</div>
+      <div class="vflow-item flow-decision" style="min-width: 320px;">
+        <strong>P1:</strong> Email message-ID<br>
+        <small>Already processed? &rarr; skip entire email</small>
+      </div>
+      <div class="vflow-arrow">&darr; not seen</div>
+      <div class="vflow-item flow-decision" style="min-width: 320px;">
+        <strong>P2:</strong> Post URL exact match<br>
+        <small>Same raw_url as existing listing? &rarr; skip</small>
+      </div>
+      <div class="vflow-arrow">&darr; no match</div>
+      <div class="vflow-item flow-decision" style="min-width: 320px;">
+        <strong>P3:</strong> Text hash (within batch)<br>
+        <small>SHA-256 of normalized text &rarr; first wins</small>
+      </div>
+      <div class="vflow-arrow">&darr; unique</div>
+      <div class="vflow-item flow-decision" style="min-width: 320px;">
+        <strong>P4:</strong> Fuzzy listing match<br>
+        <small>city + price &plusmn;10% + rooms &rarr; cross_listed</small>
+      </div>
+      <div class="vflow-arrow">&darr; pass</div>
+      <div class="vflow-item flow-output" style="min-width: 320px;">Add to results</div>
+    </div>
+  </div>
+
+  <h3>IMAP Credential Contract</h3>
+  <table class="data-table env-table">
+    <thead><tr><th>Env Variable</th><th>Required</th><th>Example</th><th>Fallback</th></tr></thead>
+    <tbody>
+      <tr><td>SHAKED_EMAIL_HOST</td><td>Yes (for IMAP)</td><td>imap.gmail.com</td><td>return []</td></tr>
+      <tr><td>SHAKED_EMAIL_USER</td><td>Yes (for IMAP)</td><td>user@gmail.com</td><td>return []</td></tr>
+      <tr><td>SHAKED_EMAIL_PASS</td><td>Yes (for IMAP)</td><td>app-password</td><td>return []</td></tr>
+    </tbody>
+  </table>
+  <p style="color: var(--red); font-size: 0.85em; margin-top: 8px;">
+    Inline credentials in URIs or config files are <strong>explicitly forbidden</strong>.
+  </p>
+
+  <h3>File Changes Summary</h3>
+  <table class="data-table">
+    <thead><tr><th>File</th><th>Action</th><th>Lines (est.)</th></tr></thead>
+    <tbody>
+      <tr><td><code>scrapers/facebook_email.py</code></td><td style="color:var(--green)">CREATE</td><td>~200</td></tr>
+      <tr><td><code>data/sources.json</code></td><td style="color:var(--orange)">MODIFY</td><td>+15</td></tr>
+      <tr><td><code>data/profiles/pardes-hanna.json</code></td><td style="color:var(--orange)">MODIFY</td><td>+1</td></tr>
+      <tr><td><code>data/facebook/processed_email_ids.json</code></td><td style="color:var(--green)">CREATE</td><td>1 (empty [])</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== DATA FLOW ==================== -->
+<div class="wp-section" id="data-flow">
+  <h2>Unified Data Flow — All Sources</h2>
+
+  <div class="diagram">
+    <div class="diagram-title">Complete scan pipeline after S005-P005 implementation</div>
+    <div style="display: flex; flex-direction: column; gap: 20px; padding: 10px;">
+
+      <!-- Sources row -->
+      <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+        <div class="flow-item flow-input" style="flex: 1; max-width: 180px;">
+          <strong>wgzimmer.ch</strong><br>
+          <small>Patchright + persistent</small><br>
+          <small style="color:var(--green)">~20-40 listings</small>
+        </div>
+        <div class="flow-item flow-input" style="flex: 1; max-width: 180px;">
+          <strong>flatfox.ch</strong><br>
+          <small>REST API (JSON)</small><br>
+          <small style="color:var(--green)">~60 listings</small>
+        </div>
+        <div class="flow-item flow-input" style="flex: 1; max-width: 180px;">
+          <strong>homeless.co.il</strong><br>
+          <small>Playwright DOM</small><br>
+          <small style="color:var(--green)">~20 listings</small>
+        </div>
+        <div class="flow-item flow-input" style="flex: 1; max-width: 180px;">
+          <strong>FB Manual</strong><br>
+          <small>JSON file + LLM</small><br>
+          <small style="color:var(--green)">~5-15 listings</small>
+        </div>
+        <div class="flow-item flow-input" style="flex: 1; max-width: 180px;">
+          <strong>FB Email</strong><br>
+          <small>IMAP + LLM</small><br>
+          <small style="color:var(--green)">~5-10 listings</small>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div style="text-align: center; color: var(--text-muted); font-size: 1.5em;">&darr;&darr;&darr;&darr;&darr;</div>
+
+      <!-- Processing -->
+      <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+        <div class="flow-item flow-process" style="flex: 1; max-width: 250px;">
+          <strong>Source-specific scrapers</strong><br>
+          <small>BaseScraper.fetch_listings()</small>
+        </div>
+        <div class="flow-item flow-process" style="flex: 1; max-width: 250px;">
+          <strong>Cross-source deduplication</strong><br>
+          <small>URL + fuzzy match</small>
+        </div>
+        <div class="flow-item flow-process" style="flex: 1; max-width: 250px;">
+          <strong>Profile filtering</strong><br>
+          <small>price, city, preferences</small>
+        </div>
+      </div>
+
+      <!-- Arrow -->
+      <div style="text-align: center; color: var(--text-muted); font-size: 1.5em;">&darr;</div>
+
+      <!-- Output -->
+      <div style="display: flex; justify-content: center;">
+        <div class="flow-item flow-output" style="min-width: 300px;">
+          <strong>listings.json</strong><br>
+          <small>~100-130 unique listings per scan</small><br>
+          <small>Basel + Pardes Hanna combined</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Source &rarr; ScrapedListing Field Mapping</h3>
+  <table class="data-table">
+    <thead><tr><th>ScrapedListing field</th><th>wgzimmer</th><th>flatfox</th><th>homeless</th><th>FB Manual</th><th>FB Email</th></tr></thead>
+    <tbody>
+      <tr><td><code>price</code></td><td>API/DOM</td><td>JSON</td><td>DOM</td><td>LLM</td><td>LLM</td></tr>
+      <tr><td><code>currency</code></td><td>CHF</td><td>CHF</td><td>ILS</td><td>ILS</td><td>ILS</td></tr>
+      <tr><td><code>country</code></td><td>CH</td><td>CH</td><td>IL</td><td>IL</td><td>IL</td></tr>
+      <tr><td><code>summary</code></td><td>API text</td><td>JSON desc</td><td>DOM text</td><td>LLM (PII stripped)</td><td>LLM (PII stripped)</td></tr>
+      <tr><td><code>direct_url</code></td><td>wgzimmer URL</td><td>flatfox URL</td><td>homeless URL</td><td>FB post URL</td><td>FB post URL</td></tr>
+      <tr><td><code>posted_date</code></td><td>API/DOM</td><td>JSON</td><td>DOM</td><td>posted_at field</td><td>email timestamp</td></tr>
+      <tr><td><code>vegan_signal</code></td><td>text scan</td><td>text scan</td><td>text scan</td><td>LLM key_features</td><td>LLM key_features</td></tr>
+      <tr><td><code>roommate_signal</code></td><td>text scan</td><td>&mdash;</td><td>&mdash;</td><td>LLM key_features</td><td>LLM key_features</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ==================== ENV VARS ==================== -->
+<div class="wp-section" id="env-vars">
+  <h2>Environment Variables</h2>
+
+  <table class="data-table env-table">
+    <thead><tr><th>Variable</th><th>WP</th><th>Required</th><th>Default</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td>SHAKED_BROWSER_PROFILE_DIR</td><td>WP001</td><td>No</td><td>~/.shaked-wg/browser-profile/wgzimmer</td><td>Persistent browser profile path</td></tr>
+      <tr><td>SHAKED_LLM_PROVIDER</td><td>WP002/3</td><td>Yes*</td><td>&mdash;</td><td>"claude" or "openai"</td></tr>
+      <tr><td>ANTHROPIC_API_KEY</td><td>WP002/3</td><td>If claude</td><td>&mdash;</td><td>Claude API key</td></tr>
+      <tr><td>OPENAI_API_KEY</td><td>WP002/3</td><td>If openai</td><td>&mdash;</td><td>OpenAI API key</td></tr>
+      <tr><td>SHAKED_EMAIL_HOST</td><td>WP003</td><td>For IMAP</td><td>&mdash;</td><td>IMAP server hostname</td></tr>
+      <tr><td>SHAKED_EMAIL_USER</td><td>WP003</td><td>For IMAP</td><td>&mdash;</td><td>IMAP username</td></tr>
+      <tr><td>SHAKED_EMAIL_PASS</td><td>WP003</td><td>For IMAP</td><td>&mdash;</td><td>IMAP password</td></tr>
+    </tbody>
+  </table>
+  <p style="color: var(--text-muted); font-size: 0.8em; margin-top: 8px;">
+    * Without LLM config, FB scrapers gracefully return []. All secrets via env vars only &mdash; never in config files.
+  </p>
+</div>
+
+<!-- ==================== CLI ==================== -->
+<div class="wp-section" id="cli">
+  <h2>CLI Output Mockups</h2>
+
+  <h3>Basel Scan (with restored wgzimmer)</h3>
+  <div class="cli">
+    <div class="cli-titlebar">
+      <div class="cli-dot red"></div>
+      <div class="cli-dot yellow"></div>
+      <div class="cli-dot green"></div>
+      <span style="color: #999; margin-left: 10px; font-size: 0.85em;">Terminal &mdash; shaked-wg-agent</span>
+    </div>
+    <div class="cli-body">
+<span class="cli-prompt">$ </span><span class="cli-cmd">shaked-wg-agent run --profile shaked</span>
+<span class="cli-info">[2026-04-15 08:00:01]</span> <span class="cli-out">Starting scan for profile: shaked (Basel)</span>
+<span class="cli-info">[2026-04-15 08:00:01]</span> <span class="cli-out">Active sources: wgzimmer, flatfox</span>
+<span class="cli-info">[2026-04-15 08:00:02]</span> <span class="cli-out">wgzimmer: using persistent profile at ~/.shaked-wg/browser-profile/wgzimmer</span>
+<span class="cli-info">[2026-04-15 08:00:04]</span> <span class="cli-success">wgzimmer: reCAPTCHA passed (Patchright + persistent context)</span>
+<span class="cli-info">[2026-04-15 08:00:06]</span> <span class="cli-success">wgzimmer: 34 listings fetched (API interception)</span>
+<span class="cli-info">[2026-04-15 08:00:08]</span> <span class="cli-success">flatfox: 63 listings fetched (REST API)</span>
+<span class="cli-info">[2026-04-15 08:00:08]</span> <span class="cli-out">Deduplication: 97 total &rarr; 89 unique</span>
+<span class="cli-info">[2026-04-15 08:00:08]</span> <span class="cli-success">Scan complete: 89 listings saved to listings.json</span>
+    </div>
+  </div>
+
+  <h3>Pardes Hanna Scan (with Facebook sources)</h3>
+  <div class="cli">
+    <div class="cli-titlebar">
+      <div class="cli-dot red"></div>
+      <div class="cli-dot yellow"></div>
+      <div class="cli-dot green"></div>
+      <span style="color: #999; margin-left: 10px; font-size: 0.85em;">Terminal &mdash; shaked-wg-agent</span>
+    </div>
+    <div class="cli-body">
+<span class="cli-prompt">$ </span><span class="cli-cmd">shaked-wg-agent run --profile pardes-hanna</span>
+<span class="cli-info">[2026-04-15 10:00:01]</span> <span class="cli-out">Starting scan for profile: pardes-hanna</span>
+<span class="cli-info">[2026-04-15 10:00:01]</span> <span class="cli-out">Active sources: homeless, facebook-manual, facebook-email</span>
+<span class="cli-info">[2026-04-15 10:00:03]</span> <span class="cli-success">homeless: 19 listings fetched</span>
+<span class="cli-info">[2026-04-15 10:00:03]</span> <span class="cli-out">facebook-manual: reading data/facebook/pardes-hanna-posts.json</span>
+<span class="cli-info">[2026-04-15 10:00:03]</span> <span class="cli-out">facebook-manual: 8 posts found, sending to LLM parser...</span>
+<span class="cli-info">[2026-04-15 10:00:05]</span> <span class="cli-out">facebook-manual: LLM parsed 8/8 posts (claude-haiku)</span>
+<span class="cli-info">[2026-04-15 10:00:05]</span> <span class="cli-out">facebook-manual: 6 rental offers, 2 filtered (request, off-topic)</span>
+<span class="cli-info">[2026-04-15 10:00:05]</span> <span class="cli-success">facebook-manual: 6 listings extracted</span>
+<span class="cli-info">[2026-04-15 10:00:06]</span> <span class="cli-out">facebook-email: connecting to IMAP (imap.gmail.com)...</span>
+<span class="cli-info">[2026-04-15 10:00:07]</span> <span class="cli-out">facebook-email: 4 new notification emails found</span>
+<span class="cli-info">[2026-04-15 10:00:07]</span> <span class="cli-out">facebook-email: extracted 7 post snippets (2 single + 1 digest[5])</span>
+<span class="cli-info">[2026-04-15 10:00:09]</span> <span class="cli-out">facebook-email: LLM parsed 7/7 snippets</span>
+<span class="cli-info">[2026-04-15 10:00:09]</span> <span class="cli-out">facebook-email: 5 rental offers, 2 filtered</span>
+<span class="cli-info">[2026-04-15 10:00:09]</span> <span class="cli-success">facebook-email: 5 listings extracted</span>
+<span class="cli-info">[2026-04-15 10:00:09]</span> <span class="cli-out">Deduplication: 30 total &rarr; 26 unique (2 cross-source dupes, 2 within-FB dupes)</span>
+<span class="cli-info">[2026-04-15 10:00:09]</span> <span class="cli-success">Scan complete: 26 listings saved to listings.json</span>
+    </div>
+  </div>
+
+  <h3>Graceful Degradation (no LLM key)</h3>
+  <div class="cli">
+    <div class="cli-titlebar">
+      <div class="cli-dot red"></div>
+      <div class="cli-dot yellow"></div>
+      <div class="cli-dot green"></div>
+      <span style="color: #999; margin-left: 10px; font-size: 0.85em;">Terminal &mdash; shaked-wg-agent</span>
+    </div>
+    <div class="cli-body">
+<span class="cli-prompt">$ </span><span class="cli-cmd">shaked-wg-agent run --profile pardes-hanna</span>
+<span class="cli-info">[2026-04-15 10:00:01]</span> <span class="cli-out">Starting scan for profile: pardes-hanna</span>
+<span class="cli-info">[2026-04-15 10:00:01]</span> <span class="cli-out">Active sources: homeless, facebook-manual, facebook-email</span>
+<span class="cli-info">[2026-04-15 10:00:03]</span> <span class="cli-success">homeless: 19 listings fetched</span>
+<span class="cli-info">[2026-04-15 10:00:03]</span> <span class="cli-warn">facebook-manual: WARNING - No LLM API key configured; scraper disabled</span>
+<span class="cli-info">[2026-04-15 10:00:03]</span> <span class="cli-warn">facebook-email: WARNING - No LLM API key configured; scraper disabled</span>
+<span class="cli-info">[2026-04-15 10:00:03]</span> <span class="cli-success">Scan complete: 19 listings saved to listings.json</span>
+    </div>
+  </div>
+
+  <h3>wgzimmer Seeding Script</h3>
+  <div class="cli">
+    <div class="cli-titlebar">
+      <div class="cli-dot red"></div>
+      <div class="cli-dot yellow"></div>
+      <div class="cli-dot green"></div>
+      <span style="color: #999; margin-left: 10px; font-size: 0.85em;">Terminal &mdash; server (one-time setup)</span>
+    </div>
+    <div class="cli-body">
+<span class="cli-prompt">nimrodw@server:~$ </span><span class="cli-cmd">python3 -c "
+from patchright.sync_api import sync_playwright
+import os
+profile = os.path.expanduser('~/.shaked-wg/browser-profile/wgzimmer')
+os.makedirs(profile, exist_ok=True)
+with sync_playwright() as pw:
+    ctx = pw.chromium.launch_persistent_context(profile, headless=False)
+    page = ctx.pages[0]
+    page.goto('https://www.wgzimmer.ch')
+    input('Browse + search, then press Enter to save profile...')
+    ctx.close()
+"</span>
+<span class="cli-out">Chromium window opens...</span>
+<span class="cli-out">[user navigates to wgzimmer.ch, performs a search]</span>
+<span class="cli-out">Browse + search, then press Enter to save profile...</span>
+<span class="cli-success">Profile saved. Google cookies persisted.</span>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>S005-P005 System Design Mockups | shaked-wg-agent | Generated 2026-04-15</p>
+  <p>Team 110 (Architecture Agent) | L-GATE_S approved &mdash; proceeding to LOD400</p>
+</div>
+
+</div>
+</body>
+</html>

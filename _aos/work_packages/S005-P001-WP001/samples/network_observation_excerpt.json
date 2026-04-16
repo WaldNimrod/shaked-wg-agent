@@ -1,0 +1,19 @@
+{
+  "_note": "Single-session Playwright response log (filtered). Captured during POC 2026-04-12; URLs truncated.",
+  "search_url": "https://www.yad2.co.il/realestate/rent?topArea=2&area=3&property=1&rooms=1-5.5&price=1-10000&mobile=1",
+  "observed_third_parties": [
+    {
+      "host": "validate.perfdrive.com",
+      "role": "ShieldSquare / bot validation redirect chain"
+    },
+    {
+      "host": "newassets.hcaptcha.com",
+      "role": "hCaptcha asset load (Hebrew i18n JSON)"
+    }
+  ],
+  "robots_txt_notes": {
+    "sitemap_index": "https://www.yad2.co.il/sitemaps/sitemap-index.xml",
+    "disallow_api_prefix": "/api/",
+    "disallow_ajax_prefix": "/ajax/"
+  }
+}

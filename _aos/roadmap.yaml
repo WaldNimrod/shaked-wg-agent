@@ -142,8 +142,8 @@ work_packages:
           Constitutional review (Team 190). Migration audit sign-off.
           Team 100 architecture review APPROVED. Hub phrasing + ruff + ID hygiene applied during audit.
     notes: >
-      Domain validation complete 2026-04-11. Artifacts: _COMMUNICATION/team_100/S001-P002-WP001/ARCH_REVIEW_2026-04-11.md,
-      _COMMUNICATION/team_190/MIGRATION_AUDIT_SIGN_OFF_2026-04-11.md.
+      Domain validation complete 2026-04-11. Artifacts: _archive/S001-P002-WP001/team_100/ARCH_REVIEW_2026-04-11.md,
+      _archive/S001-P002-WP001/MIGRATION_AUDIT_SIGN_OFF_2026-04-11.md.
 
   # ── S002: Platform Foundation (PLANNED) ───────────────────────────────────
 
@@ -709,3 +709,58 @@ work_packages:
       BLOCKED — premature until Israel product validated.
       ~50+ German strings in html_report.py. RTL support for Hebrew.
       Largest single i18n effort. Track B — LOD300 for i18n architecture.
+
+  # ── S005-P005: Data Source Expansion ──────────────────────────────
+
+  - id: S005-P005-WP001
+    label: wgzimmer.ch reCAPTCHA v3 bypass — Patchright + persistent profile
+    status: PLANNED
+    track: A
+    priority: HIGH
+    current_lean_gate: L-GATE_S
+    lod_status: LOD200
+    assigned_builder: shaked_build
+    assigned_validator: shaked_val
+    created_at: '2026-04-15'
+    milestone_ref: S005
+    spec_ref: _aos/work_packages/S005-P005-WP001/LOD200_S005-P005-WP001.md
+    notes: >
+      Replace Playwright with Patchright (drop-in fork). Persistent browser profile
+      retains Google cookies for reCAPTCHA v3 trust. Restores ~20-40 WG listings/scan.
+      Fallback: 2Captcha token injection (~$0.27/month).
+
+  - id: S005-P005-WP002
+    label: Facebook manual listing parser — LLM-based Hebrew extraction
+    status: PLANNED
+    track: A
+    priority: HIGH
+    current_lean_gate: L-GATE_S
+    lod_status: LOD200
+    assigned_builder: shaked_build
+    assigned_validator: shaked_val
+    created_at: '2026-04-15'
+    milestone_ref: S005
+    spec_ref: _aos/work_packages/S005-P005-WP002/LOD200_S005-P005-WP002.md
+    notes: >
+      ManualFacebookScraper reads copy-pasted FB posts from local JSON file.
+      LLM (Claude/GPT) extracts structured fields from Hebrew free-text.
+      Privacy-safe: no PII stored. ~$0.05/1000 posts.
+
+  - id: S005-P005-WP003
+    label: Facebook email notification parser — passive acquisition
+    status: PLANNED
+    track: A
+    priority: MEDIUM
+    current_lean_gate: L-GATE_S
+    lod_status: LOD200
+    assigned_builder: shaked_build
+    assigned_validator: shaked_val
+    created_at: '2026-04-15'
+    milestone_ref: S005
+    depends_on:
+      - S005-P005-WP002
+    spec_ref: _aos/work_packages/S005-P005-WP003/LOD200_S005-P005-WP003.md
+    notes: >
+      EmailFacebookScraper reads FB group notification emails via IMAP.
+      Reuses WP002 LLM parser. Passive coverage ~30-60% of group posts.
+      Zero legal risk — processes user's own email notifications.

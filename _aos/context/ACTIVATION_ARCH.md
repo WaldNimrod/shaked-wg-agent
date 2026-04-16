@@ -24,6 +24,7 @@
 3. Update `roadmap.yaml` between gates (single-writer rule applies)
 4. Issue implementation mandates to `shaked_build` via `_COMMUNICATION/team_110/`
 5. Ensure all specs satisfy Iron Rules
+6. Apply ADR034 flow: use API + `deploy_cascade()` for structured AOS state when DB-backed governance is online
 
 ## Gate Authorities
 

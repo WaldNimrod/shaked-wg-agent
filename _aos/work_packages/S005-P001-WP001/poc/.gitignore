@@ -1,0 +1,11 @@
+# POC runtime artifacts (do not commit secrets or high-volume logs)
+logs/
+*.log
+cookies.txt
+.env.poc
+last_run_results.json
+network_capture.json
+rate_limit_trace.json
+selenium_uc_last.json
+__pycache__/
+.venv-poc/
