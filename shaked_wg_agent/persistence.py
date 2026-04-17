@@ -61,7 +61,9 @@ def upsert_listing(listing: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     return "new", listing
 
 
-def mark_stale_listings(active_ids: set[str], retention_days: int) -> int:
+def mark_stale_listings(
+    active_ids: set[str], retention_days: int, profile_id: str | None = None
+) -> int:
     """Mark listings not seen in active_ids as stale if past retention window.
 
     Returns count of listings removed.
@@ -72,6 +74,9 @@ def mark_stale_listings(active_ids: set[str], retention_days: int) -> int:
     removed = 0
 
     for lst in listings:
+        if profile_id is not None and lst.get("profile_id") != profile_id:
+            kept.append(lst)
+            continue
         if lst["listing_id"] in active_ids:
             kept.append(lst)
             continue

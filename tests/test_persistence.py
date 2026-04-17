@@ -112,6 +112,33 @@ def test_mark_stale_keeps_active_listings() -> None:
     assert removed == 0
 
 
+def test_mark_stale_scopes_removal_to_profile() -> None:
+    listings = [
+        {
+            "listing_id": "dror-old",
+            "profile_id": "dror",
+            "title": "Dror Old",
+            "last_seen_at": "2020-01-01T00:00:00",
+        },
+        {
+            "listing_id": "default-old",
+            "profile_id": "default",
+            "title": "Default Old",
+            "last_seen_at": "2020-01-01T00:00:00",
+        },
+    ]
+    persistence_module.save_listings(listings)
+    removed = persistence_module.mark_stale_listings(
+        active_ids=set(),
+        retention_days=30,
+        profile_id="dror",
+    )
+    assert removed == 1
+    remaining_ids = {row["listing_id"] for row in persistence_module.load_listings()}
+    assert "default-old" in remaining_ids
+    assert "dror-old" not in remaining_ids
+
+
 # ---------------------------------------------------------------------------
 # Run records
 # ---------------------------------------------------------------------------

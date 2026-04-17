@@ -142,10 +142,7 @@ class HomelessScraper(BaseScraper):
         direct_url = f"{_BASE_URL}/rent/viewad,{ad_id}.aspx"
 
         # Build location_text: "{street}, {city}" (omit street if empty)
-        if street:
-            location_text = f"{street}, {city}"
-        else:
-            location_text = city
+        location_text = f"{street}, {city}" if street else city
 
         # Build district: neighborhood (or city if neighborhood empty)
         district = neighborhood if neighborhood else city

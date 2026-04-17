@@ -1,0 +1,32 @@
+{
+  "profile_id": "dror",
+  "profile_name": "Dror Ground-House Long-Term",
+  "city_id": "dror-carmel-region",
+  "move_in_from": "2026-07-01",
+  "budget_min": 5000,
+  "budget_max": 30000,
+  "preferred_roommate_age": "any",
+  "rental_duration": "permanent",
+  "diet": "",
+  "smoking_policy": "",
+  "transit_lines": [],
+  "custom_tags": [
+    "entry_until_2026-10-01",
+    "house_6-7_rooms_5_bedrooms",
+    "clinic_or_separate_unit_yard250_natural"
+  ],
+  "language_policy": {
+    "primary_listing_language": "he",
+    "translation_required": false,
+    "preserve_source_text": true
+  },
+  "retention_days": 30,
+  "enabled_sources": [
+    "homeless"
+  ],
+  "notifications": {
+    "digest_max_listings": 20,
+    "min_score_threshold": 0,
+    "channels": []
+  }
+}

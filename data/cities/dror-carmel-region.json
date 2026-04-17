@@ -1,0 +1,40 @@
+{
+  "city_id": "dror-carmel-region",
+  "city_name": "Dror Carmel-Alona Region",
+  "country": "IL",
+  "currency": "ILS",
+  "bounding_box": {
+    "west": 34.87,
+    "east": 35.06,
+    "south": 32.44,
+    "north": 32.74
+  },
+  "zip_filter": [],
+  "available_sources": [
+    "homeless"
+  ],
+  "filters": {
+    "settlements": [
+      "גן שמואל",
+      "תלמי אלעזר",
+      "גן השומרון",
+      "משמרות",
+      "פרדס חנה",
+      "כרכור",
+      "עין עירון",
+      "עמיקם",
+      "אביאל",
+      "גבעת נילי",
+      "מי עמי",
+      "גבעת עדה",
+      "בנימינה",
+      "זכרון יעקב",
+      "כרם מהרל",
+      "עופר"
+    ],
+    "region_notes": [
+      "כולל ישובי אלונה והסביבה",
+      "כולל חוף כרמל דרומי עד כרם מהרל/עופר"
+    ]
+  }
+}

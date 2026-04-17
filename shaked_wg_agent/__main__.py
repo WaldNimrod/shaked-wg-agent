@@ -70,11 +70,16 @@ def cmd_run(args: argparse.Namespace) -> None:
 def cmd_status(args: argparse.Namespace) -> None:
     """Print a project summary."""
     from shaked_wg_agent.config import load_config
-    from shaked_wg_agent.persistence import last_run, load_listings
+    from shaked_wg_agent.persistence import load_listings, load_runs
 
     cfg = load_config(args.profile)
-    listings = load_listings()
-    last = last_run()
+    all_listings = load_listings()
+    listings = [row for row in all_listings if row.get("profile_id") == cfg.profile.profile_id]
+    if not listings and cfg.profile.profile_id == "default":
+        listings = [row for row in all_listings if not row.get("profile_id")]
+
+    runs = load_runs()
+    last = next((r for r in runs if r.get("profile_id") == cfg.profile.profile_id), None)
 
     console.rule("[bold]Shaked WG Basel — Status[/bold]")
     console.print(f"  Profile   : [cyan]{cfg.profile.profile_name}[/cyan]")

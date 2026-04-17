@@ -122,8 +122,9 @@ def _publish(cfg: ProjectConfig) -> str | None:
         from shaked_wg_agent.publisher.ftps_upload import MissingCredentialsError, upload_report
         from shaked_wg_agent.publisher.html_report import generate_report
 
-        listings = load_listings()
-        runs = load_runs()
+        pid = cfg.profile.profile_id
+        listings = [row for row in load_listings() if row.get("profile_id") == pid]
+        runs = [row for row in load_runs() if row.get("profile_id") == pid]
         html = generate_report(
             listings=listings,
             runs=runs,
@@ -190,12 +191,27 @@ def run_scan(
             if scraper is not None:
                 scraper.close()
 
-    stale_removed = mark_stale_listings(active_ids, cfg.profile.retention_days)
+    stale_removed = mark_stale_listings(
+        active_ids,
+        cfg.profile.retention_days,
+        profile_id=cfg.profile.profile_id,
+    )
 
-    # Verify all stored listings are still live (HEAD request per URL)
+    # Verify only the active profile's listings to avoid cross-profile coupling.
     all_listings = load_listings()
-    verified = _verify_listings(all_listings, cfg.city)
-    save_listings(verified)
+    pid = cfg.profile.profile_id
+    profile_rows = [row for row in all_listings if row.get("profile_id") == pid]
+    if profile_rows:
+        verified_rows = _verify_listings(profile_rows, cfg.city)
+        verified_by_id = {row["listing_id"]: row for row in verified_rows}
+        merged: list[dict[str, Any]] = []
+        for row in all_listings:
+            row_id = row.get("listing_id")
+            if row_id in verified_by_id:
+                merged.append(verified_by_id[row_id])
+            else:
+                merged.append(row)
+        save_listings(merged)
 
     duration = round((datetime.now(UTC) - started_at).total_seconds())
 
