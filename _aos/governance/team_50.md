@@ -21,6 +21,34 @@ Team 50 answers one question per acceptance criterion: **"Does it behave as spec
 - API contract testing: does the endpoint return the specified shape and status?
 - Regression checks: do existing verified behaviors still hold?
 
+### Mandatory coverage standard for L2 WPs with a user interface (GCR-002 / 2026-04-19)
+
+The following is **mandatory**, not optional, for every L-GATE_BUILD QA mandate that includes a user interface:
+
+**1. Full UI interaction sweep (mandatory)**
+Every interactive element in scope must be exercised: buttons, forms, dropdowns, tabs, pagination controls, action menus, modals, and tooltips.
+- All validation paths: required fields, invalid formats, boundary conditions.
+- All visible states: empty, loading, error, success, partial results.
+- All user flows end-to-end: not just the happy path — also error scenarios, edge cases (empty results, max page size, invalid input), and cancellation paths.
+
+**2. DB round-trip verification (mandatory)**
+Every AC that involves data persistence must verify both sides:
+(a) API response confirms the correct value AND (b) a subsequent page reload or re-query returns the same value — proving DB commit, not just in-memory state.
+
+**3. Scenario matrix (mandatory minimum for every L2 QA mandate)**
+
+| # | Scenario | Purpose |
+|---|---------|---------|
+| 1 | Happy path | All steps in order, valid inputs, expected success output |
+| 2 | Error / validation path | Invalid inputs, missing required fields, server error handling |
+| 3 | Edge case path | Boundary data, empty states, maximum values |
+| 4 | Duplicate / conflict path *(where applicable)* | Repeat an action that should produce a conflict; verify correct handling |
+| 5 | Cancellation path *(where applicable)* | Abandon a multi-step flow mid-way; verify clean state |
+
+A QA mandate that covers only the happy path for UI WPs does **not** constitute a complete QA pass. Scenarios 1–3 are always required. Scenarios 4–5 must be explicitly noted as N/A with justification if not applicable.
+
+**Rationale:** Shipped WPs have passed QA without entire UI surfaces being exercised, allowing regressions to reach production. This standard removes ambiguity about what constitutes a complete QA pass.
+
 ### NOT in scope
 
 | Out-of-scope area | Who owns it |
@@ -400,6 +428,7 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-12 | v2.0.1 — Iron Rule #7: testing level (R0–R3) + exit criterion mandatory in every QA request; BLOCKED if absent**
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-13 | v2.0.2 — Evidence hierarchy; automation-first Re-QA; MCP repositioned; mandatory read: methodology/TEAM_50_QA_AUTOMATION_AND_EVIDENCE_STANDARD_v1.0.0.md**
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-17 | v2.0.3 — Execution environment: Team 50 must start API/DB via repo scripts before API/browser mandates; no SKIP-for-not-started without attempt; no delegation to Team 00**
+**log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-19 | v2.0.4 — GCR-002: Mandatory coverage standard for L2 WPs with UI: full UI interaction sweep, DB round-trip verification, 5-scenario matrix (happy path mandatory; scenarios 4-5 N/A requires justification). Happy-path-only no longer constitutes a complete QA pass for UI WPs.**
 
 ---
 
