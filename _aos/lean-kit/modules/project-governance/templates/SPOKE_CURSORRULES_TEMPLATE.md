@@ -18,7 +18,7 @@ You are working inside an **AOS spoke** (`{{REPO_NAME}}`, profile `{{PROFILE}}`)
 1. Read `_aos/roadmap.yaml` — current WP and gate position
 2. Read `_aos/context/PROJECT_CONTEXT.md` — project background
 3. Read `_aos/definition.yaml` or `_aos/context/ACTIVATION_*.md` — your role
-4. **DB probe (mandatory):** Read `{{HUB_PATH}}/_aos/db_connectivity_status.json` — hub canonical DB status. If `status: online` → structured mutations via API (Iron Rule #7 / ADR034). If `status: offline` → follow ADR034 R8 on a named branch (never main). **DB is always available in normal operation.** Refresh: `python3 -c "import sys; sys.path.insert(0, '{{HUB_PATH}}'); from agents_os_v3.modules.management.db import probe_database; print(probe_database())"`
+4. **DB probe (mandatory):** `cat "{{HUB_PATH}}/_aos/db_connectivity_status.json"` — hub canonical DB status (refreshed by hub session). If `status: online` → structured mutations via API (Iron Rule #7 / ADR034). If `status: offline` → **STOP**: report `reason` field to Team 00, wait for Team 00 guidance (ADR034 R8 on a named branch — never main). **DB is always available in normal operation.** To refresh hub status: run the hub DB probe from a hub session.
 5. **Validation:** `bash _aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh .`
 6. **AOS identity onboarding (first session):** read `{{HUB_PATH}}/methodology/AOS_IDENTITY_ONBOARDING_v1.0.0.md`
 
@@ -35,6 +35,7 @@ You are working inside an **AOS spoke** (`{{REPO_NAME}}`, profile `{{PROFILE}}`)
 9. **Universal team numbering:** single scheme across all domains
 10. **Governance flow:** source → snapshot only, never reverse (Iron Rule #11)
 11. **Iron Rule #12: gov-update + gov-sync locked to team_00 / team_100 only** (ADR040)
+12. **Iron Rule #13: AOS commands are thin orchestrators** over hub API (`core/modules/management/`); ≤150 lines + required frontmatter; SSoT per concern (ADR041). Canon: `{{HUB_PATH}}/methodology/AOS_COMMAND_ARCHITECTURE_v1.0.0.md`.
 
 ## Governance File Protection (IMMUTABLE)
 

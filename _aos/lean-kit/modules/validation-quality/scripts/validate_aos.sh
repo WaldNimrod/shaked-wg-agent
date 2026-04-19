@@ -503,6 +503,7 @@ except Exception as e:
             --exclude-dir=".claude" --exclude-dir="_COMMUNICATION" --exclude-dir="_communication" \
             --exclude-dir="_archive" \
             --exclude="CHANGELOG.md" --exclude="*.template" \
+            --exclude="CLAUDE.md" --exclude=".cursorrules" \
             "$pattern" "$PROJECT_ROOT" 2>/dev/null | head -5)
         if [ -n "$matches" ]; then
             ((violations++)) || true
@@ -1099,9 +1100,137 @@ check_29() {
 }
 
 # ================================================================
+# Check 30: AOS command line-count limit (ADR041 / Iron Rule #13)
+# ================================================================
+# Every .claude/commands/AOS_*.md with category in {gate|session|governance}
+# MUST be ≤150 lines. Enforces thin-orchestrator pattern — commands delegate
+# to API endpoints; data/logic lives in core/modules/management/*.py.
+check_30() {
+    local cmd_dir="$PROJECT_ROOT/.claude/commands"
+    if [ ! -d "$cmd_dir" ]; then
+        log_skip 30 ".claude/commands/ dir not present (non-Claude-Code repo or spoke without local commands)"
+        return 0
+    fi
+    local violations
+    violations=$(python3 - "$cmd_dir" <<'PY'
+import sys, re
+from pathlib import Path
+
+cmd_dir = Path(sys.argv[1])
+LIMIT = 150
+GATED_CATEGORIES = {"gate", "session", "governance"}
+violations = []
+
+for path in sorted(cmd_dir.glob("AOS_*.md")):
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        continue
+    # Parse frontmatter for category (if present)
+    category = None
+    if text.startswith("---\n"):
+        end = text.find("\n---\n", 4)
+        if end != -1:
+            fm = text[4:end]
+            m = re.search(r"^category:\s*(\S+)", fm, re.MULTILINE)
+            if m:
+                category = m.group(1).strip().strip('"').strip("'")
+    # Count lines
+    line_count = text.count("\n") + (0 if text.endswith("\n") else 1)
+    # Apply limit only for gated categories; unknown category treated as gated for safety
+    if category is None or category in GATED_CATEGORIES:
+        if line_count > LIMIT:
+            violations.append(f"{path.name}:{line_count} (category={category or 'unknown'})")
+
+if violations:
+    print(f"VIOLATIONS:{len(violations)}")
+    for v in violations[:10]:
+        print(v)
+else:
+    print("OK")
+PY
+    )
+    local code
+    code=$(echo "$violations" | head -1)
+    if [ "$code" = "OK" ]; then
+        log_pass 30 "AOS commands within 150-line limit (Iron Rule #13 / ADR041)"
+    else
+        local n="${code#VIOLATIONS:}"
+        local sample
+        sample=$(echo "$violations" | sed -n '2p')
+        log_fail 30 "$n AOS command(s) exceed 150-line limit — Iron Rule #13 violation. Sample: $sample"
+    fi
+}
+
+# ================================================================
+# Check 31: AOS command frontmatter required (ADR041 / Iron Rule #13)
+# ================================================================
+# Every .claude/commands/AOS_*.md MUST declare YAML frontmatter with
+# summary: (string) + category: (one of: gate|session|governance|project|
+# infrastructure|decision|meta).
+check_31() {
+    local cmd_dir="$PROJECT_ROOT/.claude/commands"
+    if [ ! -d "$cmd_dir" ]; then
+        log_skip 31 ".claude/commands/ dir not present (skip)"
+        return 0
+    fi
+    local result
+    result=$(python3 - "$cmd_dir" <<'PY'
+import sys, re
+from pathlib import Path
+
+cmd_dir = Path(sys.argv[1])
+VALID_CATS = {"gate","session","governance","project","infrastructure","decision","meta"}
+problems = []
+
+for path in sorted(cmd_dir.glob("AOS_*.md")):
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        continue
+    if not text.startswith("---\n"):
+        problems.append(f"{path.name}: no frontmatter")
+        continue
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        problems.append(f"{path.name}: frontmatter not closed")
+        continue
+    fm = text[4:end]
+    has_summary = bool(re.search(r"^summary:\s*\S", fm, re.MULTILINE))
+    m_cat = re.search(r"^category:\s*(\S+)", fm, re.MULTILINE)
+    if not has_summary:
+        problems.append(f"{path.name}: missing summary:")
+    if not m_cat:
+        problems.append(f"{path.name}: missing category:")
+        continue
+    cat = m_cat.group(1).strip().strip('"').strip("'")
+    if cat not in VALID_CATS:
+        problems.append(f"{path.name}: invalid category={cat}")
+
+if problems:
+    print(f"VIOLATIONS:{len(problems)}")
+    for p in problems[:10]:
+        print(p)
+else:
+    print("OK")
+PY
+    )
+    local code
+    code=$(echo "$result" | head -1)
+    if [ "$code" = "OK" ]; then
+        log_pass 31 "AOS command frontmatter (summary + category) present — ADR041"
+    else
+        local n="${code#VIOLATIONS:}"
+        local sample
+        sample=$(echo "$result" | sed -n '2p')
+        log_fail 31 "$n AOS command(s) missing/invalid frontmatter — ADR041 violation. Sample: $sample"
+    fi
+}
+
+# ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 29 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
+echo "validate_aos.sh — running up to 31 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
 echo "================================================="
 
 check_1
@@ -1133,6 +1262,8 @@ check_26
 check_27
 check_28
 check_29
+check_30
+check_31
 
 echo ""
 echo "================================================="

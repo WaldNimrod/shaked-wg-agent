@@ -1,6 +1,6 @@
 ---
 id: AOS_GATE_MANDATE_CANON
-version: v1.4.1
+version: v1.6.0
 status: LOCKED
 date: '2026-04-17'
 amended: '2026-04-19'
@@ -14,6 +14,8 @@ amendment_note: >-
   v1.3.0 — Signal B split into B.0 (Team 191 archive mandate — mandatory before next WP) + B-next (next WP routing). "WP closure" definition added. LOD500_LOCKED defined as requiring Team 191 archive completion, not just Team 190 verdict.
   v1.4.0 — Phase 5: mandatory §8 Post-Mandate Routing block added to every mandate (PASS/FAIL/BLOCK deterministic next-step table with exact /AOS_gate-mandate invocation). Gate alias terminology locked: full canonical gate names only in all human-facing text; single-letter alias forms (defined in pre_gate_ordering.yaml) are machine-script-only and must not appear in documentation.
   v1.4.1 — Phase 4: session-continuity override added. When the resubmission target is the same team that issued the prior rejection and that session is still active (same window, in-chat routing, no cold-start), apply [1] MINIMAL regardless of round number.
+  v1.5.0 — Phase 2.5 added: L-GATE_BUILD builder assignment policy — combined vs separate mandate when assigned_builder includes both backend (team_20) and frontend (team_30). Decision based on delivery independence principle: combined when all ACs require both simultaneously; separate when QA can stage backend PASS before frontend exists.
+  v1.6.0 — Phase 1: LOD400 hard gate for L-GATE_BUILD (GCR-001). Mandatory lod400_ref check before any L-GATE_BUILD mandate is issued. Absent lod400_ref = BLOCK with action: route Team 110 for LOD400 creation first.
 authority: Team 00 (principal) + Team 100 (chief architect)
 scope: >-
   Binding for all AOS methodology deployments: agents-os hub, spoke projects (all domains),
@@ -360,6 +362,29 @@ On auto-waiver:
    - L-GATE_BUILD: LOD400 + implementation complete (all tracks)
    - L-GATE_VALIDATE: LOD400 + L-GATE_BUILD PASS (all tracks)
 
+**L-GATE_BUILD LOD400 hard gate (GCR-001 / 2026-04-19):** When `SELECTED_GATE == L-GATE_BUILD`, perform the following mandatory check BEFORE writing any mandate:
+
+1. Read `lod400_ref` from the WP entry in roadmap.yaml.
+2. If `lod400_ref` is absent or empty → **BLOCK**:
+   ```
+   ⛔  L-GATE_BUILD BLOCKED — LOD400 spec missing
+   ─────────────────────────────────────────────────
+   WP:         {WP_ID} — {WP_LABEL}
+   Required:   LOD400 spec on disk, path registered in roadmap lod400_ref
+   Actual:     lod400_ref = (absent)
+
+   Action required:
+   1. Route Team 110 (Domain Architect) to produce LOD400_SPEC_{WP_ID}.md
+   2. Register path in roadmap: lod400_ref: _COMMUNICATION/team_110/{path}
+   3. Re-invoke /AOS_gate-mandate after LOD400 is filed and lod400_ref is set
+   ─────────────────────────────────────────────────
+   ```
+   Do NOT generate a L-GATE_BUILD mandate. Stop here.
+
+3. If `lod400_ref` is set → verify the file exists on disk at that path. If file is missing → WARN (non-blocking) in pre-flight and note discrepancy in mandate frontmatter (`lod400_ref_verified: false`). Proceed with mandate generation.
+
+4. Add to mandate frontmatter: `lod400_ref: {path}` + `lod400_ref_verified: true/false`.
+
 If prerequisites are not met, STOP and present:
 1. The specific missing item (e.g., "LOD400 not found — spec_ref path is {path}")
 2. The concrete unblocking action (e.g., "Generate LOD400 spec for this WP first, then re-invoke")
@@ -417,6 +442,28 @@ Type CONFIRM to override (recorded in mandate frontmatter), or ABORT to cancel:
 5. Add to mandate frontmatter:
    - If no violation: `cross_engine_verified: true`
    - If override: `cross_engine_verified: false` + `cross_engine_override: true`
+
+---
+
+### Phase 2.5 — L-GATE_BUILD Builder Assignment: Combined vs Separate Mandate
+
+**Applies only when `SELECTED_GATE == L-GATE_BUILD` and `assigned_builder` includes both a backend team (e.g. team_20) and a frontend team (e.g. team_30).**
+
+Before writing the build mandate, resolve whether to issue **one combined mandate** or **two separate mandates**:
+
+| Condition | Decision |
+|-----------|----------|
+| All ACs require both backend AND frontend simultaneously — QA (team_50) cannot validate any AC without both | **COMBINED** — single mandate to both teams |
+| Backend ACs (unit tests, API tests) can be validated by QA before the frontend exists | **SEPARATE** — backend mandate first; frontend mandate issued after QA backend PASS |
+| Teams operate on different timelines (backend sprint → frontend sprint later) | **SEPARATE** |
+| Risk profiles differ significantly (e.g., HIGH-risk DB migration + LOW-risk UI change) | **SEPARATE** — different scrutiny levels |
+| Small WP, tightly coupled scope, single session | **COMBINED** — operational simplicity wins |
+
+**Governing principle:** The split follows **delivery independence** — not team count or WP size.
+- **Combined:** delivery is atomic; QA validates both together in one gate event.
+- **Separate:** delivery is staged; QA issues partial PASS on backend before frontend begins.
+
+**Surface this decision:** Present the table above to the user with the recommended decision highlighted, and await confirmation before writing mandate artifact(s). If SEPARATE is chosen, produce two mandate files and note the dependency in each: backend mandate first; frontend mandate marked `activation_condition: backend L-GATE_BUILD PASS`.
 
 ---
 

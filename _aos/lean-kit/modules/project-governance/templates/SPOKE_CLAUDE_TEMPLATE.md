@@ -27,7 +27,7 @@ You are working inside an **AOS spoke** — repo `{{REPO_NAME}}`, profile `{{PRO
 1. Read `_aos/roadmap.yaml` — current WP and gate position
 2. Read `_aos/context/PROJECT_CONTEXT.md` — project background
 3. Read `_aos/definition.yaml` (L2) or `_aos/context/ACTIVATION_*.md` (L0) — your role
-4. **DB probe (mandatory):** Read `{{HUB_PATH}}/_aos/db_connectivity_status.json` — hub canonical DB status. If `status: online` → all structured mutations go via API (Iron Rule #7 / ADR034). If `status: offline` → **stop and fix before proceeding**; offline work requires ADR034 R8 protocol on a named branch (never main). **DB is always available in normal operation.** To refresh: `python3 -c "import sys; sys.path.insert(0, '{{HUB_PATH}}'); from agents_os_v3.modules.management.db import probe_database; print(probe_database())"`
+4. **DB probe (mandatory):** `cat "{{HUB_PATH}}/_aos/db_connectivity_status.json"` — hub canonical DB status (refreshed by hub session). If `status: online` → all structured mutations go via API (Iron Rule #7 / ADR034). If `status: offline` → **STOP**: report `reason` field to Team 00, wait for Team 00 guidance before proceeding (ADR034 R8 protocol on a named branch — never main). To refresh hub status: run the hub DB probe from a hub session.
 5. **Validation:** `bash _aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh .` — expect **0 FAIL** on this spoke
 6. **AOS identity onboarding (first session only):** read `{{HUB_PATH}}/methodology/AOS_IDENTITY_ONBOARDING_v1.0.0.md`
 
@@ -44,6 +44,7 @@ You are working inside an **AOS spoke** — repo `{{REPO_NAME}}`, profile `{{PRO
 9. Universal team numbering
 10. Governance flows source → snapshot only; no reverse (Iron Rule #11)
 11. **Iron Rule #12: `gov-update` + `gov-sync` locked to `team_00` / `team_100` only** (ADR040). Other teams must file canonical GCR.
+12. **Iron Rule #13** (ADR041): every deterministic AOS command is a thin orchestrator (≤150 lines + required `summary:` / `category:` frontmatter) over a hub API endpoint in `core/modules/management/`. SSoT Python modules carry data + logic. Cross-engine (Claude Code / Cursor / Codex / Desktop) call same API. Canon: `{{HUB_PATH}}/methodology/AOS_COMMAND_ARCHITECTURE_v1.0.0.md`.
 
 ## Directory Authority (uniform)
 
