@@ -63,16 +63,10 @@ You are working inside an **AOS spoke** — repo `shaked-wg-agent`, profile `L0`
 <!-- aos:canonical:end -->
 
 <!-- aos:project-specific:start -->
-## Domain rules
-
-<!-- Project-specific rules, commands, paths, and conventions go here.
-     This section is PRESERVED across aos_sync_all.sh runs. -->
 
 ## Domain rules
 
 <!-- Project-specific rules, commands, paths, and conventions go here.
      This section is PRESERVED across aos_sync_all.sh runs. -->
-
-<!-- No project-specific content yet. Add rules, commands, paths here. -->
 
 <!-- aos:project-specific:end -->

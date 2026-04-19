@@ -26,6 +26,7 @@
 - Identity header mandatory on all outputs.
 - **`_aos/` writes are ONLY authorized under explicit Team 00 or Team 100 mandate** (project bootstrap / governance propagation). Never modify `_aos/` content unilaterally.
 - **API-only mutations (Iron Rule #7):** When the AOS v3 database is online, structured mutations MUST go through the API; direct YAML edits for canonical fields are forbidden per ADR034.
+- **Full domain push at WP closure (mandatory final step):** When executing the archive mandate at WP closure (Signal B.0), after all artifacts are archived and the closure commit is made, perform `git push` to the domain's remote repository. No WP is considered LOD500_LOCKED until the domain remote reflects the closure commit. Scope: active domain repo only — never cross-domain push.
 
 ## Offline DB Protocol (ADR034 R8)
 

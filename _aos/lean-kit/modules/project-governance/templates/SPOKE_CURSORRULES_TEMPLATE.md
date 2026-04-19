@@ -50,10 +50,43 @@ You are working inside an **AOS spoke** (`{{REPO_NAME}}`, profile `{{PROFILE}}`)
 - **SSoT for boundaries:** `_aos/project_identity.yaml`
 - Do NOT create files that belong to another project here; do NOT import from other projects
 - Cross-project handoff: `~/Documents/_agent_comm/outbox/` or canonical artifact route
+
+## AOS Handoff (unified API across all engines)
+
+`/AOS_handoff` is a thin client over the hub's prompt-generate API. All engines (Claude Code, Cursor, Codex, Claude Desktop) call the same endpoint and produce identical output (no drift, no copy-paste).
+
+**Claude Code:** invokes `.claude/commands/AOS_handoff.md` (thin orchestrator).
+**Cursor / Codex / Claude Desktop / other engines:** call the hub API directly via HTTP:
+
+```
+GET {HUB_API_BASE}/api/prompts/generate
+    ?type=onboard_agent
+    &mode=handoff
+    &team_id={team_id}
+    &wp_id={wp_id}                         (optional)
+    &governance_depth={lean|full}          (default: lean)
+    &session_summary={url-encoded}         (optional, one-line)
+    &accomplishments={pipe|joined}         (optional)
+    &blockers={pipe|joined}                (optional)
+    &gate_state={mid_gate|gate_done|no_wp} (optional — server derives if omitted)
+    &next_gate={gate_name}                 (optional, used when gate_state=gate_done)
+```
+
+`HUB_API_BASE` defaults to `http://127.0.0.1:8090` for local dev; override via `AOS_API_BASE` env var when hub runs on waldhomeserver (V321).
+
+**Response (JSON):**
+- `artifact_markdown` — write verbatim to `_COMMUNICATION/team_{ID}/{suggested_filename}`
+- `activation_block` — display **inline in chat** per ADR032 v1.2.0 (always inline, no path-only)
+- `suggested_filename` — `HANDOFF_SELF_{NUM}_{CONTEXT}_{YYYY-MM-DD}_v1.md`
+- `first_action` — FIRST ACTION line for sanity-check (already included in `activation_block`)
+
+**Determinism scope:** Sections 1–7 content in `artifact_markdown` is deterministic for fixed inputs. Provenance metadata (`generated_at` timestamp + date portion of `suggested_filename`) is call-time and excluded from determinism claim.
+
+**Single source of truth:** canonical options (Section 7) + FIRST ACTION MATRIX live in `core/modules/management/team_options.py` on the hub. Do not duplicate these tables in engine-specific commands.
+
+**Prerequisite:** hub DB online (ADR034) + hub API reachable. If API unreachable: STOP and instruct user to bring up the hub server (`bash scripts/start_aos_api_local.sh`). **Do NOT re-implement the 7-section assembly locally — that reintroduces drift against the API SSoT.**
 <!-- aos:canonical:end -->
 
 <!-- aos:project-specific:start -->
-## Domain rules
-
 {{PROJECT_SPECIFIC_CONTENT}}
 <!-- aos:project-specific:end -->

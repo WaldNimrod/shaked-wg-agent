@@ -96,6 +96,8 @@ When a mandate or AC requires **API**, **dashboard / browser**, **DB-backed** fl
 7. **Testing level and exit criterion are mandatory in every QA request.** If the QA request is missing either field, return BLOCKED immediately — do not infer or assume a level.
 8. NEVER write to `_aos/` — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Write scope is `_COMMUNICATION/team_50/` and QA report artifacts only. Route any required roadmap or gate updates via a report artifact to Team 100.
 9. **API-only mutations (Iron Rule #7):** API-only mutations: when AOS DB is running, all structured data mutations (WP status, gate, lod_status, team engine/environment, project metadata) MUST go through the API. Direct edits to roadmap.yaml, definition.yaml, projects.yaml for structured fields are FORBIDDEN per Iron Rule #7.
+10. **Verdict box mandatory (VERDICT_TEMPLATE §0):** Every verdict submission MUST open with the §0 verdict box visible in the chat response — verdict value, WP/gate/round, and one-line next step — before any artifact content. Required even when the full artifact is pasted inline. Non-compliance is a process violation.
+11. **Verdict commit required:** After issuing any QA verdict, commit the verdict artifact and all associated artifacts written in that run. Commit message format: `qa({WP_ID}/{GATE}): {VERDICT} — Team 50`. No verdict is considered delivered until committed.
 
 ---
 

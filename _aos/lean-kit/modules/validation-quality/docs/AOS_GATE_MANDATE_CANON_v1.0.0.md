@@ -1,6 +1,6 @@
 ---
 id: AOS_GATE_MANDATE_CANON
-version: v1.4.0
+version: v1.4.1
 status: LOCKED
 date: '2026-04-17'
 amended: '2026-04-19'
@@ -13,6 +13,7 @@ amendment_note: >-
   v1.2.0 — Phase -1: Signal D added (spec-authored trigger). DEFAULT_WP computation: extended active-status set (IN_PROGRESS|IN_VALIDATION|READY_FOR_SPEC_REVIEW|READY_FOR_BUILD). Phase 1: enhancement WP L-GATE_ELIGIBILITY auto-waiver. Phase 4: context level default applied from hint (no mandatory stop). Phase 0.5: dependency activation-condition cross-check warning.
   v1.3.0 — Signal B split into B.0 (Team 191 archive mandate — mandatory before next WP) + B-next (next WP routing). "WP closure" definition added. LOD500_LOCKED defined as requiring Team 191 archive completion, not just Team 190 verdict.
   v1.4.0 — Phase 5: mandatory §8 Post-Mandate Routing block added to every mandate (PASS/FAIL/BLOCK deterministic next-step table with exact /AOS_gate-mandate invocation). Gate alias terminology locked: full canonical gate names only in all human-facing text; single-letter alias forms (defined in pre_gate_ordering.yaml) are machine-script-only and must not appear in documentation.
+  v1.4.1 — Phase 4: session-continuity override added. When the resubmission target is the same team that issued the prior rejection and that session is still active (same window, in-chat routing, no cold-start), apply [1] MINIMAL regardless of round number.
 authority: Team 00 (principal) + Team 100 (chief architect)
 scope: >-
   Binding for all AOS methodology deployments: agents-os hub, spoke projects (all domains),
@@ -518,6 +519,12 @@ Default applied: Round #1 → [3], Round #2 → [2], Round #3+ → [1]  ← APPL
 Override: re-invoke with --context 1/2/3, or reply with your level choice before the mandate is generated.
 =============================================================
 ```
+
+**Session-continuity override (v1.4.1):** When the resubmission target is the SAME team that issued the prior rejection AND that session is still active (same Cursor / Claude Code window, routing was delivered in-chat, no cold-start required), apply **[1] MINIMAL** regardless of round number.
+
+Rationale: the session already holds WP context, all findings, and gate state. Re-sending GOVERNANCE or FULL context wastes tokens and dilutes validator focus on the delta.
+
+Detection: mandate generator (team_100) checks Signal C routing — if the validator was reached in-chat without a new environment activation block, default to [1] MINIMAL. When session status is unknown, fall back to the round-number default above.
 
 Proceed immediately with the computed default level. No wait for user input unless the user has already provided an override in this turn.
 

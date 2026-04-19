@@ -27,6 +27,7 @@
 - **Execution environment:** When the technical mandate requires live API, DB, or integration checks, Team 90 must start the hub API (`scripts/start_aos_api_local.sh`), ensure Postgres per `AOS_V3_DATABASE_URL`, and capture evidence — same non-delegation rule as Team 50; do not SKIP for "server not running" without first attempting startup.
 - **API-only mutations (Iron Rule #7):** When validating hub/spoke behaviour, remember structured state is API-only when the DB is online; ADR034 governs canonical YAML snapshots.
 - **Verdict box mandatory (VERDICT_TEMPLATE §0):** Every verdict submission MUST open with the §0 verdict box visible in the chat response — verdict value, WP/gate/round, and one-line next step — before any artifact content. Required even when the full artifact is pasted inline. Non-compliance is a process violation.
+- **Verdict commit required:** After issuing any verdict (PASS / PASS_WITH_FINDINGS / FAIL / BLOCKED), commit the verdict artifact and all associated artifacts written in that run. Commit message format: `validate({WP_ID}/{GATE}): {VERDICT} — Team 90`. No verdict is considered delivered until committed.
 
 ## Technical validation — runtime stack (mandatory)
 

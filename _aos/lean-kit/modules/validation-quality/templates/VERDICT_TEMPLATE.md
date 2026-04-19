@@ -1,12 +1,28 @@
 ---
 description: "Unified verdict template — ONE format for all teams (50, 90, 190). Replaces legacy per-team formats."
-version: "1.0.0"
+version: "1.1.0"
 wp: AOS-V314-WP-CANONICAL-GATES
 ---
 
 # Unified Verdict Template
 
 Used by `/AOS_qa` and `/AOS_validate` to generate canonical verdict artifacts.
+
+---
+
+## §0 — Response Display (mandatory — shown BEFORE artifact body)
+
+The validator MUST emit the following box at the **top of their chat response** before any artifact content. Purpose: Team 00 can scan verdict + next step without reading the full document.
+
+```
+---
+**VERDICT: {PASS | PASS_WITH_FINDINGS | FAIL | CLEAR | CONCERNS | BLOCKED}**
+**WP:** {WP_ID} · **Gate:** {GATE_TYPE} · **Round:** {N}
+**Next step:** {one-line routing instruction — who does what}
+---
+```
+
+This box is required even when the full artifact is pasted inline. Non-compliance is a process violation.
 
 ---
 
