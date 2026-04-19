@@ -21,11 +21,11 @@ MIGRATION TASKS:
 2. GATE_HISTORY NORMALIZATION (BLOCKER-2):
    Current (broken — pipe-delimited, parses as single string):
      gate_history:
-       - gate: L-GATE_E | result: PASS | date: "2026-04-04"
+       - gate: L-GATE_ELIGIBILITY | result: PASS | date: "2026-04-04"
 
    Target (structured YAML):
      gate_history:
-       - gate: L-GATE_E
+       - gate: L-GATE_ELIGIBILITY
          result: PASS
          date: "2026-04-04"
          notes: ""
@@ -57,10 +57,10 @@ MIGRATION TASKS:
 6. ACTIVE MILESTONE MAPPING (per Team 00 clarification):
    SFA Milestone → roadmap.yaml WP
      M10.1 (COMPLETE) → DO NOT migrate (historical)
-     M10.2 (ACTIVE)   → SFA-M10-WP002, status: IN_PROGRESS, current_lean_gate: L-GATE_B
-     M10.3 (ACTIVE)   → SFA-M10-WP003, status: IN_PROGRESS, current_lean_gate: L-GATE_B
-     M10.4 (ACTIVE)   → SFA-M10-WP004, status: IN_PROGRESS, current_lean_gate: L-GATE_B
-     M10.5 (PLANNED)  → SFA-M10-WP005, status: PLANNED, current_lean_gate: L-GATE_E
+     M10.2 (ACTIVE)   → SFA-M10-WP002, status: IN_PROGRESS, current_lean_gate: L-GATE_BUILD
+     M10.3 (ACTIVE)   → SFA-M10-WP003, status: IN_PROGRESS, current_lean_gate: L-GATE_BUILD
+     M10.4 (ACTIVE)   → SFA-M10-WP004, status: IN_PROGRESS, current_lean_gate: L-GATE_BUILD
+     M10.5 (PLANNED)  → SFA-M10-WP005, status: PLANNED, current_lean_gate: L-GATE_ELIGIBILITY
 
 7. SLUG FORMAT VALIDATION:
    All migrated team IDs must match: ^[a-z][a-z0-9]*_[a-z]+$

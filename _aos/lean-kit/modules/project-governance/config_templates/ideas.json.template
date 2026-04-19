@@ -1,36 +1,35 @@
 {
-  "version": "1.1.0",
+  "version": "2.0.0",
   "schema": "aos-idea-log",
-  "description": "Project idea pipeline — all ideas, bugs, and improvement requests before GATE_0 entry",
+  "description": "Project idea pipeline — all ideas, bugs, and improvement requests before WP entry",
   "owner": "team_100",
   "fate_authority": "team_00 + nimrod",
   "next_id": 1,
   "last_updated": "[CREATED_DATE]",
   "status_legend": {
     "open": "No fate decision yet — requires Team 00 + Nimrod review",
-    "in_execution": "Fate decided AND mandate issued to team; team executing",
-    "decided": "Fully closed — fate executed",
-    "lod200_pending": "Fate decided (new_wp) — LOD200 not yet authored/approved"
+    "closed": "Fate decided and actioned. From pipeline perspective: done. Delivery_ref = canonical WP ID or artifact."
+  },
+  "closed_result_legend": {
+    "fulfilled": "closed-green — idea was executed: merged into WP, became WP, or done directly (fate: merged | new_wp | done)",
+    "cancelled": "closed-red — idea was not pursued (fate: cancelled)"
+  },
+  "fate_legend": {
+    "merged": "Absorbed into an existing WP — delivery_ref = WP ID from roadmap.yaml",
+    "new_wp": "Became its own WP — delivery_ref = WP ID (or 'backlog' if not yet assigned to a WP)",
+    "done": "Executed directly in ≤1 session, no WP — delivery_ref = commit hash or file path",
+    "cancelled": "Not pursuing — delivery_ref = N/A_CANCEL, reason in fate_rationale"
+  },
+  "delivery_ref_rule": {
+    "rule": "delivery_ref = canonical WP ID from roadmap.yaml (merged/new_wp), commit/file (done), N/A_CANCEL (cancelled). NOT a LOD artifact path. NOT an LOD500 path.",
+    "backlog": "For new_wp ideas not yet assigned to a specific WP: delivery_ref = 'backlog'",
+    "pipeline_closure": "An idea is closed the moment its fate is decided and actioned (WP created, WP assigned, executed, or cancelled). Whether the WP shipped is roadmap.yaml's concern, not the pipeline's."
   },
   "urgency_legend": {
     "critical": "Blocking active work — respond today",
     "high": "Decide this sprint / current stage",
     "medium": "Within current stage timeline",
-    "low": "Backlog"
-  },
-  "fate_legend": {
-    "new_wp": "Becomes its own work package",
-    "append": "Added to existing WP scope",
-    "immediate": "Executed directly (< 1 session)",
-    "cancel": "Not pursuing — reason logged"
-  },
-  "delivery_ref_rule": {
-    "rule": "IRON RULE — delivery_ref must be set before status transitions to decided",
-    "fate_immediate_or_append": "REQUIRED — must reference deliverable or WP gate record",
-    "fate_new_wp": "REQUIRED — must reference LOD200 approval + registry entry",
-    "fate_cancel": "Set to 'N/A_CANCEL'",
-    "status_open": "null",
-    "status_in_execution": "null — awaiting team delivery"
+    "low": "Backlog — S+ or whenever"
   },
   "ideas": []
 }

@@ -71,6 +71,20 @@ Before starting any test run, Team 50 must verify every AC is testable:
 
 ---
 
+## Execution environment (mandatory for QA mandates)
+
+When a mandate or AC requires **API**, **dashboard / browser**, **DB-backed** flows, or any check that depends on a running process, Team 50 **must** bring the stack up using repository tooling — **before** marking those criteria SKIP or asking Team 00 to operate infrastructure.
+
+| Requirement | Action |
+|-------------|--------|
+| AOS v3 API + Dashboard | Start FastAPI with [`scripts/start_aos_api_local.sh`](../../scripts/start_aos_api_local.sh) from repo root (default `127.0.0.1:8090`). Run in background if needed; confirm `GET /api/system/health` returns 200. |
+| PostgreSQL | Ensure `AOS_V3_DATABASE_URL` points at a running instance (e.g. `aos-postgres-dev` per project docs); run `scripts/db/check_db_connectivity.py` or equivalent. |
+| Env vars | Set `PYTHONPATH`, `AOS_V3_TRUST_CLIENT_ACTOR` / actor keys per mandate when testing principal-only routes. |
+
+**Process violation:** Marking API, browser, or DB-dependent VC rows as SKIP **solely** because the validator did not start the server or database **without** first attempting the steps above. **Do not** delegate “please start the server” to Team 00 — infrastructure for QA is Team 50 responsibility within the mandate scope.
+
+---
+
 ## Iron Rules (operating)
 
 1. **Every QA run must be a FRESH test** — never repeat prior findings without re-execution.
@@ -85,6 +99,29 @@ Before starting any test run, Team 50 must verify every AC is testable:
 
 ---
 
+## Offline DB Protocol (ADR034 R8)
+
+When the AOS v3 database is unreachable (`AOS_V3_DATABASE_URL` unset or connection fails), offline work is permitted on feature branches using the Offline Changelog Protocol:
+
+**Offline Workflow (6 Steps):**
+1. Check database status: `python3 -c "from agents_os_v3.modules.management.db import probe_database; print(probe_database())"`
+2. Create feature branch: `offline/YYYY-MM-DD-{project_id}-{scope}`
+3. Create `_aos/PENDING_DB_SYNC.yaml` from template with pending mutations
+4. Make offline edits to roadmap.yaml, definition.yaml, etc.
+5. Push PR with labels: `[offline-work]` `[pending-db-sync]`
+6. When DB is available, run `bash scripts/sync_offline_to_db.sh --force` and apply `[offline-sync-complete]` label
+
+**Key Rules:**
+- Offline edits MUST be on a named branch (main is forbidden when DB is offline)
+- `PENDING_DB_SYNC.yaml` MUST accompany all offline mutations
+- `gate_history[]` and prose fields remain file-authored (exemption from R2)
+- Local validation (Check 25) warns of pending sync; CI/CD gate enforces merge blocking
+
+See: `governance/directives/ADR034_ADDENDUM_R8_OFFLINE_CHANGELOG_PROTOCOL_v1.0.0.md`  
+See: `methodology/AOS_OFFLINE_BRANCH_WORKFLOW_v1.0.0.md` (detailed runbook with examples)
+
+
+<!-- aos:domain-only:tiktrack -->
 ## TikTrack Domain Rules
 
 The following rules apply when this team is operating within the TikTrack domain.
@@ -113,6 +150,7 @@ An extension lacking both approvals is invalid. The implementing team is respons
 **Extension vs. override distinction:**
 - Extension (permitted): Adding a new TT-specific configuration key to an AOS config
 - Override (requires authorization): Changing the behavior of an existing AOS mechanism
+<!-- /aos:domain-only -->
 
 ## TikTrack domain rules (on-demand)
 
@@ -359,6 +397,7 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-12 | v2.0.0 — universal functional acceptance standard; scope clarification (not code review); any-team QA request model; QA_REQUEST intake artifact; BLOCKED verdict state added**
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-12 | v2.0.1 — Iron Rule #7: testing level (R0–R3) + exit criterion mandatory in every QA request; BLOCKED if absent**
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-13 | v2.0.2 — Evidence hierarchy; automation-first Re-QA; MCP repositioned; mandatory read: methodology/TEAM_50_QA_AUTOMATION_AND_EVIDENCE_STANDARD_v1.0.0.md**
+**log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-17 | v2.0.3 — Execution environment: Team 50 must start API/DB via repo scripts before API/browser mandates; no SKIP-for-not-started without attempt; no delegation to Team 00**
 
 ---
 

@@ -12,17 +12,18 @@ depends_on: [project-governance]
 # Module 02 — Gate & Workflow
 
 ## Purpose
-L-GATE definitions (E/C/S/B/V), Track A (4-gate) and Track B (5-gate) sequences,
+L-GATE definitions (L-GATE_ELIGIBILITY / L-GATE_CONCEPT / L-GATE_SPEC / L-GATE_BUILD / L-GATE_VALIDATE), Track A (4-gate) and Track B (5-gate) sequences,
 handoff procedure, rollback policy. Optional for simple projects.
 
 ## Contents
 | File | Description |
 |------|-------------|
-| gates/L-GATE_E_ELIGIBILITY.md | Entry eligibility gate |
-| gates/L-GATE_C_CONCEPT.md | Concept review (Track B only) |
-| gates/L-GATE_S_SPEC_AND_AUTH.md | Spec + authorization gate |
-| gates/L-GATE_B_BUILD_AND_QA.md | Build + QA gate |
-| gates/L-GATE_V_VALIDATE_AND_LOCK.md | Validate + lock (cross-engine) |
+| gates/L-GATE_ELIGIBILITY.md | Entry eligibility gate |
+| gates/L-GATE_CONCEPT.md | Concept review (Track B only) |
+| gates/L-GATE_SPEC.md | Spec + authorization gate |
+| gates/L-GATE_BUILD.md | Build + QA gate |
+| gates/L-GATE_VALIDATE.md | Validate + lock (cross-engine) |
+| POST_GATE_ARCHIVE_PROCEDURE.md | Post-gate archive runbook (Iron Rule #15) |
 
 ## Dependencies
 - Requires: Module 01 (gates reference roadmap.yaml schema)

@@ -1,6 +1,6 @@
-# L-GATE_C — Concept Gate (Track B only)
+# L-GATE_CONCEPT — Concept Gate (Track B only)
 
-**When to run:** After L-GATE_E PASS. **Track B work packages only.**  
+**When to run:** After L-GATE_ELIGIBILITY PASS. **Track B work packages only.**  
 **Templates:** `../templates/LOD300_DESIGN_TEMPLATE.md`  
 **Normative definitions:** `../../methodology/gate-model/LOD_STANDARD_v1.0.0.md`
 
@@ -18,7 +18,7 @@
 - [ ] No specific function names, class names, or SQL schemas in LOD300
 
 ## Gate decision
-- **PASS** → advance to L-GATE_S
+- **PASS** → advance to L-GATE_SPEC
 - **FAIL** → return to architecture agent with findings list
 
 ## Iron Rule reminder

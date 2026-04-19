@@ -28,7 +28,7 @@ None for this example narrative.
 ## 4. Test evidence (illustrative)
 
 - Scripted runs documented in local `example_runs/` (not shipped in lean-kit).
-- Validator executed independent review 2026-03-20 per L-GATE_V checklist.
+- Validator executed independent review 2026-03-20 per L-GATE_VALIDATE checklist.
 
 ## 5. Lock status
 
@@ -36,7 +36,7 @@ None for this example narrative.
 |-------|-------|
 | locked | true |
 | locked_at | 2026-03-20 |
-| locking_gate | L-GATE_V |
+| locking_gate | L-GATE_VALIDATE |
 | verifier_signoff | team_tasktracker_val |
 
 **IRON RULE acknowledgment:** Validator engine (openai-codex) ≠ builder engine (cursor-composer).

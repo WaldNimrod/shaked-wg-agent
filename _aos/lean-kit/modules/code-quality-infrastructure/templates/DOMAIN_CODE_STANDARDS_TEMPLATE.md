@@ -56,9 +56,9 @@ reference_impl: TikTrack-Phoenix_AOSProject/_aos/context/CODE_STANDARDS.md
 
 ## How to Use This Document
 
-1. **During WP spec (LOD400):** Reference applicable CS-N standards in each acceptance criterion. Format: `[CS-N]` inline with the AC.
-2. **During implementation:** Check each CS-N for prohibited patterns before committing.
-3. **During QA (Team 50):** Verify AC compliance against referenced CS-N standards.
+1. **During WP spec (LOD400):** Reference applicable CS-N standards with a **qualified path** so the same CS number in another repo cannot be confused (e.g. hub vs TikTrack). Format per `governance/directives/ADR037_CODE_STANDARDS_CITATION_AND_MAINTENANCE_v1.0.0.md` (hub): ``[`<project-label>` `_aos/context/CODE_STANDARDS.md` CS-N]`` — **not** bare `[CS-N]` alone.
+2. **During implementation:** Check each cited CS-N in **this** file’s copy for prohibited patterns before committing.
+3. **During QA (Team 50):** Verify AC compliance against the **same** `_aos/context/CODE_STANDARDS.md` revision the AC qualified.
 4. **Adding a new standard:** Team 100 proposes to Team 00 → Team 00 approves → Team 100 adds CS-N+1 → version bump this file.
 
 ---

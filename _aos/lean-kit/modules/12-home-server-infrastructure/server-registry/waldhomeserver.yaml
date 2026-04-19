@@ -1,0 +1,153 @@
+---
+# Server Identity Card — AOS Module 12
+# Canonical reference for waldhomeserver configuration
+server:
+  hostname: waldhomeserver
+  purpose: "AOS staging, agent dispatch, scheduled tasks, database"
+  owner: "Nimrod (Team 00)"
+  created: 2026-04-18
+
+network:
+  tailscale_ip: "100.125.98.56"
+  lan_ip: "10.100.102.2"
+  ssh_user: "nimrodw"
+  ssh_auth_method: "github_key"
+  ssh_port: 22
+
+  tailscale:
+    enabled: true
+    tailnet: "home-nimrod"
+    dns_name: "waldhomeserver.home-nimrod.ts.net"
+
+hardware:
+  cpu:
+    cores: 4
+    model: "Intel Core i5"
+
+  ram_gb: 8
+
+  storage:
+    - device: "/dev/sda"
+      type: "SSD"
+      size_gb: 256
+      mount: "/"
+      purpose: "system"
+
+    - device: "/dev/sdb"
+      type: "SSD"
+      size_gb: 1024
+      mount: "/data"
+      purpose: "projects, databases, backups"
+
+os:
+  name: "Ubuntu"
+  version: "24.04.4 LTS"
+  kernel: "6.8.0"
+
+software:
+  python: "3.12"
+  node: "20.x"
+  docker:
+    enabled: true
+    version: "latest"
+    data_root: "/data/docker-volumes"
+    compose_version: "2.x"
+
+  tailscale:
+    enabled: true
+    version: "latest"
+
+  nginx:
+    enabled: false
+    purpose: "future reverse proxy"
+
+  ssh_server:
+    enabled: true
+    version: "OpenSSH 8.9"
+    key_auth: true
+
+shell:
+  default: "/bin/bash"
+  root_shell: "/bin/bash"
+
+services:
+  always_on:
+    - "sshd"
+    - "tailscaled"
+    - "docker"
+    - "aos-api" # FastAPI on port 8090
+
+  systemd:
+    - "aos-dispatch-bot" # Telegram bot
+
+  cron:
+    - "periodic maintenance jobs"
+    - "backup jobs"
+
+directories:
+  projects: "/data/projects"
+  backups: "/data/backups"
+  agent_comm_inbox: "$HOME/agent_comm/inbox"
+  agent_comm_outbox: "$HOME/agent_comm/outbox"
+  docker_volumes: "/data/docker-volumes"
+
+databases:
+  postgresql:
+    enabled: true
+    version: "15"
+    host: "localhost"
+    port: 5434
+    data_directory: "/data/postgres"
+    purpose: "agents-os and managed projects"
+
+access_control:
+  ssh:
+    - method: "github_key"
+      user: "nimrodw"
+      key_type: "ed25519"
+      key_source: "GitHub @nimrodw"
+      expires: "never"
+
+  tailscale:
+    - method: "tailnet_auth"
+      users: ["Nimrod"]
+      device: "this server"
+
+health_checks:
+  disk_free_warning_gb: 50
+  disk_free_critical_gb: 10
+  cpu_load_warning: 8
+  memory_free_warning_gb: 2
+
+monitoring:
+  enabled: false
+  notes: "Future Module 13 (Monitoring & Alerting)"
+
+backup:
+  strategy: "daily snapshots"
+  retention_days: 30
+  location: "/data/backups"
+
+notes: |
+  waldhomeserver is the primary development/staging server for all AOS-managed projects.
+  It runs:
+  - AOS API (port 8090)
+  - PostgreSQL (port 5434)
+  - Telegram Dispatch Bot (systemd service)
+  - Agent communication protocol (inbox/outbox directories)
+
+  All deployments for agents-os, TikTrack, SmallFarmsAgents, etc. target this server
+  when deployed from the home network.
+
+known_issues: |
+  [Team 50 QA audit 2026-04-18]
+  - TikTrack PostgreSQL: docker container binding to 5435 (check docker port mapping vs registry 5432)
+  - Verify with: docker ps | grep postgres
+  - If discrepancy exists, update registry after confirming docker-compose.yml mapping
+
+---
+metadata:
+  created_by: "Team 60 (AOS DevOps & Platform)"
+  created_date: "2026-04-18"
+  last_verified: "2026-04-18"
+  verification_method: "manual ssh + physical inspection"

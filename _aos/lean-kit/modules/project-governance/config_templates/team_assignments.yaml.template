@@ -2,7 +2,7 @@
 # ------------------------------------------------------
 # Declares all agents used in this project.
 # IRON RULE: builder_agent engine MUST differ from validator_agent engine.
-# Enforcement: validate_aos.sh Check 2 (automated) + System Designer at L-GATE_E (manual).
+# Enforcement: validate_aos.sh Check 2 (automated) + System Designer at L-GATE_ELIGIBILITY (manual).
 #
 # SLUG FORMAT: ^[a-z][a-z0-9]*_[a-z]+$
 #   Prefix = project abbreviation (lowercase alphanumeric only, no hyphens)
@@ -38,7 +38,7 @@ teams:
       - lod_spec_authoring
       - iron_rule_knowledge
       - mandate_issuance
-    notes: "Writes LOD200, LOD400. Reviews at L-GATE_V when required."
+    notes: "Writes LOD200, LOD400. Reviews at L-GATE_VALIDATE when required."
 
   - id: "[project-prefix]_build"
     role_type: builder_agent
@@ -55,7 +55,7 @@ teams:
       - independent_review
       - test_execution
       - finding_classification
-    notes: "Cross-engine validator at L-GATE_V. IRON RULE: engine != builder."
+    notes: "Cross-engine validator at L-GATE_VALIDATE. IRON RULE: engine != builder."
 
   # OPTIONAL roles below — include only if project requires them:
 

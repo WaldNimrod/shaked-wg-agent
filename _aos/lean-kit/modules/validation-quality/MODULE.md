@@ -2,7 +2,7 @@
 module: 8
 id: validation-quality
 title: Validation & Quality
-version: 3.1.6
+version: 3.1.10
 status: ACTIVE
 category: TOOLING
 required_by_profiles: [L0, L2, L3]
@@ -13,7 +13,7 @@ depends_on: [project-governance]
 
 ## Purpose
 
-Universal hub validation via `validate_aos.sh`, L-GATE_BUILD exit criterion (PASS / 0 FAIL on applicable checks), and companion scripts (`validate_lod`, verdicts, gates). On **agents-os hub** with all `active_modules` enabled, the script runs **19 checks** (as of Lean Kit 3.1.6 / V320).
+Universal hub validation via `validate_aos.sh`, L-GATE_BUILD exit criterion (PASS / 0 FAIL on applicable checks), and companion scripts (`validate_lod`, verdicts, gates). On **agents-os hub** with all `active_modules` enabled, the script runs **20 checks** as the baseline gate; checks **21–23** (gates/LOD/verdicts) may run as advisory depending on hub configuration (Lean Kit 3.1.9+ / V320+).
 
 ## Hub check suite (agents-os, full modules)
 
@@ -39,10 +39,19 @@ Spoke projects may run a **subset** of checks depending on `active_modules` in `
 | `scripts/validate_gates.sh` | Gate history integrity; L-GATE_VALIDATE |
 | `scripts/validate_gates.py` | Python core |
 | `GATE_REGISTRY.md` | Gate prerequisites and command cross-reference |
+| `docs/WP_DB_CANONICAL_TRACK_LOD_v1.0.0.md` | Hub DB: `POST /api/work-packages` must map `track`/`lod_status` to canonical columns (`work_packages.track`, `lod_status`) — anti-regression note for migration 010 + ADR034 |
+| `docs/AOS_GATE_MANDATE_CANON_v1.0.0.md` | LOCKED `/AOS_gate-mandate` procedure — policy **v1.0.2** in frontmatter (hub + spokes; Phase 3.5 remediation before resubmission; `governance/directives/ADR036_AOS_GATE_MANDATE_CANON_HUB_AND_SPOKES_v1.0.0.md`) |
+| `scripts/db/check_db_connectivity.py` (hub) | Unified DB-first connectivity checker used by CI and manual exception flow |
 
 ## Data authority (V320+)
 
 Structured WP/team/project mutations when the DB is online are **not** validated by editing YAML by hand — see `governance/directives/ADR034_DATA_AUTHORITY_DB_SSOT_ALL_PROFILES.md` (hub repo) and `methodology/AOS_CONCEPT_AND_PRINCIPLES.md` Iron Rule #7. Check 19 enforces that team contracts **say** this; runtime API compliance is operational.
+
+## Mandatory CI module (V320 closure)
+
+All canonical projects must include `.github/workflows/aos-governance-integrity.yml` and run `validate_aos.sh` on push/PR. This module is a hard gate for drift prevention across Dev/CI/Staging and is required for closure at scale.
+
+The CI workflow must also execute `scripts/db/check_db_connectivity.py` and retain checker output as evidence. Offline (exit 2) is acceptable when DB is intentionally unavailable, but checker execution is mandatory.
 
 ## Related
 

@@ -4,7 +4,7 @@
 **level:** All
 
 ## What this role does
-Performs **independent** review of implementation against LOD400 at **L-GATE_V**, using an engine **different** from the builder. Issues PASS/FAIL with classified findings (BLOCKER / MAJOR / MINOR).
+Performs **independent** review of implementation against LOD400 at **L-GATE_VALIDATE**, using an engine **different** from the builder. Issues PASS/FAIL with classified findings (BLOCKER / MAJOR / MINOR).
 
 ## Responsibilities
 - Read LOD400 without builder-led walkthrough bias
@@ -41,10 +41,10 @@ teams:
       - finding_classification
 ```
 
-## Iron Rule (L-GATE_V)
-> **Validator engine MUST differ from builder engine.** If the same engine appears for builder and validator on this WP, **do not** advance past L-GATE_E toward L-GATE_V until assignments are corrected.
+## Iron Rule (L-GATE_VALIDATE)
+> **Validator engine MUST differ from builder engine.** If the same engine appears for builder and validator on this WP, **do not** advance past L-GATE_ELIGIBILITY toward L-GATE_VALIDATE until assignments are corrected.
 
 ## Example slot (fill with your project IDs)
 | Slot | Engine | Notes |
 |------|--------|-------|
-| [TEAM_ID] | [engine-name — not equal to builder] | L-GATE_V only after L-GATE_B PASS |
+| [TEAM_ID] | [engine-name — not equal to builder] | L-GATE_VALIDATE only after L-GATE_BUILD PASS |

@@ -18,6 +18,29 @@
 7. NEVER write to `_aos/` — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Write scope is `_COMMUNICATION/team_80/` only. Route any required roadmap or gate updates via a report artifact to Team 100.
 8. **API-only mutations (Iron Rule #7):** API-only mutations: when AOS DB is running, all structured data mutations (WP status, gate, lod_status, team engine/environment, project metadata) MUST go through the API. Direct edits to roadmap.yaml, definition.yaml, projects.yaml for structured fields are FORBIDDEN per Iron Rule #7.
 
+## Offline DB Protocol (ADR034 R8)
+
+When the AOS v3 database is unreachable (`AOS_V3_DATABASE_URL` unset or connection fails), offline work is permitted on feature branches using the Offline Changelog Protocol:
+
+**Offline Workflow (6 Steps):**
+1. Check database status: `python3 -c "from agents_os_v3.modules.management.db import probe_database; print(probe_database())"`
+2. Create feature branch: `offline/YYYY-MM-DD-{project_id}-{scope}`
+3. Create `_aos/PENDING_DB_SYNC.yaml` from template with pending mutations
+4. Make offline edits to roadmap.yaml, definition.yaml, etc.
+5. Push PR with labels: `[offline-work]` `[pending-db-sync]`
+6. When DB is available, run `bash scripts/sync_offline_to_db.sh --force` and apply `[offline-sync-complete]` label
+
+**Key Rules:**
+- Offline edits MUST be on a named branch (main is forbidden when DB is offline)
+- `PENDING_DB_SYNC.yaml` MUST accompany all offline mutations
+- `gate_history[]` and prose fields remain file-authored (exemption from R2)
+- Local validation (Check 25) warns of pending sync; CI/CD gate enforces merge blocking
+
+See: `governance/directives/ADR034_ADDENDUM_R8_OFFLINE_CHANGELOG_PROTOCOL_v1.0.0.md`  
+See: `methodology/AOS_OFFLINE_BRANCH_WORKFLOW_v1.0.0.md` (detailed runbook with examples)
+
+
+<!-- aos:domain-only:tiktrack -->
 ## TikTrack Domain Rules
 
 The following rules apply when this team is operating within the TikTrack domain.
@@ -46,6 +69,7 @@ An extension lacking both approvals is invalid. The implementing team is respons
 **Extension vs. override distinction:**
 - Extension (permitted): Adding a new TT-specific configuration key to an AOS config
 - Override (requires authorization): Changing the behavior of an existing AOS mechanism
+<!-- /aos:domain-only -->
 
 ## TikTrack domain rules (on-demand)
 

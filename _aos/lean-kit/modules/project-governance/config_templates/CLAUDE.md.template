@@ -1,0 +1,48 @@
+# CLAUDE.md — {{PROJECT_DISPLAY_NAME}}
+
+## Identity
+**Repo:** {{REPO_NAME}}
+**Profile:** {{PROFILE}} ({{PROFILE_DESCRIPTION}})
+**Hub:** {{HUB_PATH}}
+
+## What this repo is
+{{PROJECT_PURPOSE_SENTENCE}}
+
+## Mandatory session startup
+1. Read `_aos/roadmap.yaml` — active WPs and current gate position
+2. Read `_aos/context/PROJECT_CONTEXT.md` — domain background and team entry
+3. Read `_aos/project_identity.yaml` — boundary declarations and allowed write roots
+4. Read governance contract for your team: `_aos/governance/team_[ID].md`
+
+## Team model
+Universal numbering (Iron Rule #9). See `_aos/definition.yaml`.
+Active team assignments: `_aos/team_assignments.yaml`.
+
+## Directory Authority
+
+| Team | May write to |
+|------|-------------|
+| Team 00 (Principal) | Anywhere |
+| Team 100 (Architect) | `_COMMUNICATION/team_100/`, `_aos/roadmap.yaml`, `_aos/work_packages/` |
+| Team 191 (Git/Files) | `_COMMUNICATION/team_191/`, `_archive/`, `_aos/` (bootstrap/propagation, under mandate) |
+| ALL OTHER TEAMS | `_COMMUNICATION/team_[ID]/` and application source ONLY |
+
+`_aos/` is the governance layer — **OFF LIMITS for all non-governance teams**.
+Non-AOS teams route required roadmap/gate updates via report artifact to Team 100.
+Canonical authority table: `methodology/AOS_DIRECTORY_CANON_v1.0.0.md` Part 5 (see hub).
+
+## §BOUNDARY — Cross-Project Isolation
+- **This repository is:** {{PROJECT_DISPLAY_NAME}} ({{PROFILE}} spoke)
+- **Cross-project handoff:** `~/Documents/_agent_comm/outbox/` or route to Team 10
+- NEVER create files that belong to another project in this repo
+- `_aos/project_identity.yaml` is the machine-readable boundary SSoT
+
+## AOS Hub reference
+Hub: {{HUB_PATH}}
+Methodology: hub `methodology/` directory
+Canon: hub `methodology/AOS_DIRECTORY_CANON_v1.0.0.md`
+Lean Kit: `_aos/lean-kit/` (physical snapshot — read-only)
+
+---
+*Template: lean-kit/modules/project-governance/config_templates/CLAUDE.md.template*
+*Instantiated: {{DATE}} | Profile: {{PROFILE}}*

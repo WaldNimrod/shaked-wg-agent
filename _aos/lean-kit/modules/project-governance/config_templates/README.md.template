@@ -40,7 +40,7 @@ At any time, exactly ONE agent holds write authority over `roadmap.yaml`.
 Write authority transfers at gate boundaries:
 
 - **architecture_agent** holds it between gates (WP planning, spec authoring)
-- **builder_agent** holds it during L-GATE_B (status updates during build)
+- **builder_agent** holds it during L-GATE_BUILD (status updates during build)
 - **validator_agent** reads only — never writes to roadmap.yaml
 
 Never write to `roadmap.yaml` concurrently with another agent.

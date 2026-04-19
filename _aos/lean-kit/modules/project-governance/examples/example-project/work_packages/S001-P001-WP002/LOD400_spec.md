@@ -2,7 +2,7 @@
 
 **Work package:** S001-P001-WP002  
 **Project:** Example Task Tracker (L0)  
-**Narrative state:** Spec approved at L-GATE_S; builder working toward L-GATE_B.
+**Narrative state:** Spec approved at L-GATE_SPEC; builder working toward L-GATE_BUILD.
 
 ---
 

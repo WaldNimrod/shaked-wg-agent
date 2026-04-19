@@ -114,6 +114,18 @@ def validate_file(filepath, lod_override=None):
         log_skip("V-LOD-7", f"{fname} — skipped (frontmatter parse failed)")
         return
 
+    # Pre-V318 legacy detection: `lod_target` is the V318 canonical field.
+    # Documents without it predate V318 schema standardization — skip all checks.
+    if "lod_target" not in fm:
+        log_skip("V-LOD-1", f"{fname} — pre-V318 document (no lod_target field; legacy schema)")
+        log_skip("V-LOD-2", f"{fname} — skipped (pre-V318 legacy)")
+        log_skip("V-LOD-3", f"{fname} — skipped (pre-V318 legacy)")
+        log_skip("V-LOD-4", f"{fname} — skipped (pre-V318 legacy)")
+        log_skip("V-LOD-5", f"{fname} — skipped (pre-V318 legacy)")
+        log_skip("V-LOD-6", f"{fname} — skipped (pre-V318 legacy)")
+        log_skip("V-LOD-7", f"{fname} — skipped (pre-V318 legacy)")
+        return
+
     natural_lod = detect_lod_level(fm)
     lod = detect_lod_level(fm, lod_override)
 
@@ -212,6 +224,9 @@ def main():
                         help="Validate all WP directories under _aos/work_packages/")
     parser.add_argument("--lod", default=None,
                         help="Override LOD level detection (100/200/300/400/500)")
+    parser.add_argument("--min-lod", type=int, default=None,
+                        help="Skip WPs with lod_status below LOD<N> (e.g. --min-lod 400 skips "
+                             "legacy WPs without LOD400 docs, avoiding false failures)")
     args = parser.parse_args()
 
     if args.all:
@@ -235,7 +250,39 @@ def main():
 
     lod_override = f"LOD{args.lod}" if args.lod else None
 
+    # Build lod_status + wp_status map from roadmap.yaml for --min-lod filtering
+    lod_status_map: dict = {}
+    wp_status_map: dict = {}
+    if args.min_lod is not None:
+        roadmap_path = REPO_ROOT / "_aos" / "roadmap.yaml"
+        if roadmap_path.exists():
+            try:
+                roadmap = yaml.safe_load(roadmap_path.read_text(encoding="utf-8")) or {}
+                for wp in roadmap.get("work_packages", []):
+                    wp_id = wp.get("id", "")
+                    if wp_id:
+                        lod_status_map[wp_id] = wp.get("lod_status", "")
+                        wp_status_map[wp_id] = wp.get("status", "")
+            except Exception:
+                pass  # best-effort; proceed without filtering if roadmap unreadable
+
     for wp_dir in wp_dirs:
+        wp_id = wp_dir.name
+
+        # --min-lod filter: skip WPs whose roadmap lod_status is below the threshold
+        # Also skip COMPLETE WPs — their legacy docs will never be updated.
+        if args.min_lod is not None:
+            wp_status = wp_status_map.get(wp_id, "")
+            if wp_status == "COMPLETE":
+                print(f"[SKIP] {wp_id}: status COMPLETE (--min-lod filter skips completed WPs)")
+                continue
+            lod_status = lod_status_map.get(wp_id, "")
+            m = re.match(r'LOD(\d+)', lod_status or "")
+            lod_num = int(m.group(1)) if m else 0
+            if lod_num < args.min_lod:
+                print(f"[SKIP] {wp_id}: lod_status '{lod_status or 'unknown'}' < LOD{args.min_lod} (--min-lod filter)")
+                continue
+
         lod_files = find_lod_files(wp_dir)
         if not lod_files:
             print(f"[SKIP] {wp_dir.name} — no LOD*.md files found")

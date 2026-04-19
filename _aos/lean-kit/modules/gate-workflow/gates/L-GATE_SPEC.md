@@ -1,6 +1,6 @@
-# L-GATE_S — Spec + Authorization Gate
+# L-GATE_SPEC — Spec + Authorization Gate
 
-**When to run:** After L-GATE_E PASS (Track A) or L-GATE_C PASS (Track B).  
+**When to run:** After L-GATE_ELIGIBILITY PASS (Track A) or L-GATE_CONCEPT PASS (Track B).  
 **This gate merges:** L0 equivalents of spec approval + execution authorization (see LOD Standard §Lean gate mapping).
 
 **Templates:** `../templates/LOD400_SPEC_TEMPLATE.md`
@@ -28,15 +28,22 @@
 - [ ] `roadmap.yaml` updated: `lod_status` = LOD400_APPROVED, `assigned_builder` declared
 
 ## Gate decision
-- **PASS** → advance to L-GATE_B; builder is authorized to begin
+- **PASS** → advance to L-GATE_BUILD; builder is authorized to begin
 - **FAIL** → return to architecture agent for spec revision; record blocking findings
 
-## roadmap.yaml update on L-GATE_S PASS
+### Pre-Condition (V318+)
+Before routing to Team 190, Team 100 MUST run:
+```bash
+./lean-kit/modules/validation-quality/scripts/validate_lod.sh <wp-dir>
+```
+Exit code must be 0. If exit 1, return to developer — do NOT route to Team 190.
+
+## roadmap.yaml update on L-GATE_SPEC PASS
 ```yaml
     lod_status: LOD400_APPROVED
-    current_lean_gate: L-GATE_B
+    current_lean_gate: L-GATE_BUILD
     gate_history:
-      - gate: L-GATE_S
+      - gate: L-GATE_SPEC
         result: PASS
         date: [YYYY-MM-DD]
         approved_by: [TEAM_ID]

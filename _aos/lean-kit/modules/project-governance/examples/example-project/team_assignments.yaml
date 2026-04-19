@@ -37,6 +37,6 @@ teams:
     skills:
       - independent_review
       - test_execution
-    notes: "Cross-engine validator at L-GATE_V; engine != cursor-composer builder."
+    notes: "Cross-engine validator at L-GATE_VALIDATE; engine != cursor-composer builder."
 
 cross_engine_validator: tasktracker_val

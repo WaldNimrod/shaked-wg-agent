@@ -36,4 +36,4 @@ supersedes: null
 - [ ] DEFER: reason [reason]
 - [ ] CLOSE: reason [reason]
 
-> **Iron Rule:** L-GATE_V validation MUST use a different engine than the builder. See `gates/L-GATE_V_VALIDATE_AND_LOCK.md`.
+> **Iron Rule:** L-GATE_VALIDATE validation MUST use a different engine than the builder. See `gates/L-GATE_VALIDATE_VALIDATE_AND_LOCK.md`.

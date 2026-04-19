@@ -7,7 +7,7 @@
 Coordinates gate transitions, generates build mandates for builder agents, and manages WP routing within the project. Project-local equivalent of Teams 10/11 gateway function in the legacy numbered model.
 
 ## Responsibilities
-- Generate build mandates at L-GATE_S → L-GATE_B transition
+- Generate build mandates at L-GATE_SPEC → L-GATE_BUILD transition
 - Coordinate gate documentation and artifact routing between roles
 - Manage WP assignment handoffs between architecture_agent and builder_agent
 - Track gate status in roadmap.yaml during active build phases

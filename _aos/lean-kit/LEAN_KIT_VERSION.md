@@ -1,8 +1,8 @@
 # Lean Kit Version
 
-**version:** 3.1.7
-**date:** 2026-04-16
-**status:** RELEASED — Module 11.4 (Domain/Platform Separation, required L0/L2/L2.5) + Module 14 (Code Quality Infrastructure, optional)
+**version:** 3.1.10
+**date:** 2026-04-17
+**status:** RELEASED — Module 08: WP DB canonical columns KB (`docs/WP_DB_CANONICAL_TRACK_LOD_v1.0.0.md`); hub snapshot sync with `_aos/lean-kit`
 
 ## Contents status
 
@@ -28,6 +28,9 @@
 | 3.1.5 | 2026-04-15 | Module 13 (content-wp-lifecycle) canonicalized. Defines the WP execution model for CONTENT_SUBSTRATE projects: LOD100→LOD200→LOD300→LOD400→Build→Validate, 4 source types, Decision Package template (mandatory), 5 LOD templates. Proven in nimrod-book. No skipping stages. |
 | 3.1.6 | 2026-04-16 | V320 DB Full Migration governance lock: Check 19 added to validate_aos.sh (API-only mutations Iron Rule #7 enforcement). All 17 team contracts updated with API-only clause. Iron Rule #7 extended in AOS_CONCEPT_AND_PRINCIPLES.md to cover all profiles including L0. |
 | 3.1.7 | 2026-04-16 | Module 11.4 (Domain/Platform Separation): binding DOM-PLAT-1/2/3 rules; Module 11 required_by_profiles → [L0, L2, L2.5]; DOMAIN_RULES_TEMPLATE added. Module 14 (code-quality-infrastructure, optional): PRE_COMMIT_PATTERN, CI_QUALITY_GATES_PATTERN, DOMAIN_CODE_STANDARDS_TEMPLATE. Reference impl: TikTrack Phoenix. |
+| 3.1.8 | 2026-04-16 | (tagged release — same module set as 3.1.7; version bump for snapshot tracking) |
+| 3.1.9 | 2026-04-17 | Post-bundle gap resolution (BUNDLE-V316-V317-V318): V318 validators wired into validate_aos.sh as checks 21-23 (advisory, module 07); validate_lod.py --min-lod flag (AC-006 resolution); DB advance prerequisite validation (_validate_advance_prerequisites); /ideas/groom API endpoint + page-ideas.js API-first; 4 surgical fixes (idea_groom.sh has_issues, archive_gate_artifacts.sh _deep cap, prompt_staleness_check.sh heredoc argv, validate_gates.py dead code comment); check_19 SKIP for hub-only DB checker on spokes; GATE_REGISTRY.md v1.2.0. Hub: 20 PASS / 3 SKIP / 0 FAIL. Both spokes: 0 FAIL. |
+| 3.1.10 | 2026-04-17 | Module 08 operational KB: `docs/WP_DB_CANONICAL_TRACK_LOD_v1.0.0.md` documents canonical `work_packages.track` / `lod_status` mapping for `POST /api/work-packages` (V320 NB hierarchy closure). MODULE.md check-suite wording clarified. Physical `_aos/lean-kit` snapshot aligned. |
 
 ## Snapshot model
 

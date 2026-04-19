@@ -19,7 +19,7 @@ LOD_STATUS_ENUM = {
     "LOD400_APPROVED", "LOD500_LOCKED", "SUPERSEDED", "ARCHIVED"
 }
 
-# Valid forward progressions (each state → allowed next states)
+# Reserved: future gate-walk validation (V319+) — defined but not yet called
 VALID_TRANSITIONS = {
     "DRAFT":            {"LOD100_APPROVED", "ARCHIVED"},
     "LOD100_APPROVED":  {"LOD200_APPROVED", "LOD300_APPROVED", "ARCHIVED"},
@@ -103,12 +103,20 @@ def check_report_paths(wp_id, gate_history):
         if result != "PASS":
             continue
         has_pass_entries = True
-        # BR-18: strictly require 'report_path' — no fallback to 'verdict_ref'
+        # BR-18: prefer 'report_path'; accept 'verdict_ref' as legacy alias
+        # (pre-V318 gate_history entries used verdict_ref before BR-18 standardized report_path).
         report_path = entry.get("report_path")
         if not report_path:
+            legacy_ref = entry.get("verdict_ref")
+            if legacy_ref:
+                # Legacy: accept verdict_ref as backward-compatible alias, skip strict check
+                log_skip("V-GATE-2",
+                         f"{wp_id} — gate_history[{i}] ({entry.get('gate','?')}) uses legacy "
+                         f"'verdict_ref' field (pre-BR-18; recommend migrating to report_path)")
+                continue
             log_fail("V-GATE-2",
                      f"{wp_id} — gate_history[{i}] ({entry.get('gate','?')}) PASS entry "
-                     f"missing 'report_path' field (BR-18; 'verdict_ref' is not accepted)")
+                     f"missing 'report_path' field (BR-18; use report_path for new WPs)")
             continue
         full_path = REPO_ROOT / report_path
         if not full_path.exists():

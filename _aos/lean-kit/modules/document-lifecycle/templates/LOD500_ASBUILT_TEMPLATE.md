@@ -16,11 +16,24 @@ spec_ref: [path/to/LOD400_spec.md]
 
 **work_package_id:** [S00X-P00X-WP00X]
 **spec_ref:** [path/to/LOD400_spec.md v1.X.X]
-**gate:** L-GATE_V
+**gate:** L-GATE_VALIDATE
 **fidelity:** [FULL_MATCH / DEVIATIONS_DOCUMENTED / PARTIAL]
 
 ## 1. What was built
 [Summary of what was implemented. 2-4 sentences. Matches LOD400 scope.]
+
+## 1b. Documentation layers
+
+| Layer | Scope | Artifact / Location | Status |
+|-------|-------|---------------------|--------|
+| L1 — User/Changelog | User-visible changes, release notes | [path or N/A] | ✅ Done / ➖ N/A |
+| L2 — Architecture | Architectural decisions, trade-offs, component design | [path or N/A] | ✅ Done / ➖ N/A |
+| L3 — API/Interface | API contracts, interface specs, integration points | [path or N/A] | ✅ Done / ➖ N/A |
+| L4 — Implementation | Inline code docs, README updates, technical notes | [path or N/A] | ✅ Done / ➖ N/A |
+
+> **Rule:** This section must be fully complete — all applicable layers marked ✅ Done or ➖ N/A with justification — **before submitting to L-GATE_VALIDATE**.  
+> L-GATE_VALIDATE treats an absent or incomplete §1b as a **BLOCKED** precondition (not FAIL).  
+> N/A is valid only when the layer is genuinely inapplicable to this WP type (document the reason).
 
 ## 2. Fidelity record
 [Compare against each LOD400 AC:]
@@ -56,6 +69,6 @@ spec_ref: [path/to/LOD400_spec.md]
 
 ## Cross-Engine Validation — Iron Rule
 
-Documents at LOD400+ require cross-engine validation at L-GATE_V.
+Documents at LOD400+ require cross-engine validation at L-GATE_VALIDATE.
 **The validator engine MUST differ from the builder engine — IRON RULE.**
-No exception. No waiver. See `gates/L-GATE_V_VALIDATE_AND_LOCK.md`.
+No exception. No waiver. See `gates/L-GATE_VALIDATE_VALIDATE_AND_LOCK.md`.

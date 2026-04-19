@@ -14,753 +14,802 @@ project:
     Future: SaaS evolution S002–S004 (multi-city, multi-tenant, billing, permissions).
 
 milestones:
-  - id: S001
-    label: Personal Agent — Basel, June 2026
-    profile: L0
-    status: COMPLETE
-    completed_at: '2026-04-11'
-    target_date: '2026-06-08'
-    notes: >
-      Working deployed agent. 3x daily cron. Publishing to nimrod.bio.
-      Both WPs (S001-P001-WP001, S001-P002-WP001) L-GATE_V PASS 2026-04-11.
-      Canonization complete. validate_aos.sh 12/12 PASS.
+- id: S001
+  label: Personal Agent — Basel, June 2026
+  profile: L0
+  status: COMPLETE
+  completed_at: '2026-04-11'
+  target_date: '2026-06-08'
+  notes: >
+    Working deployed agent. 3x daily cron. Publishing to nimrod.bio.
+    Both WPs (S001-P001-WP001, S001-P002-WP001) L-GATE_V PASS 2026-04-11.
+    Canonization complete. validate_aos.sh 12/12 PASS.
 
-  - id: S002
-    label: Platform Foundation — City-agnostic, API surface, notifications
-    profile: L2
-    status: COMPLETE
-    completed_at: '2026-04-12'
-    target_date: '2026-09-30'
-    notes: >
-      All 5 WPs L-GATE_V PASS 2026-04-12 (Team 190/OpenAI). LOD500 LOCKED.
-      Three-entity data model, FastAPI REST API, API key auth, multi-channel notifications.
-      81 tests, ruff clean, validate_aos.sh 12/12 PASS. Developer docs: docs/DEVELOPER_GUIDE.md.
+- id: S002
+  label: Platform Foundation — City-agnostic, API surface, notifications
+  profile: L2
+  status: COMPLETE
+  completed_at: '2026-04-12'
+  target_date: '2026-09-30'
+  notes: >
+    All 5 WPs L-GATE_V PASS 2026-04-12 (Team 190/OpenAI). LOD500 LOCKED.
+    Three-entity data model, FastAPI REST API, API key auth, multi-channel notifications.
+    81 tests, ruff clean, validate_aos.sh 12/12 PASS. Developer docs: docs/DEVELOPER_GUIDE.md.
 
-  - id: S003
-    label: SaaS Infrastructure — Multi-tenancy, billing, permissions
-    profile: L2.5
-    status: PLANNED
-    target_date: '2026-12-31'
-    notes: >
-      True multi-tenant architecture. Billing provider integration (Stripe/LemonSqueezy).
-      RBAC + API key lifecycle. Complex WPs → L2.5 (mandatory Track B + R1/R2/R3).
+- id: S003
+  label: SaaS Infrastructure — Multi-tenancy, billing, permissions
+  profile: L2.5
+  status: PLANNED
+  target_date: '2026-12-31'
+  notes: >
+    True multi-tenant architecture. Billing provider integration (Stripe/LemonSqueezy).
+    RBAC + API key lifecycle. Complex WPs → L2.5 (mandatory Track B + R1/R2/R3).
 
-  - id: S004
-    label: SaaS Product Launch — Self-serve, white-label, analytics
-    profile: L2.5
-    status: PLANNED
-    target_date: '2027-03-31'
-    notes: >
-      Customer self-serve onboarding. Web dashboard. Agency/partner white-label.
-      Usage analytics. Full SaaS offering.
+- id: S004
+  label: SaaS Product Launch — Self-serve, white-label, analytics
+  profile: L2.5
+  status: PLANNED
+  target_date: '2027-03-31'
+  notes: >
+    Customer self-serve onboarding. Web dashboard. Agency/partner white-label.
+    Usage analytics. Full SaaS offering.
 
-  - id: S005
-    label: Israel Market Expansion — Pardes Hanna Region
-    profile: L2
-    status: ACTIVE
-    target_date: '2026-09-30'
-    notes: >
-      Israel market entry. Pardes Hanna region (N-of-Netanya, S-of-Haifa, E-to-Afula,
-      excluding those 3 cities). All rental types. Yad2 critical path.
-      Roommate scoring as differentiator (unique in IL market).
-      Low business potential acknowledged — competitors are cheap/free.
-      Decisions: _COMMUNICATION/team_00/DECISIONS_ISRAEL_STRATEGY_v1.0.0.md
+- id: S005
+  label: Israel Market Expansion — Pardes Hanna Region
+  profile: L2
+  status: ACTIVE
+  target_date: '2026-09-30'
+  notes: >
+    Israel market entry. Pardes Hanna region (N-of-Netanya, S-of-Haifa, E-to-Afula,
+    excluding those 3 cities). All rental types. Yad2 critical path.
+    Roommate scoring as differentiator (unique in IL market).
+    Low business potential acknowledged — competitors are cheap/free.
+    Decisions: _COMMUNICATION/team_00/DECISIONS_ISRAEL_STRATEGY_v1.0.0.md
 
 work_packages:
 
   # ── S001: Personal Agent ──────────────────────────────────────────────────
 
-  - id: S001-P001-WP001
-    label: Application core — Python agent skeleton, scraper stubs, CLI
-    status: COMPLETE
-    track: A
-    current_lean_gate: L-GATE_V
-    lod_status: LOD500
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-10'
-    milestone_ref: S001
-    spec_ref: _aos/work_packages/S001-P001-WP001/LOD400_spec.md
-    gate_history:
-      - gate: L-GATE_E
-        result: PASS
-        date: '2026-04-10'
-        notes: Project scope and data model defined. Config/data files in place.
-      - gate: L-GATE_S
-        result: PASS
-        date: '2026-04-10'
-        notes: Architecture approved. Python package structure, scraper abstractions, scoring model.
-      - gate: L-GATE_B
-        result: PASS
-        date: '2026-04-10'
-        notes: Implementation complete; tests and ruff per LOD400 (baseline L-GATE_B).
-      - gate: L-GATE_V
-        result: PASS
-        date: '2026-04-11'
-        notes: >
-          Constitutional validation by shaked_val (OpenAI). 53 tests, validate_aos 12/12,
-          LOD500 v0.2.2 addendum filed. 1 MAJOR doc-drift finding (resolved via addendum), 1 MINOR activation drift.
+- id: S001-P001-WP001
+  label: Application core — Python agent skeleton, scraper stubs, CLI
+  status: COMPLETE
+  track: A
+  current_lean_gate: L-GATE_V
+  lod_status: LOD500
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-10'
+  milestone_ref: S001
+  spec_ref: _aos/work_packages/S001-P001-WP001/LOD400_spec.md
+  gate_history:
+  - gate: L-GATE_E
+    result: PASS
+    date: '2026-04-10'
+    notes: Project scope and data model defined. Config/data files in place.
+  - gate: L-GATE_S
+    result: PASS
+    date: '2026-04-10'
+    notes: Architecture approved. Python package structure, scraper 
+      abstractions, scoring model.
+  - gate: L-GATE_B
+    result: PASS
+    date: '2026-04-10'
+    notes: Implementation complete; tests and ruff per LOD400 (baseline 
+      L-GATE_B).
+  - gate: L-GATE_V
+    result: PASS
+    date: '2026-04-11'
     notes: >
-      Core Python package implemented: config, persistence, scorer, runner, scrapers.
-      Playwright wgzimmer scraper (v0.3.0). HTML report + FTPS publish. 59 live listings.
-      v0.2.2 deployed: dual-table UI, verified/unverified split, live validation button.
-      L-GATE_V PASS recorded 2026-04-11.
+      Constitutional validation by shaked_val (OpenAI). 53 tests, validate_aos 12/12,
+      LOD500 v0.2.2 addendum filed. 1 MAJOR doc-drift finding (resolved via addendum),
+      1 MINOR activation drift.
+  notes: >
+    Core Python package implemented: config, persistence, scorer, runner, scrapers.
+    Playwright wgzimmer scraper (v0.3.0). HTML report + FTPS publish. 59 live listings.
+    v0.2.2 deployed: dual-table UI, verified/unverified split, live validation button.
+    L-GATE_V PASS recorded 2026-04-11.
 
-  - id: S001-P002-WP001
-    label: AOS canonization — governance gaps, SaaS roadmap register
-    status: COMPLETE
-    track: A
-    current_lean_gate: L-GATE_V
-    lod_status: LOD500
-    assigned_builder: shaked_arch
-    assigned_validator: shaked_val
-    created_at: '2026-04-11'
-    milestone_ref: S001
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    gate_history:
-      - gate: L-GATE_E
-        result: PASS
-        date: '2026-04-11'
-        notes: Canonization plan approved by Team 00 (Nimrod).
-      - gate: L-GATE_S
-        result: PASS
-        date: '2026-04-11'
-        notes: >
-          Architecture review: gap list confirmed (project_identity.yaml missing,
-          lean-kit v3.1.2→v3.1.3, WP ID migration, pyproject.toml version mismatch).
-          SaaS roadmap S002–S004 structure approved.
-      - gate: L-GATE_B
-        result: PASS
-        date: '2026-04-11'
-        notes: >
-          Canonization deliverables merged: project_identity, lean-kit v3.1.3 snapshot,
-          ideas.json, hub registry fields, SaaS WP register, validate_aos Check 12 synced.
-      - gate: L-GATE_V
-        result: PASS
-        date: '2026-04-11'
-        notes: >
-          Constitutional review (Team 190). Migration audit sign-off.
-          Team 100 architecture review APPROVED. Hub phrasing + ruff + ID hygiene applied during audit.
+  profile: L0
+- id: S001-P002-WP001
+  label: AOS canonization — governance gaps, SaaS roadmap register
+  status: COMPLETE
+  track: A
+  current_lean_gate: L-GATE_V
+  lod_status: LOD500
+  assigned_builder: shaked_arch
+  assigned_validator: shaked_val
+  created_at: '2026-04-11'
+  milestone_ref: S001
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  gate_history:
+  - gate: L-GATE_E
+    result: PASS
+    date: '2026-04-11'
+    notes: Canonization plan approved by Team 00 (Nimrod).
+  - gate: L-GATE_S
+    result: PASS
+    date: '2026-04-11'
     notes: >
-      Domain validation complete 2026-04-11. Artifacts: _archive/S001-P002-WP001/team_100/ARCH_REVIEW_2026-04-11.md,
-      _archive/S001-P002-WP001/MIGRATION_AUDIT_SIGN_OFF_2026-04-11.md.
+      Architecture review: gap list confirmed (project_identity.yaml missing,
+      lean-kit v3.1.2→v3.1.3, WP ID migration, pyproject.toml version mismatch).
+      SaaS roadmap S002–S004 structure approved.
+  - gate: L-GATE_B
+    result: PASS
+    date: '2026-04-11'
+    notes: >
+      Canonization deliverables merged: project_identity, lean-kit v3.1.3 snapshot,
+      ideas.json, hub registry fields, SaaS WP register, validate_aos Check 12 synced.
+  - gate: L-GATE_V
+    result: PASS
+    date: '2026-04-11'
+    notes: >
+      Constitutional review (Team 190). Migration audit sign-off.
+      Team 100 architecture review APPROVED. Hub phrasing + ruff + ID hygiene applied
+      during audit.
+  notes: >
+    Domain validation complete 2026-04-11. Artifacts: _archive/S001-P002-WP001/team_100/ARCH_REVIEW_2026-04-11.md,
+    _archive/S001-P002-WP001/MIGRATION_AUDIT_SIGN_OFF_2026-04-11.md.
 
   # ── S002: Platform Foundation (PLANNED) ───────────────────────────────────
 
-  - id: S002-P001-WP001
-    label: City-agnostic config schema + scraper interface
-    status: COMPLETE
-    track: A
-    current_lean_gate: COMPLETE
-    lod_status: LOD500_LOCKED
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-11'
-    milestone_ref: S002
-    spec_ref: _aos/work_packages/S002-P001-WP001/LOD400_S002-P001-WP001.md
-    gate_history:
-      - gate: L-GATE_E
-        result: PASS
-        date: '2026-04-12'
-      - gate: L-GATE_S
-        result: PASS
-        date: '2026-04-12'
-        notes: LOD400 v1.1.0 validated by Team 190 (PASS WITH FINDINGS).
-      - gate: L-GATE_B
-        result: PASS
-        date: '2026-04-12'
-        notes: Implementation complete. 81 tests pass, ruff clean, validate_aos 12/12.
-      - gate: L-GATE_V
-        result: PASS
-        date: '2026-04-12'
-        validator: team_190
-        validator_engine: openai
-        builder_engine: cursor-composer
-        fidelity: FULL_MATCH
-    notes: >
-      Three-entity config model (AgentMeta, CityDefinition, SearchProfile, SourceDefinition).
-      load_config(profile_id), CLI --profile, scraper/scorer/runner updated.
-      L-GATE_V PASS 2026-04-12.
+  profile: L0
+- id: S002-P001-WP001
+  label: City-agnostic config schema + scraper interface
+  status: COMPLETE
+  track: A
+  current_lean_gate: COMPLETE
+  lod_status: LOD500_LOCKED
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-11'
+  milestone_ref: S002
+  spec_ref: _aos/work_packages/S002-P001-WP001/LOD400_S002-P001-WP001.md
+  gate_history:
+  - gate: L-GATE_E
+    result: PASS
+    date: '2026-04-12'
+  - gate: L-GATE_S
+    result: PASS
+    date: '2026-04-12'
+    notes: LOD400 v1.1.0 validated by Team 190 (PASS WITH FINDINGS).
+  - gate: L-GATE_B
+    result: PASS
+    date: '2026-04-12'
+    notes: Implementation complete. 81 tests pass, ruff clean, validate_aos 
+      12/12.
+  - gate: L-GATE_V
+    result: PASS
+    date: '2026-04-12'
+    validator: team_190
+    validator_engine: openai
+    builder_engine: cursor-composer
+    fidelity: FULL_MATCH
+  notes: >
+    Three-entity config model (AgentMeta, CityDefinition, SearchProfile, SourceDefinition).
+    load_config(profile_id), CLI --profile, scraper/scorer/runner updated.
+    L-GATE_V PASS 2026-04-12.
 
-  - id: S002-P001-WP002
-    label: Zurich + Bern city definitions + source registry + default profile
-    status: COMPLETE
-    track: A
-    current_lean_gate: COMPLETE
-    lod_status: LOD500_LOCKED
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-11'
-    milestone_ref: S002
-    spec_ref: _aos/work_packages/S002-P001-WP002/LOD400_S002-P001-WP002.md
-    gate_history:
-      - gate: L-GATE_E
-        result: PASS
-        date: '2026-04-12'
-      - gate: L-GATE_S
-        result: PASS
-        date: '2026-04-12'
-        notes: LOD400 v1.1.0 validated by Team 190 (PASS WITH FINDINGS).
-      - gate: L-GATE_B
-        result: PASS
-        date: '2026-04-12'
-      - gate: L-GATE_V
-        result: PASS
-        date: '2026-04-12'
-        validator: team_190
-        validator_engine: openai
-        builder_engine: cursor-composer
-        fidelity: FULL_MATCH
-    notes: >
-      City definitions (Basel/Zurich/Bern), source registry with city_params,
-      default profile, agent.json, legacy migration (.bak backups).
-      L-GATE_V PASS 2026-04-12.
+  profile: L0
+- id: S002-P001-WP002
+  label: Zurich + Bern city definitions + source registry + default profile
+  status: COMPLETE
+  track: A
+  current_lean_gate: COMPLETE
+  lod_status: LOD500_LOCKED
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-11'
+  milestone_ref: S002
+  spec_ref: _aos/work_packages/S002-P001-WP002/LOD400_S002-P001-WP002.md
+  gate_history:
+  - gate: L-GATE_E
+    result: PASS
+    date: '2026-04-12'
+  - gate: L-GATE_S
+    result: PASS
+    date: '2026-04-12'
+    notes: LOD400 v1.1.0 validated by Team 190 (PASS WITH FINDINGS).
+  - gate: L-GATE_B
+    result: PASS
+    date: '2026-04-12'
+  - gate: L-GATE_V
+    result: PASS
+    date: '2026-04-12'
+    validator: team_190
+    validator_engine: openai
+    builder_engine: cursor-composer
+    fidelity: FULL_MATCH
+  notes: >
+    City definitions (Basel/Zurich/Bern), source registry with city_params,
+    default profile, agent.json, legacy migration (.bak backups).
+    L-GATE_V PASS 2026-04-12.
 
-  - id: S002-P002-WP001
-    label: REST API layer — /search, /listings, /runs endpoints
-    status: COMPLETE
-    track: B
-    profile: L2.5
-    current_lean_gate: COMPLETE
-    lod_status: LOD500_LOCKED
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-11'
-    milestone_ref: S002
-    spec_ref: _aos/work_packages/S002-P002-WP001/LOD400_S002-P002-WP001.md
-    team_00_decision: "L2.5 / Track B — confirmed 2026-04-12"
-    gate_history:
-      - gate: L-GATE_E
-        result: PASS
-        date: '2026-04-12'
-      - gate: L-GATE_S
-        result: PASS
-        date: '2026-04-12'
-        notes: LOD400 v1.1.1 validated by Team 190 (PASS WITH FINDINGS).
-      - gate: L-GATE_B
-        result: PASS
-        date: '2026-04-12'
-      - gate: L-GATE_V
-        result: PASS
-        date: '2026-04-12'
-        validator: team_190
-        validator_engine: openai
-        builder_engine: cursor-composer
-        fidelity: FULL_MATCH
-    notes: >
-      FastAPI REST API: POST /search, GET /listings, /runs, /health.
-      CORS, X-Request-ID, Pydantic schemas, profile_id resolution.
-      L-GATE_V PASS 2026-04-12.
+  profile: L0
+- id: S002-P002-WP001
+  label: REST API layer — /search, /listings, /runs endpoints
+  status: COMPLETE
+  track: B
+  profile: L2.5
+  current_lean_gate: COMPLETE
+  lod_status: LOD500_LOCKED
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-11'
+  milestone_ref: S002
+  spec_ref: _aos/work_packages/S002-P002-WP001/LOD400_S002-P002-WP001.md
+  team_00_decision: "L2.5 / Track B — confirmed 2026-04-12"
+  gate_history:
+  - gate: L-GATE_E
+    result: PASS
+    date: '2026-04-12'
+  - gate: L-GATE_S
+    result: PASS
+    date: '2026-04-12'
+    notes: LOD400 v1.1.1 validated by Team 190 (PASS WITH FINDINGS).
+  - gate: L-GATE_B
+    result: PASS
+    date: '2026-04-12'
+  - gate: L-GATE_V
+    result: PASS
+    date: '2026-04-12'
+    validator: team_190
+    validator_engine: openai
+    builder_engine: cursor-composer
+    fidelity: FULL_MATCH
+  notes: >
+    FastAPI REST API: POST /search, GET /listings, /runs, /health.
+    CORS, X-Request-ID, Pydantic schemas, profile_id resolution.
+    L-GATE_V PASS 2026-04-12.
 
-  - id: S002-P002-WP002
-    label: API key auth (single-user)
-    status: COMPLETE
-    track: A
-    current_lean_gate: COMPLETE
-    lod_status: LOD500_LOCKED
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-11'
-    milestone_ref: S002
-    spec_ref: _aos/work_packages/S002-P002-WP002/LOD400_S002-P002-WP002.md
-    gate_history:
-      - gate: L-GATE_E
-        result: PASS
-        date: '2026-04-12'
-      - gate: L-GATE_S
-        result: PASS
-        date: '2026-04-12'
-        notes: LOD400 v1.1.2 validated by Team 190 (PASS WITH FINDINGS).
-      - gate: L-GATE_B
-        result: PASS
-        date: '2026-04-12'
-      - gate: L-GATE_V
-        result: PASS
-        date: '2026-04-12'
-        validator: team_190
-        validator_engine: openai
-        builder_engine: cursor-composer
-        fidelity: FULL_MATCH
-    notes: >
-      verify_api_key FastAPI dependency, hmac.compare_digest, router-level auth.
-      L-GATE_V PASS 2026-04-12.
+- id: S002-P002-WP002
+  label: API key auth (single-user)
+  status: COMPLETE
+  track: A
+  current_lean_gate: COMPLETE
+  lod_status: LOD500_LOCKED
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-11'
+  milestone_ref: S002
+  spec_ref: _aos/work_packages/S002-P002-WP002/LOD400_S002-P002-WP002.md
+  gate_history:
+  - gate: L-GATE_E
+    result: PASS
+    date: '2026-04-12'
+  - gate: L-GATE_S
+    result: PASS
+    date: '2026-04-12'
+    notes: LOD400 v1.1.2 validated by Team 190 (PASS WITH FINDINGS).
+  - gate: L-GATE_B
+    result: PASS
+    date: '2026-04-12'
+  - gate: L-GATE_V
+    result: PASS
+    date: '2026-04-12'
+    validator: team_190
+    validator_engine: openai
+    builder_engine: cursor-composer
+    fidelity: FULL_MATCH
+  notes: >
+    verify_api_key FastAPI dependency, hmac.compare_digest, router-level auth.
+    L-GATE_V PASS 2026-04-12.
 
-  - id: S002-P003-WP001
-    label: Multi-channel notification digest
-    status: COMPLETE
-    track: A
-    current_lean_gate: COMPLETE
-    lod_status: LOD500_LOCKED
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-11'
-    milestone_ref: S002
-    spec_ref: _aos/work_packages/S002-P003-WP001/LOD400_S002-P003-WP001.md
-    gate_history:
-      - gate: L-GATE_E
-        result: PASS
-        date: '2026-04-12'
-      - gate: L-GATE_S
-        result: PASS
-        date: '2026-04-12'
-        notes: LOD400 v1.1.0 validated by Team 190 (PASS WITH FINDINGS).
-      - gate: L-GATE_B
-        result: PASS
-        date: '2026-04-12'
-      - gate: L-GATE_V
-        result: PASS
-        date: '2026-04-12'
-        validator: team_190
-        validator_engine: openai
-        builder_engine: cursor-composer
-        fidelity: FULL_MATCH
-    notes: >
-      5-channel notifier (email, telegram, discord, ntfy, webhook).
-      Digest builder, orchestrator, runner integration.
-      L-GATE_V PASS 2026-04-12.
+  profile: L0
+- id: S002-P003-WP001
+  label: Multi-channel notification digest
+  status: COMPLETE
+  track: A
+  current_lean_gate: COMPLETE
+  lod_status: LOD500_LOCKED
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-11'
+  milestone_ref: S002
+  spec_ref: _aos/work_packages/S002-P003-WP001/LOD400_S002-P003-WP001.md
+  gate_history:
+  - gate: L-GATE_E
+    result: PASS
+    date: '2026-04-12'
+  - gate: L-GATE_S
+    result: PASS
+    date: '2026-04-12'
+    notes: LOD400 v1.1.0 validated by Team 190 (PASS WITH FINDINGS).
+  - gate: L-GATE_B
+    result: PASS
+    date: '2026-04-12'
+  - gate: L-GATE_V
+    result: PASS
+    date: '2026-04-12'
+    validator: team_190
+    validator_engine: openai
+    builder_engine: cursor-composer
+    fidelity: FULL_MATCH
+  notes: >
+    5-channel notifier (email, telegram, discord, ntfy, webhook).
+    Digest builder, orchestrator, runner integration.
+    L-GATE_V PASS 2026-04-12.
 
   # ── S002: Operational Closure + Research ─────────────────────────────────
 
-  - id: S002-OPS-WP001
-    label: S002 v0.3.0 production deployment
-    status: COMPLETE
-    track: A
-    current_lean_gate: COMPLETE
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-12'
-    completed_at: '2026-04-12'
-    milestone_ref: S002
-    spec_ref: _aos/work_packages/S002-OPS-WP001/LOD200_S002-OPS-WP001.md
-    gate_history:
-      - gate: COMPLETE
-        result: PASS
-        date: '2026-04-12'
-        notes: >
-          Deployed v0.3.0 to waldhomeserver. Merged dev→main (40524dc), git pull on server,
-          pip install, 3 scan runs, report published to nimrod.bio/agents/shaked-wg/index.html.
-          SC-01–SC-03 verified. SC-04 (Shaked notification) pending.
+  profile: L0
+- id: S002-OPS-WP001
+  label: S002 v0.3.0 production deployment
+  status: COMPLETE
+  track: A
+  current_lean_gate: COMPLETE
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-12'
+  completed_at: '2026-04-12'
+  milestone_ref: S002
+  spec_ref: _aos/work_packages/S002-OPS-WP001/LOD200_S002-OPS-WP001.md
+  gate_history:
+  - gate: COMPLETE
+    result: PASS
+    date: '2026-04-12'
     notes: >
-      Push dev→main, deploy to production, run full scan, verify report,
-      notify Shaked with S002 change summary. Track A operational WP.
+      Deployed v0.3.0 to waldhomeserver. Merged dev→main (40524dc), git pull on server,
+      pip install, 3 scan runs, report published to nimrod.bio/agents/shaked-wg/index.html.
+      SC-01–SC-03 verified. SC-04 (Shaked notification) pending.
+  notes: >
+    Push dev→main, deploy to production, run full scan, verify report,
+    notify Shaked with S002 change summary. Track A operational WP.
 
-  - id: S002-RND-WP001
-    label: Israel apartment search — source mapping & entry assessment
-    status: COMPLETE
-    track: A
-    current_lean_gate: COMPLETE
-    lod_status: LOD200
-    assigned_builder: shaked_arch
-    assigned_validator: team_00
-    created_at: '2026-04-12'
-    completed_at: '2026-04-12'
-    milestone_ref: S002
-    spec_ref: _aos/work_packages/S002-RND-WP001/LOD200_S002-RND-WP001.md
-    gate_history:
-      - gate: COMPLETE
-        result: PASS
-        date: '2026-04-12'
-        notes: >
-          Research complete. 11 platforms mapped, 7+ competitors analyzed.
-          5 strategic decisions by Team 00 → S005 milestone created.
-          Findings: _COMMUNICATION/team_00/DECISIONS_ISRAEL_STRATEGY_v1.0.0.md
+  profile: L0
+- id: S002-RND-WP001
+  label: Israel apartment search — source mapping & entry assessment
+  status: COMPLETE
+  track: A
+  current_lean_gate: COMPLETE
+  lod_status: LOD200
+  assigned_builder: shaked_arch
+  assigned_validator: team_00
+  created_at: '2026-04-12'
+  completed_at: '2026-04-12'
+  milestone_ref: S002
+  spec_ref: _aos/work_packages/S002-RND-WP001/LOD200_S002-RND-WP001.md
+  gate_history:
+  - gate: COMPLETE
+    result: PASS
+    date: '2026-04-12'
     notes: >
-      Research WP: map Israeli rental platforms, sample data, assess quality,
-      identify competitors, recommend adaptations. Entry gate for Israel expansion.
+      Research complete. 11 platforms mapped, 7+ competitors analyzed.
+      5 strategic decisions by Team 00 → S005 milestone created.
+      Findings: _COMMUNICATION/team_00/DECISIONS_ISRAEL_STRATEGY_v1.0.0.md
+  notes: >
+    Research WP: map Israeli rental platforms, sample data, assess quality,
+    identify competitors, recommend adaptations. Entry gate for Israel expansion.
 
   # ── S003: SaaS Infrastructure (PLANNED) ───────────────────────────────────
 
-  - id: S003-P001-WP001
-    label: Multi-tenant data model — tenants, profiles, users, results
-    status: PLANNED
-    track: B
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S003
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  profile: L0
+- id: S003-P001-WP001
+  label: Multi-tenant data model — tenants, profiles, users, results
+  status: PLANNED
+  track: B
+  current_lean_gate: L-GATE_E
+  lod_status: LOD400
+  assigned_builder: TBD
+  assigned_validator: team_190
+  created_at: '2026-04-11'
+  milestone_ref: S003
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  gate_history:
+  - gate: L-GATE_S
+    result: SUBMITTED
+    date: '2026-04-19'
     notes: >
-      Profile: L2.5 MANDATORY. New database schema (SQLite → PostgreSQL).
-      LOD300 required: entity model, isolation strategy, migration plan.
-      Human gate (Team 00) at LOD300 mockup + UX final.
+      LOD400 v1.0.0 filed; MANDATE_S003-P001-WP001_LOD400_REVIEW_v1.0.0.md — constitutional
+      review pending Team 190.
+      Parent LOD300 LOCKED. EXT-CP1 prerequisite before L-GATE_B per canonization
+      plan.
+  notes: >
+    Profile: L2.5 MANDATORY. PostgreSQL schema + Alembic + dual-backend persistence
+    (json default).
+    LOD300 LOCKED; LOD400 v1.0.0 implementation spec — see spec_ref. L-GATE_S in progress
+    (Team 190).
 
-  - id: S003-P001-WP002
-    label: Tenant isolation + auth middleware
-    status: PLANNED
-    track: B
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S003
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: >
-      Profile: L2.5. Depends on S003-P001-WP001.
-      Security-critical: JWT/session auth, row-level isolation, audit logging.
+  profile: L0
+- id: S003-P001-WP002
+  label: Tenant isolation + auth middleware
+  status: PLANNED
+  track: B
+  current_lean_gate: L-GATE_E
+  lod_status:
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S003
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: >
+    Profile: L2.5. Depends on S003-P001-WP001.
+    Security-critical: JWT/session auth, row-level isolation, audit logging.
 
-  - id: S003-P002-WP001
-    label: Billing provider integration (provider TBD — pending specification)
-    status: DEFERRED
-    track: B
-    profile: L2.5
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S003
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    team_00_decision: >
-      DEFERRED 2026-04-12. Provider selection (Stripe vs LemonSqueezy) requires
-      dedicated research session: availability in Israel, costs, capabilities,
-      system integration requirements. Full specification before implementation.
-      Do not enter L-GATE_E until billing spec WP is COMPLETE.
-    notes: >
-      Profile: L2.5 MANDATORY. External API + webhook state machine.
-      LOD300 required: subscription lifecycle, webhook handling, failure modes.
-      EXT-CP1 (Team 190) required before pipeline entry.
-      BLOCKED on billing specification work (separate research WP, TBD).
+  profile: L0
+- id: S003-P002-WP001
+  label: Billing provider integration (provider TBD — pending specification)
+  status: PLANNED
+  track: B
+  profile: L2.5
+  current_lean_gate: L-GATE_E
+  lod_status:
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S003
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  team_00_decision: >
+    DEFERRED 2026-04-12. Provider selection (Stripe vs LemonSqueezy) requires
+    dedicated research session: availability in Israel, costs, capabilities,
+    system integration requirements. Full specification before implementation.
+    Do not enter L-GATE_E until billing spec WP is COMPLETE.
+  notes: >
+    Profile: L2.5 MANDATORY. External API + webhook state machine.
+    LOD300 required: subscription lifecycle, webhook handling, failure modes.
+    EXT-CP1 (Team 190) required before pipeline entry.
+    BLOCKED on billing specification work (separate research WP, TBD).
 
-  - id: S003-P002-WP002
-    label: Subscription tiers — Free / Pro / Agency
-    status: DEFERRED
-    track: A
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S003
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Config-based feature gating. Depends on S003-P002-WP001. DEFERRED with billing block.
+- id: S003-P002-WP002
+  label: Subscription tiers — Free / Pro / Agency
+  status: PLANNED
+  track: A
+  current_lean_gate: L-GATE_E
+  lod_status:
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S003
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: Config-based feature gating. Depends on S003-P002-WP001. DEFERRED with 
+    billing block.
 
-  - id: S003-P002-WP003
-    label: Usage metering + quota enforcement
-    status: DEFERRED
-    track: A
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S003
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Per-tenant scan count, result limits per tier, overage handling. DEFERRED with billing block.
+  profile: L0
+- id: S003-P002-WP003
+  label: Usage metering + quota enforcement
+  status: PLANNED
+  track: A
+  current_lean_gate: L-GATE_E
+  lod_status:
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S003
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: Per-tenant scan count, result limits per tier, overage handling. 
+    DEFERRED with billing block.
 
-  - id: S003-P003-WP001
-    label: RBAC — admin / agent / viewer roles
-    status: PLANNED
-    track: B
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S003
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Profile L2.5. Cross-service auth contract. Permission matrix in LOD300.
+  profile: L0
+- id: S003-P003-WP001
+  label: RBAC — admin / agent / viewer roles
+  status: COMPLETE
+  track: B
+  current_lean_gate: COMPLETE
+  lod_status: LOD500_LOCKED
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S003
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: Profile L2.5. Cross-service auth contract. Permission matrix in LOD300.
 
-  - id: S003-P003-WP002
-    label: API key lifecycle — issue, rotate, revoke
-    status: PLANNED
-    track: A
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S003
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Per-tenant API keys with scope, expiry, revocation. Depends on S003-P003-WP001.
+  profile: L0
+- id: S003-P003-WP002
+  label: API key lifecycle — issue, rotate, revoke
+  status: COMPLETE
+  track: A
+  current_lean_gate: COMPLETE
+  lod_status: LOD500_LOCKED
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S003
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: Per-tenant API keys with scope, expiry, revocation. Depends on 
+    S003-P003-WP001.
 
   # ── S004: SaaS Product Launch (PLANNED) ───────────────────────────────────
 
-  - id: S004-P001-WP001
-    label: Self-serve onboarding — signup → profile wizard → first scan
-    status: PLANNED
-    track: B
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S004
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Profile L2.5. Full UX flow. LOD300 mockup gate mandatory.
+  profile: L0
+- id: S004-P001-WP001
+  label: Self-serve onboarding — signup → profile wizard → first scan
+  status: PLANNED
+  track: B
+  current_lean_gate: L-GATE_E
+  lod_status:
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S004
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: Profile L2.5. Full UX flow. LOD300 mockup gate mandatory.
 
-  - id: S004-P001-WP002
-    label: Web dashboard — search results, alerts history, billing
-    status: PLANNED
-    track: B
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S004
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Profile L2.5. React/Next.js frontend. Replaces static HTML report.
+  profile: L0
+- id: S004-P001-WP002
+  label: Web dashboard — search results, alerts history, billing
+  status: PLANNED
+  track: B
+  current_lean_gate: L-GATE_E
+  lod_status:
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S004
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: Profile L2.5. React/Next.js frontend. Replaces static HTML report.
 
-  - id: S004-P002-WP001
-    label: Agency/partner configuration — custom branding, city bundles
-    status: PLANNED
-    track: A
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S004
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: White-label config per tenant. City bundle packages.
+  profile: L0
+- id: S004-P002-WP001
+  label: Agency/partner configuration — custom branding, city bundles
+  status: COMPLETE
+  track: A
+  current_lean_gate: COMPLETE
+  lod_status: LOD500_LOCKED
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S004
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: White-label config per tenant. City bundle packages.
 
-  - id: S004-P002-WP002
-    label: Reseller API + webhook contracts
-    status: PLANNED
-    track: B
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S004
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Profile L2.5. Public API contract + webhook event registry.
+  profile: L0
+- id: S004-P002-WP002
+  label: Reseller API + webhook contracts
+  status: PLANNED
+  track: B
+  current_lean_gate: L-GATE_E
+  lod_status:
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S004
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: Profile L2.5. Public API contract + webhook event registry.
 
-  - id: S004-P003-WP001
-    label: Usage analytics + customer health dashboard
-    status: PLANNED
-    track: A
-    current_lean_gate: L-GATE_E
-    lod_status: null
-    assigned_builder: TBD
-    assigned_validator: TBD
-    created_at: '2026-04-11'
-    milestone_ref: S004
-    spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
-    notes: Scan frequency, result quality, engagement metrics per tenant.
+  profile: L0
+- id: S004-P003-WP001
+  label: Usage analytics + customer health dashboard
+  status: PLANNED
+  track: A
+  current_lean_gate: L-GATE_E
+  lod_status:
+  assigned_builder: TBD
+  assigned_validator: TBD
+  created_at: '2026-04-11'
+  milestone_ref: S004
+  spec_ref: _COMMUNICATION/team_00/AOS_CANONIZATION_WORK_PLAN.md
+  notes: Scan frequency, result quality, engagement metrics per tenant.
 
   # ── S005: Israel Market Expansion (ACTIVE) ─────────────────────────────────
 
-  - id: S005-P001-WP001
-    label: Yad2 POC — scraping feasibility + rate limit research
-    status: PLANNED
-    track: A
-    priority: URGENT
-    current_lean_gate: L-GATE_E
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: team_00
-    created_at: '2026-04-12'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P001-WP001/LOD200_S005-P001-WP001.md
-    notes: >
-      URGENT — gates all downstream Israel work. Team 20 immediate activation.
-      Test scraping methods against Yad2 Cloudflare. Research rate limits.
-      Sample listings. Legal/ToS assessment. POC code + feasibility report.
+  profile: L0
+- id: S005-P001-WP001
+  label: Yad2 POC — scraping feasibility + rate limit research
+  status: PLANNED
+  track: A
+  priority: URGENT
+  current_lean_gate: L-GATE_E
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: team_00
+  created_at: '2026-04-12'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P001-WP001/LOD200_S005-P001-WP001.md
+  notes: >
+    URGENT — gates all downstream Israel work. Team 20 immediate activation.
+    Test scraping methods against Yad2 Cloudflare. Research rate limits.
+    Sample listings. Legal/ToS assessment. POC code + feasibility report.
 
-  - id: S005-P001-WP002
-    label: Yad2 connector architecture + normalizer gateway
-    status: PLANNED
-    track: B
-    current_lean_gate: L-GATE_E
-    lod_status: LOD200
-    assigned_builder: shaked_arch
-    assigned_validator: shaked_val
-    created_at: '2026-04-12'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P001-WP002/LOD200_S005-P001-WP002.md
-    depends_on:
-      - S005-P001-WP001
-    notes: >
-      Separate connectors/yad2/ subpackage. Normalizer gateway pattern.
-      LOD300 required for API contract. BLOCKED until Yad2 POC complete.
+  profile: L0
+- id: S005-P001-WP002
+  label: Yad2 connector architecture + normalizer gateway
+  status: PLANNED
+  track: B
+  current_lean_gate: L-GATE_E
+  lod_status: LOD200
+  assigned_builder: shaked_arch
+  assigned_validator: shaked_val
+  created_at: '2026-04-12'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P001-WP002/LOD200_S005-P001-WP002.md
+  depends_on:
+  - S005-P001-WP001
+  notes: >
+    Separate connectors/yad2/ subpackage. Normalizer gateway pattern.
+    LOD300 required for API contract. BLOCKED until Yad2 POC complete.
 
-  - id: S005-P002-WP001
-    label: Pardes Hanna region — geographic definition
-    status: PLANNED
-    track: A
-    current_lean_gate: L-GATE_E
-    lod_status: LOD200
-    assigned_builder: shaked_arch
-    assigned_validator: team_00
-    created_at: '2026-04-12'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P002-WP001/LOD200_S005-P002-WP001.md
-    notes: >
-      Regional bounding box (N-of-Netanya, S-of-Haifa, E-to-Afula).
-      Settlement list. Israeli geography (no zip codes). country: IL.
-      Output: data/cities/pardes-hanna-region.json
+  profile: L0
+- id: S005-P002-WP001
+  label: Pardes Hanna region — geographic definition
+  status: PLANNED
+  track: A
+  current_lean_gate: L-GATE_E
+  lod_status: LOD200
+  assigned_builder: shaked_arch
+  assigned_validator: team_00
+  created_at: '2026-04-12'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P002-WP001/LOD200_S005-P002-WP001.md
+  notes: >
+    Regional bounding box (N-of-Netanya, S-of-Haifa, E-to-Afula).
+    Settlement list. Israeli geography (no zip codes). country: IL.
+    Output: data/cities/pardes-hanna-region.json
 
-  - id: S005-P003-WP001
-    label: Facebook group agent — feasibility + cost evaluation
-    status: PLANNED
-    track: A
-    current_lean_gate: L-GATE_E
-    lod_status: LOD200
-    assigned_builder: shaked_arch
-    assigned_validator: team_00
-    created_at: '2026-04-12'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P003-WP001/LOD200_S005-P003-WP001.md
-    notes: >
-      Research WP. Browser agent feasibility for FB group scraping.
-      Cost analysis (compute, proxy, anti-detection). Legal/ToS risk.
-      Go/no-go recommendation.
+  profile: L0
+- id: S005-P003-WP001
+  label: Facebook group agent — feasibility + cost evaluation
+  status: PLANNED
+  track: A
+  current_lean_gate: L-GATE_E
+  lod_status: LOD200
+  assigned_builder: shaked_arch
+  assigned_validator: team_00
+  created_at: '2026-04-12'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P003-WP001/LOD200_S005-P003-WP001.md
+  notes: >
+    Research WP. Browser agent feasibility for FB group scraping.
+    Cost analysis (compute, proxy, anti-detection). Legal/ToS risk.
+    Go/no-go recommendation.
 
   # ── S005-P004: Codebase Internationalization ───────────────────────────────
 
-  - id: S005-P004-WP001
-    label: Data field generalization — currency + transit labels
-    status: PLANNED
-    track: A
-    priority: HIGH
-    current_lean_gate: L-GATE_E
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-12'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P004-WP001/LOD200_S005-P004-WP001.md
-    notes: >
-      Rename price_chf→price, budget_min_chf→budget_min, add currency field.
-      Update 14 files. Transit labels: "Tram lines"→"Transit lines".
-      Prerequisite for any Israeli listing to flow through the pipeline.
+  profile: L0
+- id: S005-P004-WP001
+  label: Data field generalization — currency + transit labels
+  status: PLANNED
+  track: A
+  priority: HIGH
+  current_lean_gate: L-GATE_E
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-12'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P004-WP001/LOD200_S005-P004-WP001.md
+  notes: >
+    Rename price_chf→price, budget_min_chf→budget_min, add currency field.
+    Update 14 files. Transit labels: "Tram lines"→"Transit lines".
+    Prerequisite for any Israeli listing to flow through the pipeline.
 
-  - id: S005-P004-WP002
-    label: Dynamic scraper registry — data-driven source loading
-    status: PLANNED
-    track: A
-    priority: MEDIUM
-    current_lean_gate: L-GATE_E
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-12'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P004-WP002/LOD200_S005-P004-WP002.md
-    notes: >
-      Replace hardcoded _build_scraper() mapping with dynamic import from sources.json.
-      Support connector_class for Yad2-style normalizer gateway pattern.
-      Extract flatfox-specific verification into source hook.
+  profile: L0
+- id: S005-P004-WP002
+  label: Dynamic scraper registry — data-driven source loading
+  status: PLANNED
+  track: A
+  priority: MEDIUM
+  current_lean_gate: L-GATE_E
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-12'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P004-WP002/LOD200_S005-P004-WP002.md
+  notes: >
+    Replace hardcoded _build_scraper() mapping with dynamic import from sources.json.
+    Support connector_class for Yad2-style normalizer gateway pattern.
+    Extract flatfox-specific verification into source hook.
 
-  - id: S005-P004-WP003
-    label: Keyword and label locale generalization
-    status: PLANNED
-    track: B
-    priority: LOW
-    current_lean_gate: L-GATE_E
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-12'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P004-WP003/LOD200_S005-P004-WP003.md
-    depends_on:
-      - S005-P004-WP001
-    notes: >
-      Extract German vegan keywords from scorer + 4 scrapers into locale-keyed config.
-      Add Hebrew equivalents. Parameterize Accept-Language, CLI badges, email text.
-      Track B — LOD300 required for keyword registry design.
+  profile: L0
+- id: S005-P004-WP003
+  label: Keyword and label locale generalization
+  status: PLANNED
+  track: B
+  priority: LOW
+  current_lean_gate: L-GATE_E
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-12'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P004-WP003/LOD200_S005-P004-WP003.md
+  depends_on:
+  - S005-P004-WP001
+  notes: >
+    Extract German vegan keywords from scorer + 4 scrapers into locale-keyed config.
+    Add Hebrew equivalents. Parameterize Accept-Language, CLI badges, email text.
+    Track B — LOD300 required for keyword registry design.
 
-  - id: S005-P001-WP003
-    label: Yad2 scraper implementation (BLOCKED)
-    status: PLANNED
-    track: A
-    priority: HIGH
-    current_lean_gate: L-GATE_E
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-12'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P001-WP003/LOD200_S005-P001-WP003.md
-    depends_on:
-      - S005-P001-WP001
-      - S005-P001-WP002
-      - S005-P004-WP001
-      - S005-P004-WP002
-      - S005-P002-WP001
-    notes: >
-      BLOCKED — awaiting Yad2 POC + connector architecture.
-      Implement Yad2 connector: Hebrew parsing, NIS prices, Pardes Hanna region.
-      If POC BLOCKED: cancel, pivot to Homeless.co.il.
+  profile: L0
+- id: S005-P001-WP003
+  label: Yad2 scraper implementation (BLOCKED)
+  status: PLANNED
+  track: A
+  priority: HIGH
+  current_lean_gate: L-GATE_E
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-12'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P001-WP003/LOD200_S005-P001-WP003.md
+  depends_on:
+  - S005-P001-WP001
+  - S005-P001-WP002
+  - S005-P004-WP001
+  - S005-P004-WP002
+  - S005-P002-WP001
+  notes: >
+    BLOCKED — awaiting Yad2 POC + connector architecture.
+    Implement Yad2 connector: Hebrew parsing, NIS prices, Pardes Hanna region.
+    If POC BLOCKED: cancel, pivot to Homeless.co.il.
 
-  - id: S005-P004-WP004
-    label: HTML report locale adaptation (BLOCKED)
-    status: PLANNED
-    track: B
-    priority: LOW
-    current_lean_gate: L-GATE_E
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-12'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P004-WP004/LOD200_S005-P004-WP004.md
-    depends_on:
-      - S005-P004-WP001
-      - S005-P004-WP003
-    notes: >
-      BLOCKED — premature until Israel product validated.
-      ~50+ German strings in html_report.py. RTL support for Hebrew.
-      Largest single i18n effort. Track B — LOD300 for i18n architecture.
+  profile: L0
+- id: S005-P004-WP004
+  label: HTML report locale adaptation (BLOCKED)
+  status: PLANNED
+  track: B
+  priority: LOW
+  current_lean_gate: L-GATE_E
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-12'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P004-WP004/LOD200_S005-P004-WP004.md
+  depends_on:
+  - S005-P004-WP001
+  - S005-P004-WP003
+  notes: >
+    BLOCKED — premature until Israel product validated.
+    ~50+ German strings in html_report.py. RTL support for Hebrew.
+    Largest single i18n effort. Track B — LOD300 for i18n architecture.
 
   # ── S005-P005: Data Source Expansion ──────────────────────────────
 
-  - id: S005-P005-WP001
-    label: wgzimmer.ch reCAPTCHA v3 bypass — Patchright + persistent profile
-    status: PLANNED
-    track: A
-    priority: HIGH
-    current_lean_gate: L-GATE_S
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-15'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P005-WP001/LOD200_S005-P005-WP001.md
-    notes: >
-      Replace Playwright with Patchright (drop-in fork). Persistent browser profile
-      retains Google cookies for reCAPTCHA v3 trust. Restores ~20-40 WG listings/scan.
-      Fallback: 2Captcha token injection (~$0.27/month).
+  profile: L0
+- id: S005-P005-WP001
+  label: wgzimmer.ch reCAPTCHA v3 bypass — Patchright + persistent profile
+  status: PLANNED
+  track: A
+  priority: HIGH
+  current_lean_gate: L-GATE_S
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-15'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P005-WP001/LOD200_S005-P005-WP001.md
+  notes: >
+    Replace Playwright with Patchright (drop-in fork). Persistent browser profile
+    retains Google cookies for reCAPTCHA v3 trust. Restores ~20-40 WG listings/scan.
+    Fallback: 2Captcha token injection (~$0.27/month).
 
-  - id: S005-P005-WP002
-    label: Facebook manual listing parser — LLM-based Hebrew extraction
-    status: PLANNED
-    track: A
-    priority: HIGH
-    current_lean_gate: L-GATE_S
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-15'
-    milestone_ref: S005
-    spec_ref: _aos/work_packages/S005-P005-WP002/LOD200_S005-P005-WP002.md
-    notes: >
-      ManualFacebookScraper reads copy-pasted FB posts from local JSON file.
-      LLM (Claude/GPT) extracts structured fields from Hebrew free-text.
-      Privacy-safe: no PII stored. ~$0.05/1000 posts.
+  profile: L0
+- id: S005-P005-WP002
+  label: Facebook manual listing parser — LLM-based Hebrew extraction
+  status: PLANNED
+  track: A
+  priority: HIGH
+  current_lean_gate: L-GATE_S
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-15'
+  milestone_ref: S005
+  spec_ref: _aos/work_packages/S005-P005-WP002/LOD200_S005-P005-WP002.md
+  notes: >
+    ManualFacebookScraper reads copy-pasted FB posts from local JSON file.
+    LLM (Claude/GPT) extracts structured fields from Hebrew free-text.
+    Privacy-safe: no PII stored. ~$0.05/1000 posts.
 
-  - id: S005-P005-WP003
-    label: Facebook email notification parser — passive acquisition
-    status: PLANNED
-    track: A
-    priority: MEDIUM
-    current_lean_gate: L-GATE_S
-    lod_status: LOD200
-    assigned_builder: shaked_build
-    assigned_validator: shaked_val
-    created_at: '2026-04-15'
-    milestone_ref: S005
-    depends_on:
-      - S005-P005-WP002
-    spec_ref: _aos/work_packages/S005-P005-WP003/LOD200_S005-P005-WP003.md
-    notes: >
-      EmailFacebookScraper reads FB group notification emails via IMAP.
-      Reuses WP002 LLM parser. Passive coverage ~30-60% of group posts.
-      Zero legal risk — processes user's own email notifications.
+  profile: L0
+- id: S005-P005-WP003
+  label: Facebook email notification parser — passive acquisition
+  status: PLANNED
+  track: A
+  priority: MEDIUM
+  current_lean_gate: L-GATE_S
+  lod_status: LOD200
+  assigned_builder: shaked_build
+  assigned_validator: shaked_val
+  created_at: '2026-04-15'
+  milestone_ref: S005
+  depends_on:
+  - S005-P005-WP002
+  spec_ref: _aos/work_packages/S005-P005-WP003/LOD200_S005-P005-WP003.md
+  notes: >
+    EmailFacebookScraper reads FB group notification emails via IMAP.
+    Reuses WP002 LLM parser. Passive coverage ~30-60% of group posts.
+    Zero legal risk — processes user's own email notifications.
+  profile: L0

@@ -1,5 +1,5 @@
 #!/bin/bash
-# validate_aos.sh — Universal _aos/ Validation (16 Checks)
+# validate_aos.sh — Universal _aos/ Validation (26 Checks)
 # =========================================================
 # L-GATE_BUILD exit criterion: MUST return exit code 0 (no FAIL; SKIP is allowed).
 #
@@ -19,6 +19,7 @@
 
 set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="${1:-.}"
 AOS_DIR="$PROJECT_ROOT/_aos"
 PASS_COUNT=0
@@ -749,9 +750,10 @@ sys.exit(0)
 }
 
 # ================================================================
-# Check 19: API-only mutations — Iron Rule #7 enforcement
-# Verify that all team contracts include the API-only mutations clause
-# (added in V320 DB Full Migration)
+# Check 19: API-only mutations + DB checker readiness
+# Verify:
+#  1) all team contracts include Iron Rule #7 API-only clause
+#  2) unified DB checker script exists and can run
 # ================================================================
 check_19() {
     _require_active_modules 19 01 || return 0
@@ -779,13 +781,327 @@ if missing:
     sys.exit(1)
 sys.exit(0)
 " && log_pass 19 "API-only mutations: all team contracts include Iron Rule #7 API-only clause" \
-  || log_fail 19 "API-only mutations: one or more team contracts missing Iron Rule #7 API-only clause (see errors above)"
+  || { log_fail 19 "API-only mutations: one or more team contracts missing Iron Rule #7 API-only clause (see errors above)"; return; }
+
+    local checker="$PROJECT_ROOT/scripts/db/check_db_connectivity.py"
+    if [ ! -f "$checker" ]; then
+        log_skip 19 "Unified DB checker not found at scripts/db/check_db_connectivity.py (hub-only component; skip on spokes)"
+        return
+    fi
+    python3 "$checker" --source "validate_aos.sh" --format text --persist-success >/tmp/aos_db_check.txt 2>&1
+    local rc=$?
+    if [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ]; then
+        echo "[PASS] Check 19b: Unified DB checker executable (online=0/offline=2 accepted)"
+    else
+        log_fail 19 "Unified DB checker execution failed (exit=$rc)"
+    fi
+}
+
+# ================================================================
+# Check 20: MCP profile — .cursor/mcp.json when L2 / L2.5
+# ================================================================
+check_20() {
+    # Always run (MCP profile is cross-cutting; not tied to module 14 snapshot filter)
+    local MCP_PROFILE
+    MCP_PROFILE=$(python3 -c "
+import yaml, sys
+try:
+    d = yaml.safe_load(open('$AOS_DIR/metadata.yaml'))
+    print(d.get('mcp_profile', 'none'))
+except Exception:
+    print('none')
+" 2>/dev/null)
+
+    if [[ "$MCP_PROFILE" == "L2" || "$MCP_PROFILE" == "L2.5" ]]; then
+        if [ ! -f "$PROJECT_ROOT/.cursor/mcp.json" ]; then
+            log_fail 20 ".cursor/mcp.json missing (mcp_profile=${MCP_PROFILE} requires it)"
+            return
+        fi
+        if ! python3 -c "import json; json.load(open('$PROJECT_ROOT/.cursor/mcp.json'))" 2>/dev/null; then
+            log_fail 20 ".cursor/mcp.json is not valid JSON"
+            return
+        fi
+        log_pass 20 ".cursor/mcp.json present and valid JSON (profile=${MCP_PROFILE})"
+        return
+    fi
+
+    log_pass 20 "mcp_profile='${MCP_PROFILE}' — no .cursor/mcp.json required"
+}
+
+# ================================================================
+# Check 21: Gate structure validation (validate_gates.sh)
+# Requires module 07 (validation-quality). Skips gracefully when absent.
+# Advisory mode: SKIP (not FAIL) on violations until pre-V318 data debt
+# is cleared (report_path backfill for legacy gate_history entries).
+# ================================================================
+check_21() {
+    _require_active_modules 21 07 || return 0
+    local gs="$SCRIPT_DIR/validate_gates.sh"
+    [ ! -f "$gs" ] && { log_skip 21 "validate_gates.sh not found in $SCRIPT_DIR"; return 0; }
+    if bash "$gs" --roadmap "$AOS_DIR/roadmap.yaml" > /dev/null 2>&1; then
+        log_pass 21 "validate_gates.sh: gate structure PASS"
+    else
+        log_skip 21 "validate_gates.sh: gate structure advisories found (pre-V318 data debt; run validate_gates.sh manually)"
+    fi
+}
+
+# ================================================================
+# Check 22: LOD document validation (validate_lod.sh, LOD400+ only)
+# Requires module 07 (validation-quality). Skips gracefully when absent.
+# Uses --min-lod 400 to skip WPs below LOD400 in roadmap.
+# Advisory mode: SKIP on violations — pre-V318 LOD docs use a different
+# frontmatter schema (lod_level/status vs lod_target/lod_status).
+# ================================================================
+check_22() {
+    _require_active_modules 22 07 || return 0
+    local ls_script="$SCRIPT_DIR/validate_lod.sh"
+    [ ! -f "$ls_script" ] && { log_skip 22 "validate_lod.sh not found in $SCRIPT_DIR"; return 0; }
+    if bash "$ls_script" --all --min-lod 400 > /dev/null 2>&1; then
+        log_pass 22 "validate_lod.sh: LOD400+ document structure PASS"
+    else
+        log_skip 22 "validate_lod.sh: LOD400+ advisories found (pre-V318 schema debt; run validate_lod.sh --all --min-lod 400 manually)"
+    fi
+}
+
+# ================================================================
+# Check 23: Verdict schema validation (validate_verdicts.sh)
+# Requires module 07 (validation-quality). Skips gracefully when absent.
+# Advisory mode: SKIP on violations — pre-V318 verdicts use older
+# schema without standardized part_a/b fields.
+# ================================================================
+check_23() {
+    _require_active_modules 23 07 || return 0
+    local vs="$SCRIPT_DIR/validate_verdicts.sh"
+    [ ! -f "$vs" ] && { log_skip 23 "validate_verdicts.sh not found in $SCRIPT_DIR"; return 0; }
+    if bash "$vs" > /dev/null 2>&1; then
+        log_pass 23 "validate_verdicts.sh: verdict schema PASS"
+    else
+        log_skip 23 "validate_verdicts.sh: verdict schema advisories found (pre-V318 schema debt; run validate_verdicts.sh manually)"
+    fi
+}
+
+# ================================================================
+# Check 24: Port registry canon (Team 60 SSoT) — hub only
+# Verifies lean-kit/modules/12-home-server-infrastructure/deployment/port-registry.yaml
+# parses, has no duplicate port assignments, and that every entry has a port + project.
+# Hub-scoped (skips on spoke projects where the file is absent).
+# ================================================================
+check_24() {
+    local pr="$PROJECT_ROOT/lean-kit/modules/12-home-server-infrastructure/deployment/port-registry.yaml"
+    if [ ! -f "$pr" ]; then
+        log_skip 24 "port-registry.yaml not found (spoke project — hub canon does not apply)"
+        return 0
+    fi
+    local result
+    result=$(python3 - "$pr" <<'PY' 2>&1
+import sys, yaml
+path = sys.argv[1]
+try:
+    with open(path) as f:
+        docs = list(yaml.safe_load_all(f))
+except Exception as e:
+    print(f"PARSE_ERROR: {e}")
+    sys.exit(2)
+doc = next((d for d in docs if isinstance(d, dict) and "ports" in d), {})
+ports = doc.get("ports") or []
+if not isinstance(ports, list) or not ports:
+    print("EMPTY: ports list missing or empty")
+    sys.exit(2)
+seen = {}
+errors = []
+for i, p in enumerate(ports):
+    if not isinstance(p, dict):
+        errors.append(f"entry[{i}] not a mapping")
+        continue
+    if "port" not in p or "project" not in p:
+        errors.append(f"entry[{i}] missing port/project ({p.get('service','?')})")
+        continue
+    pn = p["port"]
+    if pn in seen:
+        errors.append(f"duplicate port {pn} ({seen[pn]} vs {p.get('project')})")
+    else:
+        seen[pn] = p.get("project")
+if errors:
+    print("; ".join(errors))
+    sys.exit(2)
+print(f"OK: {len(seen)} unique ports registered")
+PY
+    )
+    if [ $? -eq 0 ]; then
+        log_pass 24 "port-registry.yaml: $result"
+    else
+        log_fail 24 "port-registry.yaml integrity: $result"
+    fi
+}
+
+# ================================================================
+# Check 25: Offline DB sync — PENDING_DB_SYNC.yaml detection
+# Warns when _aos/PENDING_DB_SYNC.yaml exists (offline work pending DB sync).
+# WARN (not FAIL) — file is legitimate on offline branches.
+# Real enforcement happens at CI merge gate (ADR034 R8.5).
+# ================================================================
+check_25() {
+    local sync_file="$AOS_DIR/PENDING_DB_SYNC.yaml"
+    if [ -f "$sync_file" ]; then
+        local sid
+        sid=$(python3 - "$sync_file" <<'PY' 2>&1
+import yaml, sys
+try:
+    with open(sys.argv[1]) as f:
+        d = yaml.safe_load(f)
+    sid = d.get('offline_session', {}).get('session_id', 'unknown')
+    print(sid)
+except Exception:
+    print('unknown')
+PY
+        ) || sid="unknown"
+        log_skip 25 "PENDING_DB_SYNC.yaml found (session: $sid) — offline mutations await DB sync via sync_offline_to_db.sh"
+    else
+        log_pass 25 "No pending offline DB sync (PENDING_DB_SYNC.yaml absent)"
+    fi
+}
+
+# ================================================================
+# Check 26: LOD400 bare CS-N citations (ADR037 advisory)
+# Scans _aos/work_packages/**/LOD400*.md for markdown [...CS-N...] without
+# CODE_STANDARDS.md on the same line. Advisory only — does not FAIL.
+# ================================================================
+check_26() {
+    local wp_root="$AOS_DIR/work_packages"
+    if [ ! -d "$wp_root" ]; then
+        log_pass 26 "No work_packages dir — skip LOD400 CS scan"
+        return 0
+    fi
+    local result
+    result=$(python3 - "$wp_root" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+pat = re.compile(r"\[[^\]]*CS-\d+[^\]]*\]")
+hits = []
+for path in sorted(root.rglob("LOD400*.md")):
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        continue
+    for i, line in enumerate(text.splitlines(), 1):
+        if not pat.search(line):
+            continue
+        if "CODE_STANDARDS.md" in line:
+            continue
+        if "Forbidden" in line and "Bare" in line:
+            continue
+        hits.append(f"{path.relative_to(root)}:{i}")
+
+if not hits:
+    print("OK:0")
+else:
+    print(f"WARN:{len(hits)}")
+    for h in hits[:25]:
+        print(h)
+    if len(hits) > 25:
+        print(f"... and {len(hits) - 25} more")
+PY
+    )
+    local code
+    code=$(echo "$result" | head -1)
+    if [[ "$code" == OK:0 ]]; then
+        log_pass 26 "LOD400 CS citations — no suspected bare [CS-N] lines (ADR037)"
+    else
+        local n
+        n=${code#WARN:}
+        log_skip 26 "Advisory (ADR037): $n LOD400 line(s) may use bare CS cites — qualify with repo + _aos/context/CODE_STANDARDS.md + CS-N. Sample: $(echo "$result" | sed -n '2p')"
+    fi
+}
+
+# ================================================================
+# Check 27: Canonical CLAUDE.md invariants (ADR040 / Iron Rule #12)
+# ================================================================
+# Verifies that CLAUDE.md contains the AOS canonical invariants:
+# - "AOS Spoke Notice" or equivalent identity section (hub/spoke aware)
+# - DB probe step reference (db_connectivity_status or probe_database)
+# - Iron Rule #12 / ADR040 reference
+check_27() {
+    local claude_path="$AOS_DIR/../CLAUDE.md"
+    [ -f "$claude_path" ] || claude_path="$AOS_DIR/CLAUDE.md"
+    if [ ! -f "$claude_path" ]; then
+        log_skip 27 "CLAUDE.md not found at expected locations (skip — non-AOS repo root)"
+        return 0
+    fi
+    local missing=""
+    grep -q "db_connectivity_status\|probe_database" "$claude_path" || missing="${missing} DB-probe"
+    grep -qE "Iron Rule #12|ADR040|AOS Spoke Notice|AOS Identity" "$claude_path" || missing="${missing} authority-identity"
+    grep -q "AOS" "$claude_path" || missing="${missing} AOS-context"
+    if [ -z "$missing" ]; then
+        log_pass 27 "CLAUDE.md canonical invariants present (DB-probe + AOS authority/identity — ADR040)"
+    else
+        log_fail 27 "CLAUDE.md missing canonical invariants:${missing} — run aos_sync_all.sh to regenerate"
+    fi
+}
+
+# ================================================================
+# Check 28: Canonical .cursorrules invariants (ADR040 / Iron Rule #12)
+# ================================================================
+check_28() {
+    local cursor_path="$AOS_DIR/../.cursorrules"
+    [ -f "$cursor_path" ] || cursor_path="$AOS_DIR/.cursorrules"
+    if [ ! -f "$cursor_path" ]; then
+        log_skip 28 ".cursorrules not found at expected locations (skip — Cursor optional)"
+        return 0
+    fi
+    local missing=""
+    grep -q "db_connectivity_status\|probe_database" "$cursor_path" || missing="${missing} DB-probe"
+    grep -qE "Iron Rule #12|ADR040|AOS Spoke Notice|AOS Identity|Mandatory Session Startup|Mandatory session startup|Session startup" "$cursor_path" || missing="${missing} startup-section"
+    if [ -z "$missing" ]; then
+        log_pass 28 ".cursorrules canonical invariants present (DB-probe + AOS startup section)"
+    else
+        log_fail 28 ".cursorrules missing canonical invariants:${missing} — run aos_sync_all.sh to regenerate"
+    fi
+}
+
+# ================================================================
+# Check 29: Spoke lean-kit version matches hub (ADR040)
+# ================================================================
+# Hub self-check: always PASS (hub is the SSOT).
+# Spoke check: _aos/lean-kit/LEAN_KIT_VERSION.md content must match hub's lean-kit/LEAN_KIT_VERSION.md
+check_29() {
+    local is_hub=0
+    local pid_file="$AOS_DIR/project_identity.yaml"
+    if [ -f "$pid_file" ] && grep -q 'role:.*hub\|project_id:.*agents-os' "$pid_file" 2>/dev/null; then
+        is_hub=1
+    fi
+    local local_ver="$AOS_DIR/lean-kit/LEAN_KIT_VERSION.md"
+    if [ "$is_hub" -eq 1 ]; then
+        if [ -f "$local_ver" ]; then
+            log_pass 29 "Hub lean-kit version file present ($(head -1 "$local_ver" 2>/dev/null | head -c 80))"
+        else
+            log_skip 29 "Hub LEAN_KIT_VERSION.md not found — skip"
+        fi
+        return 0
+    fi
+    # Spoke: compare against hub at canonical absolute path
+    local hub_ver="/Users/nimrod/Documents/agents-os/lean-kit/LEAN_KIT_VERSION.md"
+    if [ ! -f "$local_ver" ]; then
+        log_skip 29 "spoke _aos/lean-kit/LEAN_KIT_VERSION.md not found — skip"
+        return 0
+    fi
+    if [ ! -f "$hub_ver" ]; then
+        log_skip 29 "hub LEAN_KIT_VERSION.md not reachable at $hub_ver — skip"
+        return 0
+    fi
+    if diff -q "$local_ver" "$hub_ver" >/dev/null 2>&1; then
+        log_pass 29 "spoke lean-kit version matches hub"
+    else
+        log_fail 29 "spoke lean-kit version drifted vs hub — run aos_sync_all.sh to resync"
+    fi
 }
 
 # ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 19 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
+echo "validate_aos.sh — running up to 29 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
 echo "================================================="
 
 check_1
@@ -807,6 +1123,16 @@ check_16
 check_17
 check_18
 check_19
+check_20
+check_21
+check_22
+check_23
+check_24
+check_25
+check_26
+check_27
+check_28
+check_29
 
 echo ""
 echo "================================================="

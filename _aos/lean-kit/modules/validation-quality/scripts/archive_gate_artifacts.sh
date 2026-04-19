@@ -152,7 +152,7 @@ enforce_cap() {
   while [[ $subdirs -gt 20 ]]; do
     # Get oldest subdir (sorted by mod time newest-first, so last is oldest)
     local oldest
-    oldest=$(ls -1dt "$archive_dir"/*/ 2>/dev/null | tail -1 | sed 's:/$::')
+    oldest=$(ls -1dt "$archive_dir"/*/ 2>/dev/null | grep -v '/_deep/$' | tail -1 | sed 's:/$::')
 
     if [[ -z "$oldest" || ! -d "$oldest" ]]; then
       break

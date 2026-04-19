@@ -44,4 +44,6 @@ Patterns and templates for domain-level code quality infrastructure: pre-commit 
 
 Copy individual templates into the domain repo as needed. Do not modify hub copies.
 
+**Hub binding — qualified `CODE_STANDARDS` cites:** `governance/directives/ADR037_CODE_STANDARDS_CITATION_AND_MAINTENANCE_v1.0.0.md`. LOD400 ACs must not use bare `[CS-N]`; use `[<repo-label> _aos/context/CODE_STANDARDS.md CS-N]`. `validate_aos.sh` **Check 26** (advisory) scans `_aos/work_packages/**/LOD400*.md` for suspected bare CS markdown links.
+
 A domain wishing to share patterns back to this module files a standard `GOVERNANCE_CHANGE_REQUEST` via Team 100.

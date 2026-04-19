@@ -55,7 +55,7 @@ supersedes: null
 [What must be tested? By which team?]
 - Unit: [scope]
 - Integration: [scope]
-- Cross-engine validation: [scope — required at L-GATE_V]
+- Cross-engine validation: [scope — required at L-GATE_VALIDATE]
 
 ## 8. Consuming team sign-off
 > I confirm this spec is executable and unambiguous. All open questions are resolved.
@@ -65,6 +65,6 @@ supersedes: null
 
 ## Cross-Engine Validation — Iron Rule
 
-Documents at LOD400+ require cross-engine validation at L-GATE_V.
+Documents at LOD400+ require cross-engine validation at L-GATE_VALIDATE.
 **The validator engine MUST differ from the builder engine — IRON RULE.**
-No exception. No waiver. See `gates/L-GATE_V_VALIDATE_AND_LOCK.md`.
+No exception. No waiver. See `gates/L-GATE_VALIDATE_VALIDATE_AND_LOCK.md`.

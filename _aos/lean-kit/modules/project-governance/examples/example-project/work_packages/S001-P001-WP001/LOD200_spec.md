@@ -37,4 +37,4 @@ Users need a minimal command-line task list to capture items, mark them done, an
 
 ## 6. Lean gates completed (example)
 
-- L-GATE_E, L-GATE_S — concept and spec path approved before build (see `roadmap.yaml`).
+- L-GATE_ELIGIBILITY, L-GATE_SPEC — concept and spec path approved before build (see `roadmap.yaml`).

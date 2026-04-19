@@ -1,0 +1,119 @@
+---
+id: QA_REQUEST_[WP-ID]_v1.0.0
+type: QA_REQUEST
+from: Team [XX] ([TEAM_NAME])
+to: Team 50 (QA & Functional Acceptance)
+work_package: [WP-ID]
+date: [YYYY-MM-DD]
+version: v1.0.0
+---
+
+# QA Request — [WP-ID]
+
+## Request Summary
+
+| Field | Value |
+|-------|-------|
+| Requestor | Team [XX] — [TEAM_NAME] |
+| Work Package | [WP-ID] |
+| LOD400 Spec | `_aos/work_packages/[WP-ID]/LOD400_spec.md` |
+| Build artifact / URL | [path or URL to test] |
+| Environment | [local / staging / upress / other] |
+| Requested by | [YYYY-MM-DD] |
+
+---
+
+## Testing Level
+
+| Field | Value |
+|-------|-------|
+| Level | R0 / R1 / R2 / R3 — choose one |
+| Exit criterion | [e.g., "pytest tests/ exit 0 mandatory" or "E2E script X must exit 0"] |
+
+| Level | Scope |
+|-------|-------|
+| R0 — Smoke | Critical path only; ≤5 ACs; fast verification that the build runs |
+| R1 — Basic | All MUST ACs verified; no regression check required |
+| R2 — Full | All ACs (MUST + SHOULD) + basic regression on previously verified flows |
+| R3 — E2E | All ACs + named scripts/suites must exit 0 + full regression |
+
+> **Rule:** Level and exit criterion are mandatory. If absent, Team 50 will return the request as BLOCKED.
+
+---
+
+## Acceptance Criteria Table
+
+> **Rule:** Every row must have a specific, observable expected result. Vague ACs (e.g., "should look good", "should work") will be returned as UNTESTABLE.
+
+| AC-ID | Behavior to Verify | Test Steps | Expected Result | Priority |
+|-------|--------------------|------------|-----------------|----------|
+| AC-01 | [Describe the feature / behavior] | 1. [Step 1] 2. [Step 2] | [Exact observable result] | MUST |
+| AC-02 | [Describe the feature / behavior] | 1. [Step 1] 2. [Step 2] | [Exact observable result] | MUST |
+| AC-03 | [Describe the feature / behavior] | 1. [Step 1] 2. [Step 2] | [Exact observable result] | SHOULD |
+
+> Add rows as needed. Remove this comment block when done.
+
+---
+
+## Test Environment
+
+### Access
+
+| Item | Value |
+|------|-------|
+| Base URL | [http://...] |
+| Admin URL | [http://.../wp-admin or /dashboard or other] |
+| Environment type | [local / staging / production] |
+
+### Credentials
+
+> Store credentials in project `.env` or `_aos/context/` — do NOT paste plaintext credentials here.
+
+| Credential | Location |
+|------------|----------|
+| Admin user | `[path to .env or context file]` |
+| Admin password | `[path to .env or context file]` |
+| API key (if needed) | `[path to .env or context file]` |
+
+### Setup steps (if any)
+
+```
+[Any setup required before testing — server start commands, seed data, plugin activation, etc.]
+[Leave empty if environment is ready as-is]
+```
+
+---
+
+## Pass Threshold
+
+| Condition | Verdict |
+|-----------|---------|
+| All MUST ACs pass | PASS |
+| All MUST ACs pass; ≥1 SHOULD AC fails with documented finding | CONDITIONAL-PASS |
+| Any MUST AC fails | FAIL |
+| Any AC is untestable or environment is inaccessible | BLOCKED |
+
+> Adjust thresholds above if project requires stricter/looser criteria.
+
+---
+
+## Notes for Team 50
+
+[Any context Team 50 needs that is not in the spec — known issues, areas of concern, recent changes that may affect behavior, etc.]
+
+[Leave empty if none.]
+
+---
+
+## Routing
+
+After completing QA, write verdict to:
+```
+_COMMUNICATION/team_50/[WP-ID]/QA_REPORT_[WP-ID]_v1.0.0.md
+```
+
+Route completion notification to Team 00 for onward routing to requestor (Team [XX]).
+
+---
+
+*[PROJECT_NAME] | QA Request | [WP-ID] | [YYYY-MM-DD]*

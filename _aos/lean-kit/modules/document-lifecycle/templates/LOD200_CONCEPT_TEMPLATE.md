@@ -65,6 +65,6 @@ supersedes: null
 ## 9. Gate approval record
 | Gate | Approver | Date | Status |
 |------|---------|------|--------|
-| L-GATE_S (spec+auth) | [TEAM_ID] | [date] | PENDING |
+| L-GATE_SPEC (spec+auth) | [TEAM_ID] | [date] | PENDING |
 
-> **Iron Rule:** L-GATE_V validation MUST use a different engine than the builder. See `gates/L-GATE_V_VALIDATE_AND_LOCK.md`.
+> **Iron Rule:** L-GATE_VALIDATE validation MUST use a different engine than the builder. See `gates/L-GATE_VALIDATE_VALIDATE_AND_LOCK.md`.

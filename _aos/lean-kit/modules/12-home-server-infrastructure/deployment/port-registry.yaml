@@ -1,0 +1,187 @@
+---
+# Global Port Registry — AOS Module 12
+# SINGLE SOURCE OF TRUTH for all port allocations across all projects on waldhomeserver
+# Per Multi-Project Docker Workstation Standard (lean-kit/modules/standards-conventions/)
+#
+# CRITICAL: All new port assignments must be registered here BEFORE deployment.
+# Port conflicts are detected and resolved using this registry.
+
+server: "waldhomeserver"
+created: "2026-04-18"
+version: "1.1.0"
+
+# ============================================
+# GOVERNANCE — AOS PORT CANON
+# ============================================
+# This file is the **single source of truth** for port allocations across all
+# projects (hub + spokes) running on the workstation/server.
+#
+# Binding rules for ALL teams (echoed in CLAUDE.md / AGENTS.md):
+#  R1. Every long-running listener (API, DB, dashboard, UI) MUST be registered
+#      here BEFORE first start. Ad-hoc ports are forbidden.
+#  R2. Project start scripts MUST pre-flight against this registry and fail
+#      fast if the requested port is unregistered or already held by another
+#      process. Reference implementation: scripts/start_aos_api_local.sh.
+#  R3. Conflicts: do NOT silently bump to an unregistered port. Either kill
+#      the stale holder or request a new registration via Team 60.
+#  R4. Edits to this file require Team 60 approval (DevOps & Platform).
+#  R5. validate_aos.sh Check 24 verifies this file exists, parses, and has
+#      no duplicate port assignments. CI gate for the hub.
+
+# Port Priority Rule:
+# 1. TikTrack ports are IMMUTABLE (primary project)
+# 2. For conflicts between other projects: established project keeps port
+# 3. Newer project re-assigns to next available port
+
+ports:
+  # ============================================
+  # TikTrack (PRIMARY PROJECT — IMMUTABLE PORTS)
+  # ============================================
+  - port: 5432
+    service: "PostgreSQL"
+    project: "TikTrack-Phoenix_AOSProject"
+    protocol: "TCP"
+    scope: "localhost"
+    mode: "always-on"
+    container_name: "tiktrack-postgres-dev"
+    status: "IMMUTABLE"
+    notes: "TikTrack primary project — do NOT reassign"
+
+  - port: 8080
+    service: "Frontend (Vite)"
+    project: "TikTrack-Phoenix_AOSProject"
+    protocol: "TCP"
+    scope: "localhost"
+    mode: "always-on"
+    status: "IMMUTABLE"
+    notes: "TikTrack primary project — do NOT reassign"
+
+  - port: 8082
+    service: "API (FastAPI)"
+    project: "TikTrack-Phoenix_AOSProject"
+    protocol: "TCP"
+    scope: "localhost"
+    mode: "always-on"
+    status: "IMMUTABLE"
+    notes: "TikTrack primary project — do NOT reassign"
+
+  # ============================================
+  # Agents-OS (AOS HUB)
+  # ============================================
+  - port: 5434
+    service: "PostgreSQL"
+    project: "agents-os"
+    protocol: "TCP"
+    scope: "localhost,lan,tailscale"
+    mode: "always-on"
+    container_name: "aos-postgres-dev"
+    status: "ACTIVE"
+    notes: "Moved from 5432 (TikTrack conflict) on 2026-04-09"
+
+  - port: 8090
+    service: "API (FastAPI uvicorn)"
+    project: "agents-os"
+    protocol: "TCP"
+    scope: "localhost,lan,tailscale"
+    mode: "always-on"
+    status: "IMMUTABLE"
+    notes: "agents-os hub API — exclusive. Single-instance per host. Do NOT pick an alternate port without Team 60 registration."
+
+  - port: 8099
+    service: "Dashboard static files"
+    project: "agents-os"
+    protocol: "TCP"
+    scope: "localhost,lan,tailscale"
+    mode: "always-on"
+    notes: "Clean assignment"
+
+  # ============================================
+  # SmallFarmsAgents (SPOKE PROJECT)
+  # ============================================
+  - port: 5433
+    service: "PostgreSQL"
+    project: "SmallFarmsAgents"
+    protocol: "TCP"
+    scope: "localhost"
+    mode: "always-on"
+    container_name: "oma-postgres"
+    status: "ACTIVE"
+    notes: "Clean — no conflicts"
+
+  - port: 5001
+    service: "Admin UI (Flask)"
+    project: "SmallFarmsAgents"
+    protocol: "TCP"
+    scope: "localhost"
+    mode: "always-on"
+    status: "ACTIVE"
+    notes: "Clean — no conflicts"
+
+  - port: 8081
+    service: "Static viewer"
+    project: "SmallFarmsAgents"
+    protocol: "TCP"
+    scope: "localhost"
+    mode: "always-on"
+    status: "ACTIVE"
+    notes: "Moved from 8080 (TikTrack conflict) on 2026-04-09"
+
+  # ============================================
+  # HobbitHome (SPOKE PROJECT)
+  # ============================================
+  - port: 8083
+    service: "WordPress (Apache)"
+    project: "HobbitHome"
+    protocol: "TCP"
+    scope: "localhost"
+    mode: "always-on"
+    container_name: "hobbithome-wp"
+    status: "ACTIVE"
+    notes: "Hebrew / uPress spoke; does not use 8080 (TikTrack immutable)"
+
+  - port: 3308
+    service: "MySQL 8"
+    project: "HobbitHome"
+    protocol: "TCP"
+    scope: "localhost"
+    mode: "always-on"
+    container_name: "hobbithome-db"
+    status: "ACTIVE"
+    notes: "Host port for mysql CLI / SQL import (3307 used elsewhere)"
+
+  # ============================================
+  # RESERVED / DO NOT USE
+  # ============================================
+  # These ports are immutable per Multi-Project standard:
+  # - 5432 (TikTrack PostgreSQL — IMMUTABLE)
+  # - 8080 (TikTrack Frontend — IMMUTABLE)
+  # - 8082 (TikTrack API — IMMUTABLE)
+  # - 8090 (AOS API — shared engine)
+  # - 8081 (SmallFarmsAgents static — established 2026-04-09)
+
+# ============================================
+# VALIDATION RULES
+# ============================================
+validation_rules:
+  - rule_1: "No duplicate port assignments (enforced by validate_aos.sh Check 24)"
+  - rule_2: "All project deploy-spec.yaml ports must appear in this registry"
+  - rule_3: "Port conflicts resolved using Priority Rule (TikTrack immutable, then established projects)"
+  - rule_4: "New ports require Team 60 approval before registration"
+  - rule_5: "Project start scripts MUST pre-flight against this registry and against `lsof` before binding (see scripts/start_aos_api_local.sh as reference)"
+  - rule_6: "Ad-hoc port bumps (picking an unregistered port to dodge a conflict) are forbidden — kill the stale holder or register the new port first"
+
+# ============================================
+# DIAGNOSTICS (For Team 60 / Team 51 QA)
+# ============================================
+diagnostics:
+  check_who_holds_port: "lsof -nP -iTCP:<port> -sTCP:LISTEN"
+  list_containers: "docker ps --format 'table {{.Names}}\\t{{.Ports}}'"
+  check_for_collisions: "docker ps -a --format '{{.Names}}' | sort"
+  systemctl_services: "systemctl list-units --type=service --state=running"
+
+---
+metadata:
+  registry_owner: "Team 60 (AOS DevOps & Platform)"
+  governance_reference: "lean-kit/modules/standards-conventions/MULTI_PROJECT_DOCKER_WORKSTATION_v1.0.0.md"
+  last_updated: "2026-04-18"
+  update_protocol: "Team 60 approval required for any new port registration"

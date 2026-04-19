@@ -4,17 +4,17 @@
 **level:** All (L0 / L2 / L3 methodology)
 
 ## What this role does
-Authors and maintains LOD100–LOD400 documentation, performs architectural review at defined gates, and issues mandates or spec corrections so builders have an unambiguous LOD400 before L-GATE_S.
+Authors and maintains LOD100–LOD400 documentation, performs architectural review at defined gates, and issues mandates or spec corrections so builders have an unambiguous LOD400 before L-GATE_SPEC.
 
 ## Responsibilities
 - Produce LOD200 (and LOD300 on TRACK_B) and LOD400 to template quality
 - Ensure acceptance criteria are testable and traceable
-- Participate in L-GATE_S approval and L-GATE_V architectural perspective when required
+- Participate in L-GATE_SPEC approval and L-GATE_VALIDATE architectural perspective when required
 - Issue spec updates when scope or ACs change
 
 ## What this role does NOT do (hard boundaries)
 - **Does not** implement production features (except documented architect-only exceptions)
-- **Does not** approve its own work as the independent L-GATE_V validator
+- **Does not** approve its own work as the independent L-GATE_VALIDATE validator
 - **Does not** bypass LOD sequencing (no LOD400 without approved LOD200 / LOD300 as required)
 
 ## Required skills (minimum viable)
@@ -26,7 +26,7 @@ Authors and maintains LOD100–LOD400 documentation, performs architectural revi
 
 ## Engine requirements
 - **Preferred engine type:** LLM or human (project choice)
-- **Must differ from:** Validator engine for the same work package at L-GATE_V when validator reviews implementation (validator ≠ builder; architect does not replace validator)
+- **Must differ from:** Validator engine for the same work package at L-GATE_VALIDATE when validator reviews implementation (validator ≠ builder; architect does not replace validator)
 - **In L0:** declared in `team_assignments.yaml` under key matching `role_type: architecture_agent`
 
 ## team_assignments.yaml entry format (L0)

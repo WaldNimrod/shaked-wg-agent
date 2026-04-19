@@ -124,10 +124,10 @@ format_json_output() {
   total_ideas=$(jq '. | length' "$ideas_file")
 
   local dup_count stale_count missing_count closed_count
-  dup_count=$(echo "$duplicates" | jq -s 'length')
-  stale_count=$(echo "$stale" | jq -s 'length')
-  missing_count=$(echo "$missing" | jq -s 'length')
-  closed_count=$(echo "$closed_no_delivery" | jq -s 'length')
+  dup_count=$(echo "$duplicates" | jq 'length')
+  stale_count=$(echo "$stale" | jq 'length')
+  missing_count=$(echo "$missing" | jq 'length')
+  closed_count=$(echo "$closed_no_delivery" | jq 'length')
 
   local has_issues="false"
   if [ "$((dup_count + stale_count + missing_count + closed_count))" -gt 0 ]; then
@@ -135,9 +135,9 @@ format_json_output() {
   fi
 
   # Emit JSON output
-  printf '{"file":"%s","total_ideas":%d,"issues":{"duplicates":%s,"stale":%s,"missing_fields":%s,"closed_no_delivery":%s},"summary":{"duplicates":%d,"stale":%d,"missing_fields":%d,"closed_no_delivery":%d},"has_issues":true}\n' \
+  printf '{"file":"%s","total_ideas":%d,"issues":{"duplicates":%s,"stale":%s,"missing_fields":%s,"closed_no_delivery":%s},"summary":{"duplicates":%d,"stale":%d,"missing_fields":%d,"closed_no_delivery":%d},"has_issues":%s}\n' \
     "$ideas_file" "$total_ideas" "$duplicates" "$stale" "$missing" "$closed_no_delivery" \
-    "$dup_count" "$stale_count" "$missing_count" "$closed_count"
+    "$dup_count" "$stale_count" "$missing_count" "$closed_count" "$has_issues"
 }
 
 run_checks() {

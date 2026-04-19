@@ -103,7 +103,7 @@ create_sidecar() {
 
     # Extract WP and GATE from YAML frontmatter using python3
     local wp gate
-    wp=$(python3 << 'PYTHON_END'
+    wp=$(python3 - "$prompt_file" << 'PYTHON_END'
 import sys
 import re
 
@@ -123,7 +123,7 @@ except Exception:
     pass
 PYTHON_END
     )
-    gate=$(python3 << 'PYTHON_END'
+    gate=$(python3 - "$prompt_file" << 'PYTHON_END'
 import sys
 import re
 

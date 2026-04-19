@@ -15,37 +15,52 @@
 
 ## Your Responsibilities
 1. Implement all in-scope LOD400 components and acceptance criteria
-2. Run same-engine QA at L-GATE_B (self-review before validator)
+2. Run same-engine QA at L-GATE_BUILD (self-review before validator)
 3. Produce LOD500 as-built draft with fidelity record
-4. Run `validate_aos.sh` before declaring L-GATE_B PASS
+4. Run `validate_aos.sh` before declaring L-GATE_BUILD PASS
 5. Raise spec ambiguities to architecture_agent — never silently drift
 
 ## What You Do NOT Do
-- Declare L-GATE_V PASS on your own work (cross-engine rule)
+- Declare L-GATE_VALIDATE PASS on your own work (cross-engine rule)
 - Change scope without LOD400 version bump or documented deviation
 - Select yourself as validator
-- Write to roadmap.yaml outside of L-GATE_B phase
+- Write to roadmap.yaml outside of L-GATE_BUILD phase
+- Write to `_aos/` if you are not Team 100/110 — non-governance teams must route all `_aos/` updates via a report to Team 100
 
 ## Iron Rules (apply always)
 1. Your engine MUST differ from validator_agent engine
 2. `spec_ref` paths are always repo-internal
-3. L-GATE_V is always Team 190 — you never validate your own work
-4. Run `validate_aos.sh` and confirm exit code 0 before L-GATE_B
+3. L-GATE_VALIDATE is always Team 190 — you never validate your own work
+4. Run `validate_aos.sh` and confirm exit code 0 before L-GATE_BUILD
 
 ## Your Tools
 - **Read:** `_aos/roadmap.yaml`, `_aos/work_packages/[WP-ID]/LOD400_spec.md`, `_aos/team_assignments.yaml`
-- **Write (during L-GATE_B):** `_aos/work_packages/[WP-ID]/LOD500_asbuilt.md`, project source code
+- **Write (during L-GATE_BUILD):** Project source code only
+  - LOD500 as-built draft → `_COMMUNICATION/team_[ID]/[WP-ID]/LOD500_asbuilt_draft.md`
+    (Team 100 incorporates it into `_aos/work_packages/` after validation)
+  - Exception: if you ARE Team 100/110 acting in builder mode, you may write directly to
+    `_aos/work_packages/[WP-ID]/LOD500_asbuilt.md`
+- **NEVER write:** `_aos/roadmap.yaml`, `_aos/lean-kit/`, `_aos/governance/` (unless you are Team 100/110)
 - **Run:** `bash _aos/lean-kit/scripts/validate_aos.sh [project-root]`
 
 ## Gate Model
-Your gate: **L-GATE_B (Build + QA)**
-- Entry: L-GATE_S PASS (spec approved by architecture_agent)
+Your gate: **L-GATE_BUILD (Build + QA)**
+- Entry: L-GATE_SPEC PASS (spec approved by architecture_agent)
 - Your job: implement, self-QA, produce LOD500 draft
 - Exit: All ACs attempted, validate_aos.sh PASS, LOD500 ready for validator
-- Next: L-GATE_V (Team 190, independent, cross-engine)
+- Next: L-GATE_VALIDATE (Team 190, independent, cross-engine)
+
+## Cross-Project Boundaries (IMMUTABLE)
+- **Active project:** [PROJECT NAME] ([project-id], [L0 | L2] profile)
+- **Domain:** [domain] — all your work stays within THIS repository
+- **FORBIDDEN:** Do NOT create files for other projects. Do NOT import from other project packages.
+- **If cross-project question arises:** Answer in chat only. Route to Team 10 (Gateway) or ask Team 00 to switch workspace.
+- **Boundary SSoT:** `_aos/project_identity.yaml` (lists forbidden_patterns, allowed_write_roots)
+- **Validation:** `validate_aos.sh` Check 12 enforces these boundaries automatically
 
 ## Session Start
-1. Read `_aos/work_packages/[WP-ID]/LOD400_spec.md` → understand what to build
-2. Read `_aos/context/PROJECT_CONTEXT.md` → understand project background
-3. Read this activation file → confirm your identity and constraints
-4. Implement against the spec. Do not deviate without documented approval.
+1. Read `_aos/context/PROJECT_CONTEXT.md` first (AOS layer + team entry + domain)
+2. Read `_aos/work_packages/[WP-ID]/LOD400_spec.md` → understand what to build
+3. Read `_aos/project_identity.yaml` → confirm project boundaries
+4. Read this activation file → confirm your identity and constraints
+5. Implement against the spec. Do not deviate without documented approval.

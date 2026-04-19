@@ -1,5 +1,5 @@
 # Fictional example: "task-tracker" — demonstrates Track A L-GATE sequence and two WPs.
-# WP001 is COMPLETE through L-GATE_V; WP002 is mid-build at L-GATE_B.
+# WP001 is COMPLETE through L-GATE_VALIDATE; WP002 is mid-build at L-GATE_BUILD.
 #
 # Schema v1.1 — includes active_milestone, milestone_ref, slug-format team IDs.
 #
@@ -21,7 +21,7 @@ work_packages:
     label: "CLI task list MVP"
     status: COMPLETE
     track: A
-    current_lean_gate: L-GATE_V
+    current_lean_gate: L-GATE_VALIDATE
     lod_status: LOD500
     assigned_builder: tasktracker_build
     assigned_validator: tasktracker_val
@@ -29,19 +29,19 @@ work_packages:
     milestone_ref: "TT-M001"
     spec_ref: "work_packages/S001-P001-WP001/LOD400_spec.md"
     gate_history:
-      - gate: L-GATE_E
+      - gate: L-GATE_ELIGIBILITY
         result: PASS
         date: "2026-03-18"
         notes: "Eligibility confirmed; cross-engine pair registered."
-      - gate: L-GATE_S
+      - gate: L-GATE_SPEC
         result: PASS
         date: "2026-03-19"
         notes: "LOD400 approved; execution authorized."
-      - gate: L-GATE_B
+      - gate: L-GATE_BUILD
         result: PASS
         date: "2026-03-19"
         notes: "Builder QA complete; LOD500 draft ready for validator."
-      - gate: L-GATE_V
+      - gate: L-GATE_VALIDATE
         result: PASS
         date: "2026-03-20"
         notes: "Independent validator (openai-codex) locked LOD500."
@@ -51,7 +51,7 @@ work_packages:
     label: "Due dates and reminders"
     status: IN_PROGRESS
     track: A
-    current_lean_gate: L-GATE_B
+    current_lean_gate: L-GATE_BUILD
     lod_status: LOD500
     assigned_builder: tasktracker_build
     assigned_validator: tasktracker_val
@@ -59,12 +59,12 @@ work_packages:
     milestone_ref: "TT-M001"
     spec_ref: "work_packages/S001-P001-WP002/LOD400_spec.md"
     gate_history:
-      - gate: L-GATE_E
+      - gate: L-GATE_ELIGIBILITY
         result: PASS
         date: "2026-03-20"
         notes: ""
-      - gate: L-GATE_S
+      - gate: L-GATE_SPEC
         result: PASS
         date: "2026-03-20"
         notes: ""
-    notes: "Implementation underway; L-GATE_B not yet recorded."
+    notes: "Implementation underway; L-GATE_BUILD not yet recorded."

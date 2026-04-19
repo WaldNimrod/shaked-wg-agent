@@ -1,4 +1,4 @@
-# L-GATE_E — Eligibility Gate
+# L-GATE_ELIGIBILITY — Eligibility Gate
 
 **When to run:** Before any work begins. This is the intake filter.
 
@@ -9,7 +9,7 @@
 ### Readiness
 - [ ] WP has a clear, written LOD100 (idea/intent) — not just a verbal description
 - [ ] WP is assigned to a program and stage in `roadmap.yaml`
-- [ ] WP has no unresolved dependency blocks (all predecessors are COMPLETE in `roadmap.yaml` — i.e. prior WPs reached L-GATE_V PASS / locked — or not required)
+- [ ] WP has no unresolved dependency blocks (all predecessors are COMPLETE in `roadmap.yaml` — i.e. prior WPs reached L-GATE_VALIDATE PASS / locked — or not required)
 
 ### Team readiness
 - [ ] Builder agent is identified and available (declared in `team_assignments.yaml`)
@@ -21,16 +21,16 @@
   - If TRACK_B: LOD300 is planned in the sequence after LOD200
 
 ## Gate decision
-- **PASS** → advance to L-GATE_S (Track A) or L-GATE_C (Track B)
+- **PASS** → advance to L-GATE_SPEC (Track A) or L-GATE_CONCEPT (Track B)
 - **FAIL** → document blocking reason in `roadmap.yaml`; do not proceed
 
-## roadmap.yaml update on L-GATE_E PASS
+## roadmap.yaml update on L-GATE_ELIGIBILITY PASS
 ```yaml
 work_packages:
   - id: [WP_ID]
-    current_lean_gate: L-GATE_S  # or L-GATE_C for Track B
+    current_lean_gate: L-GATE_SPEC  # or L-GATE_CONCEPT for Track B
     gate_history:
-      - gate: L-GATE_E
+      - gate: L-GATE_ELIGIBILITY
         result: PASS
         date: [YYYY-MM-DD]
         notes: "[any notes]"

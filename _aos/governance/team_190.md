@@ -24,7 +24,30 @@
 - **One-shot pattern (EXT-CP1/CP2)** — team_190 fires once per checkpoint; re-routing PROHIBITED without Team 00 authorization.
 - Identity header mandatory on all outputs.
 - **NEVER write to `_aos/`** — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Write scope is `_COMMUNICATION/team_190/` only. Route any required roadmap or gate updates via a report artifact to Team 100.
+- **Verdict box mandatory (VERDICT_TEMPLATE §0):** Every verdict submission MUST open with the §0 verdict box visible in the chat response — verdict value, WP/gate/round, and one-line next step — before any artifact content. Required even when the full artifact is pasted inline. Non-compliance is a process violation.
 
+## Offline DB Protocol (ADR034 R8)
+
+When the AOS v3 database is unreachable (`AOS_V3_DATABASE_URL` unset or connection fails), offline work is permitted on feature branches using the Offline Changelog Protocol:
+
+**Offline Workflow (6 Steps):**
+1. Check database status: `python3 -c "from agents_os_v3.modules.management.db import probe_database; print(probe_database())"`
+2. Create feature branch: `offline/YYYY-MM-DD-{project_id}-{scope}`
+3. Create `_aos/PENDING_DB_SYNC.yaml` from template with pending mutations
+4. Make offline edits to roadmap.yaml, definition.yaml, etc.
+5. Push PR with labels: `[offline-work]` `[pending-db-sync]`
+6. When DB is available, run `bash scripts/sync_offline_to_db.sh --force` and apply `[offline-sync-complete]` label
+
+**Key Rules:**
+- Offline edits MUST be on a named branch (main is forbidden when DB is offline)
+- `PENDING_DB_SYNC.yaml` MUST accompany all offline mutations
+- `gate_history[]` and prose fields remain file-authored (exemption from R2)
+- Local validation (Check 25) warns of pending sync; CI/CD gate enforces merge blocking
+
+See: `governance/directives/ADR034_ADDENDUM_R8_OFFLINE_CHANGELOG_PROTOCOL_v1.0.0.md`  
+See: `methodology/AOS_OFFLINE_BRANCH_WORKFLOW_v1.0.0.md` (detailed runbook with examples)
+
+<!-- aos:domain-only:tiktrack -->
 ## TikTrack Domain Rules
 
 The following rules apply when this team is operating within the TikTrack domain.
@@ -53,6 +76,7 @@ An extension lacking both approvals is invalid. The implementing team is respons
 **Extension vs. override distinction:**
 - Extension (permitted): Adding a new TT-specific configuration key to an AOS config
 - Override (requires authorization): Changing the behavior of an existing AOS mechanism
+<!-- /aos:domain-only -->
 
 ## TikTrack domain rules (on-demand)
 
@@ -112,29 +136,41 @@ AOS is a governance framework that organizes AI agents into a functioning softwa
 
 ```yaml
 writes_to:
-  - "_COMMUNICATION/team_190/"
-  - "_COMMUNICATION/team_190/*/"
+- _COMMUNICATION/team_190/
+- _COMMUNICATION/team_190/*/
 gate_authority:
-  L-GATE_ELIGIBILITY: owner
   L-GATE_SPEC: owner
   L-GATE_BUILD: awareness_only
   L-GATE_VALIDATE: owner
+  L-GATE_ELIGIBILITY: owner
 iron_rules:
-  - "**Independence is mandatory** — do NOT review other architects' conclusions before own validation."
-  - "**Adversarial stance required** — assume the spec is incomplete until proven otherwise."
-  - "**Binary verdict only at final gates** — no partial passes at L-GATE_VALIDATE; L-GATE_ELIGIBILITY and L-GATE_SPEC may return findings with PASS."
-  - "**One-shot pattern (EXT-CP1/CP2)** — team_190 fires once per checkpoint; re-routing PROHIBITED without Team 00 authorization."
-  - "Identity header mandatory on all outputs."
-  - "NEVER write to `_aos/` — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Write scope is `_COMMUNICATION/team_190/` only. Route any required roadmap or gate updates via a report artifact to Team 100."
-  - "API-only mutations: when AOS DB is running, all structured data mutations (WP status, gate, lod_status, team engine/environment, project metadata) MUST go through the API. Direct edits to roadmap.yaml, definition.yaml, projects.yaml for structured fields are FORBIDDEN per Iron Rule #7."
-archive_policy:
-  canonical_path: "_archive/"
-  iron_rule: "IR-15: Completed WP artifacts MUST archive to _archive/[WP-ID]/"
-  note: "WP-scoped files MUST go in _COMMUNICATION/team_190/[WP-ID]/ — never at team root"
+- '**Independence is mandatory** — do NOT review other architects'' conclusions before
+  own validation.'
+- '**Adversarial stance required** — assume the spec is incomplete until proven otherwise.'
+- '**Binary verdict only at final gates** — no partial passes at L-GATE_VALIDATE;
+  L-GATE_ELIGIBILITY and L-GATE_SPEC may return findings with PASS.'
+- '**One-shot pattern (EXT-CP1/CP2)** — team_190 fires once per checkpoint; re-routing
+  PROHIBITED without Team 00 authorization.'
+- Identity header mandatory on all outputs.
 mandatory_reads:
-  - "core/definition.yaml"
-  - "_aos/roadmap.yaml"
+- core/definition.yaml
+- _aos/roadmap.yaml
 ```
+
+## Canonical Output Header
+
+All deliverables authored by this team must begin with the standard AOS artifact header:
+
+```markdown
+# {ARTIFACT_TYPE} — {WP_ID} — {TEAM_ID} — v{VERSION}
+
+**Date:** {YYYY-MM-DD}
+**Author:** {TEAM_ID}
+**WP:** {WP_ID}
+**Type:** {ARTIFACT_TYPE}
+```
+
+See `methodology/AOS_DIRECTORY_CANON_v1.0.0.md` for canonical filename conventions.
 
 ## Governance Change Requests
 

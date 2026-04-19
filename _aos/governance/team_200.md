@@ -87,6 +87,29 @@ Team 200 does **NOT** write to:
 
 ---
 
+## Offline DB Protocol (ADR034 R8)
+
+When the AOS v3 database is unreachable (`AOS_V3_DATABASE_URL` unset or connection fails), offline work is permitted on feature branches using the Offline Changelog Protocol:
+
+**Offline Workflow (6 Steps):**
+1. Check database status: `python3 -c "from agents_os_v3.modules.management.db import probe_database; print(probe_database())"`
+2. Create feature branch: `offline/YYYY-MM-DD-{project_id}-{scope}`
+3. Create `_aos/PENDING_DB_SYNC.yaml` from template with pending mutations
+4. Make offline edits to roadmap.yaml, definition.yaml, etc.
+5. Push PR with labels: `[offline-work]` `[pending-db-sync]`
+6. When DB is available, run `bash scripts/sync_offline_to_db.sh --force` and apply `[offline-sync-complete]` label
+
+**Key Rules:**
+- Offline edits MUST be on a named branch (main is forbidden when DB is offline)
+- `PENDING_DB_SYNC.yaml` MUST accompany all offline mutations
+- `gate_history[]` and prose fields remain file-authored (exemption from R2)
+- Local validation (Check 25) warns of pending sync; CI/CD gate enforces merge blocking
+
+See: `governance/directives/ADR034_ADDENDUM_R8_OFFLINE_CHANGELOG_PROTOCOL_v1.0.0.md`  
+See: `methodology/AOS_OFFLINE_BRANCH_WORKFLOW_v1.0.0.md` (detailed runbook with examples)
+
+---
+
 ## Bundle Authorization Model
 
 Team 00 (Nimrod) authorizes each bundle by:
@@ -132,26 +155,38 @@ All cowork bundle sessions use **Team 200** as the canonical identity. Avoid "Te
 
 ```yaml
 writes_to:
-  - "_COMMUNICATION/team_200/"
-  - "_COMMUNICATION/team_50/"   # QA verdicts — acting as Team 50 within bundle scope
+- _COMMUNICATION/team_200/
+- _COMMUNICATION/team_50/
 gate_authority:
-  COWORK_PHASE3: owner          # Phase 3 (Build) per WP within a bundle
-  COWORK_PHASE4: owner          # Phase 4 (QA / L-GATE_BUILD) per WP within a bundle
+  COWORK_PHASE3: owner
+  COWORK_PHASE4: owner
 iron_rules:
-  - "One branch per bundle — never commit to main"
-  - "LOD400 is law — zero deviations; FCP-4 for any spec defect found"
-  - "Gates G1/G2/G3 must exit 0 before proceeding to next WP — no exceptions"
-  - "validate_aos.sh must exit 0 after each WP (always included in gate shell block)"
-  - "No spoke repos — do NOT touch TikTrack, AOS-Sandbox-*, SmallFarmsAgents"
-  - "Recovery when blocked: WIP commit + BLOCKER_LOG.md, no improvised fixes"
-  - "WP_STATUS.md MANDATORY after each QA commit — machine-readable checkpoint artifact"
-  - "NEVER write to _aos/ — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Write scope is _COMMUNICATION/team_200/ and _COMMUNICATION/team_50/ (QA verdicts within bundle scope) only. Route any required roadmap or gate updates via a report artifact to Team 100."
-  - "API-only mutations: when AOS DB is running, all structured data mutations must go through the API. Direct edits to roadmap.yaml, definition.yaml, projects.yaml for structured fields are FORBIDDEN per Iron Rule #7."
+- One branch per bundle — never commit to main
+- LOD400 is law — zero deviations; FCP-4 for any spec defect found
+- Gates G1/G2/G3 must exit 0 before proceeding to next WP — no exceptions
+- validate_aos.sh must exit 0 after each WP (always included in gate shell block)
+- No spoke repos — do NOT touch TikTrack, AOS-Sandbox-*, SmallFarmsAgents
+- 'Recovery when blocked: WIP commit + BLOCKER_LOG.md, no improvised fixes'
+- WP_STATUS.md MANDATORY after each QA commit — machine-readable checkpoint artifact
 mandatory_reads:
-  - "core/definition.yaml"
-  - "_aos/governance/team_200.md"
-  - "_COMMUNICATION/cowork/ (active bundle files)"
+- core/definition.yaml
+- _aos/governance/team_200.md
 ```
+
+## Canonical Output Header
+
+All deliverables authored by this team must begin with the standard AOS artifact header:
+
+```markdown
+# {ARTIFACT_TYPE} — {WP_ID} — {TEAM_ID} — v{VERSION}
+
+**Date:** {YYYY-MM-DD}
+**Author:** {TEAM_ID}
+**WP:** {WP_ID}
+**Type:** {ARTIFACT_TYPE}
+```
+
+See `methodology/AOS_DIRECTORY_CANON_v1.0.0.md` for canonical filename conventions.
 
 ## Governance Change Requests
 

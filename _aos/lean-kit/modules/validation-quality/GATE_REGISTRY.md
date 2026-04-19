@@ -1,8 +1,8 @@
 ---
 id: GATE_REGISTRY
-version: "1.1.0"
+version: "1.2.0"
 wp: AOS-V314-WP-CANONICAL-GATES
-description: "Canonical reference for all gate types across all AOS tracks. Used by /AOS_gate-mandate, /AOS_qa, /AOS_validate, and /AOS_gate-status skills."
+description: "Canonical reference for all gate types across all AOS tracks. Used by /AOS_gate-mandate (default WP/gate from roadmap + Table B), /AOS_qa, /AOS_validate, and /AOS_gate-status skills."
 ---
 
 # AOS Gate Registry
@@ -131,7 +131,7 @@ Maps each Tier 1 gate operation command to its equivalent in each engine environ
 | Gate Status | `/AOS_gate-status` | `.cursorrules` §AOS Gate Operations — Gate Status Check | `SYSTEM_PROMPT.template` §Gate Operations > Gate Status |
 | Governance Update | `/AOS_gov-update` | `.cursorrules` §AOS Gate Operations — Governance Update | `SYSTEM_PROMPT.template` §Gate Operations > Governance Update |
 
-**Tier 2 commands** (archive, gov-sync, server, mail, send, project-init, domain-health, handoff, decide, help) are Claude Code only unless otherwise noted in ADR031. See `governance/directives/ADR031_MODEL_B_FILE_STRUCTURE.md` §6 for rationale.
+**Tier 2 commands** (archive, gov-sync, server, mail, send, project-init, domain-health, decide, help) are Claude Code only unless otherwise noted in ADR031. **`/AOS_handoff`** is **not** Tier 2: cross-engine **behavioral** parity is required (`ADR031` §4 row, `ADR032` §3.3). See `governance/directives/ADR031_MODEL_B_FILE_STRUCTURE.md` §4–§6.
 
 **Machine-readable inventory (SSoT):** `lean-kit/modules/validation-quality/schemas/aos_commands_manifest.yaml` — enforced by `validate_aos_commands.sh`.
 
@@ -154,7 +154,7 @@ V316 scripts integrate with gate operations at defined trigger points. All scrip
 
 **Ordering schema:** `lean-kit/modules/validation-quality/schemas/pre_gate_ordering.yaml` encodes the Prerequisite Chain (below) as machine-readable YAML. The schema is the SSoT consumer, not the SSoT definer — the Prerequisite Chain section below remains the authoritative source.
 
-**Gate alias resolution:** Scripts accept both canonical (`L-GATE_ELIGIBILITY`) and alias (`L-GATE_E`) forms. Aliases are defined in `pre_gate_ordering.yaml` and resolved at script entry. All internal logic and output uses canonical forms.
+**Gate alias resolution (machine-only):** Scripts accept both canonical gate names and their single-letter short-form aliases defined in `pre_gate_ordering.yaml`, for backwards compatibility. Aliases are resolved at script entry; all internal logic and output uses canonical forms. **Aliases must never appear in human-facing documentation** — use full names only: L-GATE_ELIGIBILITY, L-GATE_CONCEPT, L-GATE_SPEC, L-GATE_BUILD, L-GATE_VALIDATE.
 
 ---
 
@@ -175,7 +175,7 @@ When the dashboard engine and database are online, structured WP/team/project st
 
 ---
 
-*AOS-V314-WP-CANONICAL-GATES + AOS-V315-WP-CROSS-ENGINE-PARITY | Gate Registry v1.1.0 | 2026-04-13*
+*AOS-V314-WP-CANONICAL-GATES + AOS-V315-WP-CROSS-ENGINE-PARITY + AOS-V318 | Gate Registry v1.2.0 | 2026-04-17*
 
 ---
 
@@ -194,3 +194,39 @@ When the dashboard engine and database are online, structured WP/team/project st
 | V-GATE-1 | validate_gates.sh | L-GATE_VALIDATE | CAT-3.5 | LOD status progression validity |
 | V-GATE-2 | validate_gates.sh | L-GATE_VALIDATE | CAT-3.6 | Gate history report_path existence |
 | V-XENGINE | /AOS_gate-mandate | Mandate gen | CAT-3.7 | Cross-engine vendor constraint |
+
+---
+
+## V318 Integration Checks (21-23) — validate_aos.sh
+
+V318 validators are now wired into `validate_aos.sh` as **first-class checks** (21–23), activated
+when module 07 is in `active_modules`. They run in advisory mode — violations log `[SKIP]` (not
+`[FAIL]`) to allow pre-V318 data debt to coexist with the check infrastructure.
+
+| Check | validate_aos.sh | Script | Flag | Advisory Notes |
+|-------|----------------|--------|------|----------------|
+| Check 21 | Gate structure | `validate_gates.sh` | none | SKIP on violation (pre-V318 `verdict_ref` in gate_history) |
+| Check 22 | LOD400+ documents | `validate_lod.sh` | `--all --min-lod 400` | SKIP on violation; `--min-lod 400` skips legacy LOD200 WPs |
+| Check 23 | Verdict schema | `validate_verdicts.sh` | none | SKIP on violation (pre-V318 legacy verdict files) |
+
+**Module dependency:** All three checks require module 07 (`validation-quality`) in
+`active_modules`. If module 07 is absent, checks 21-23 are skipped automatically.
+
+**Standalone vs. integrated usage:**
+
+- `validate_gates.sh`, `validate_lod.sh`, and `validate_verdicts.sh` are **standalone tools** —
+  invoke directly for detailed output with per-violation drill-down.
+- As checks 21-23 in `validate_aos.sh`, they run silently (`> /dev/null 2>&1`) and report
+  a single pass/skip line. Use standalone for debugging.
+
+**`--min-lod` filter (AC-006 resolution):**
+`validate_lod.sh --all --min-lod 400` skips WPs whose `lod_status` in `roadmap.yaml` is below
+LOD400. This eliminates false failures for V310-V315-era WPs that legitimately have only
+LOD200 documents. New WPs at LOD400 or higher are still fully validated.
+
+**Pre-V318 data compatibility:**
+- `validate_gates.py` V-GATE-2: accepts `verdict_ref` as legacy alias for `report_path` (logs
+  SKIP instead of FAIL for pre-BR-18 entries).
+- `validate_verdicts.py`: files with no YAML frontmatter are SKIPped (pre-V318 legacy files).
+- `validate_verdicts.py` team_50 schema: 7 base required fields only (`id`, `from`, `to`,
+  `type`, `work_package`, `gate`, `date`); P-AOS-4 cowork-bundle fields are optional extensions.

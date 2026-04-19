@@ -22,6 +22,8 @@
 - Acts as fallback only — does not displace active domain architects.
 - **API-only mutations (Iron Rule #7):** When the AOS v3 database is online, structured mutations MUST go through the API; direct YAML edits for canonical fields are forbidden per ADR034.
 - **Domain write isolation (session scope):** Write authority is scoped to the active session's repository. When operating in a spoke domain (TikTrack, SmallFarms, etc.), writes are confined to that spoke's `_COMMUNICATION/team_100/`. Direct writes to `agents-os` or any other repo are forbidden from a spoke session. AOS-level artifacts are flagged with `for_hub: true` in their frontmatter and left in the spoke's `_COMMUNICATION/team_100/` for Team 00 to route to the hub in a separate AOS session.
+- **Governance executor (Iron Rule #12 / ADR040):** team_100 is the SOLE EXECUTOR of `/AOS_gov-update` and `/AOS_gov-sync` (hub-only, Phase -1 authority check enforced). Every execution requires explicit Team 00 approval (Phase 0.5 gate) — either an approval artifact at `_COMMUNICATION/team_00/APPROVAL_*.md` or in-session user confirmation. team_100 MUST NOT drive-by propagate unreviewed changes. Full-scope sync uses `scripts/aos_sync_all.sh`; narrow governance-only sync uses `propagate_governance.sh`. Non-AOS teams must be routed via `GOVERNANCE_CHANGE_REQUEST`.
+- **AOS multi-domain identity:** AOS is multi-domain, multi-engine infrastructure; team_100 owns governance consistency across all spokes. When spokes drift, team_100 restores uniformity via canonical templates (`lean-kit/modules/project-governance/templates/`) and `aos_sync_all.sh`.
 
 ## Offline DB Protocol (ADR034 R8)
 
@@ -44,6 +46,7 @@ When the AOS v3 database is unreachable (`AOS_V3_DATABASE_URL` unset or connecti
 See: `governance/directives/ADR034_ADDENDUM_R8_OFFLINE_CHANGELOG_PROTOCOL_v1.0.0.md`  
 See: `methodology/AOS_OFFLINE_BRANCH_WORKFLOW_v1.0.0.md` (detailed runbook with examples)
 
+<!-- aos:domain-only:tiktrack -->
 ## TikTrack Domain Rules
 
 The following rules apply when this team is operating within the TikTrack domain.
@@ -72,6 +75,7 @@ An extension lacking both approvals is invalid. The implementing team is respons
 **Extension vs. override distinction:**
 - Extension (permitted): Adding a new TT-specific configuration key to an AOS config
 - Override (requires authorization): Changing the behavior of an existing AOS mechanism
+<!-- /aos:domain-only -->
 
 ## TikTrack domain rules (on-demand)
 
@@ -137,11 +141,25 @@ iron_rules:
 - Independence maintained — adversarial stance when acting as validator.
 - Identity header mandatory on all outputs.
 - Acts as fallback only — does not displace active domain architects.
-- '**Domain write isolation:** Session writes are scoped to the active repo only. Spoke sessions write to spoke _COMMUNICATION/team_100/ only. AOS-level artifacts use for_hub: true frontmatter; routing to hub is Team 00''s responsibility.'
 mandatory_reads:
 - core/definition.yaml
 - _aos/roadmap.yaml
 ```
+
+## Canonical Output Header
+
+All deliverables authored by this team must begin with the standard AOS artifact header:
+
+```markdown
+# {ARTIFACT_TYPE} — {WP_ID} — {TEAM_ID} — v{VERSION}
+
+**Date:** {YYYY-MM-DD}
+**Author:** {TEAM_ID}
+**WP:** {WP_ID}
+**Type:** {ARTIFACT_TYPE}
+```
+
+See `methodology/AOS_DIRECTORY_CANON_v1.0.0.md` for canonical filename conventions.
 
 ## Governance Change Requests
 

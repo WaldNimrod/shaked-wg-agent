@@ -4,7 +4,7 @@
 **level:** All
 
 ## What this role does
-Implements the approved LOD400 specification, runs same-engine QA at L-GATE_B, and produces the LOD500 as-built draft for independent validation at L-GATE_V.
+Implements the approved LOD400 specification, runs same-engine QA at L-GATE_BUILD, and produces the LOD500 as-built draft for independent validation at L-GATE_VALIDATE.
 
 ## Responsibilities
 - Implement all in-scope LOD400 components and ACs
@@ -13,7 +13,7 @@ Implements the approved LOD400 specification, runs same-engine QA at L-GATE_B, a
 - Execute unit/integration tests per LOD400 §7
 
 ## What this role does NOT do (hard boundaries)
-- **Does not** declare L-GATE_V PASS on its own work (cross-engine rule)
+- **Does not** declare L-GATE_VALIDATE PASS on its own work (cross-engine rule)
 - **Does not** change scope without LOD400 version bump or documented deviation
 - **Does not** select itself as validator
 
@@ -26,7 +26,7 @@ Implements the approved LOD400 specification, runs same-engine QA at L-GATE_B, a
 
 ## Engine requirements
 - **Preferred engine type:** LLM
-- **Must differ from:** **Validator agent engine (IRON RULE)** — same engine for builder and validator blocks L-GATE_V
+- **Must differ from:** **Validator agent engine (IRON RULE)** — same engine for builder and validator blocks L-GATE_VALIDATE
 - **In L0:** declared in `team_assignments.yaml` under `role_type: builder_agent`
 
 ## team_assignments.yaml entry format (L0)

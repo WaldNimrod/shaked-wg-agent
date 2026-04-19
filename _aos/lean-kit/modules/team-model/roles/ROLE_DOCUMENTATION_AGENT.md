@@ -13,7 +13,7 @@ Maintains LOD500 polish, indexes artifacts, and keeps governance cross-reference
 
 ## What this role does NOT do (hard boundaries)
 - **Does not** change LOD400 technical meaning (Architecture Agent owns spec)
-- **Does not** replace Validator Agent at L-GATE_V
+- **Does not** replace Validator Agent at L-GATE_VALIDATE
 - **Does not** approve deviations without Architecture + Validator alignment
 
 ## Required skills (minimum viable)
@@ -24,7 +24,7 @@ Maintains LOD500 polish, indexes artifacts, and keeps governance cross-reference
 
 ## Engine requirements
 - **Preferred engine type:** LLM or human
-- **Must differ from:** No hard rule vs builder; **L-GATE_V validation still requires independent validator ≠ builder** (Documentation Agent is not a substitute for Validator Agent)
+- **Must differ from:** No hard rule vs builder; **L-GATE_VALIDATE validation still requires independent validator ≠ builder** (Documentation Agent is not a substitute for Validator Agent)
 - **In L0:** declared in `team_assignments.yaml` under `role_type: documentation_agent`
 
 ## team_assignments.yaml entry format (L0)

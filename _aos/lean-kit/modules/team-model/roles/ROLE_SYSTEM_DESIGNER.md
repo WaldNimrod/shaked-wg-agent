@@ -8,13 +8,13 @@ Owns routing, prioritization, and escalation for the project in the L0 (Lean) pr
 
 ## Responsibilities
 - Assign work packages and track status in `roadmap.yaml`
-- Verify builder and validator engines differ before L-GATE_E advance (Iron Rule)
+- Verify builder and validator engines differ before L-GATE_ELIGIBILITY advance (Iron Rule)
 - Escalate blockers to the appropriate role; remove organizational friction
 - Declare track (TRACK_A / TRACK_B) when acting as decision authority for intake
 
 ## What this role does NOT do (hard boundaries)
 - **Does not** approve specification content in place of the Architecture Agent
-- **Does not** substitute for cross-engine validation at L-GATE_V (human sign-off does not replace validator engine)
+- **Does not** substitute for cross-engine validation at L-GATE_VALIDATE (human sign-off does not replace validator engine)
 - **Does not** perform code review as the sole quality gate
 
 ## Required skills (minimum viable)

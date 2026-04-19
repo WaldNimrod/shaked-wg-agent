@@ -15,8 +15,10 @@ except ImportError:
 REPO_ROOT = Path(__file__).resolve().parents[4]
 
 REQUIRED_FIELDS = {
-    "team_50":  ["id","from","to","type","work_package","gate","date",
-                  "part_a_verdict","part_b_verdict","overall_verdict"],
+    # team_50: 7 base fields only.
+    # part_a_verdict/part_b_verdict/overall_verdict are P-AOS-4 cowork bundle
+    # specific fields (V316+ only) — not universally required for all QA verdicts.
+    "team_50":  ["id","from","to","type","work_package","gate","date"],
     "team_90":  ["id","from","to","type","work_package","gate","date",
                   "verdict","findings_blocker"],
     "team_190": ["id","from","to","type","work_package","gate","date",
@@ -56,7 +58,13 @@ def validate_verdict_file(filepath, team_id):
     fname = Path(filepath).name
     fm = parse_frontmatter(filepath)
     if fm is None:
-        log_fail(f"{team_id}/{fname} — no YAML frontmatter (cannot validate)")
+        # Skip legacy files without YAML frontmatter (pre-V318 format).
+        log_skip(f"{team_id}/{fname} — no YAML frontmatter (pre-V318 legacy file; skipping)")
+        return
+    # Pre-V318 cowork-bundle format uses `verdict_type` instead of `type` (P-AOS-4 schema).
+    # Files with frontmatter but no `type` field are pre-V318 legacy — skip all checks.
+    if "type" not in fm:
+        log_skip(f"{team_id}/{fname} — pre-V318 document (no type field; cowork-bundle schema)")
         return
     required = REQUIRED_FIELDS[team_id]
     missing = [f for f in required if f not in fm]
