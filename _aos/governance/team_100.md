@@ -108,6 +108,67 @@ Same 8-check validation as domain architects — strategic, architectural, execu
 
 **"Push everything" scope rule:** Push commands are always scoped to the active session's repository. "Push everything" from a TikTrack session = TikTrack repo only. Never cross-repo.
 
+## Inbound Cross-Domain Report Protocol
+
+When Team 00 routes a `for_hub: true` artifact to this session (methodology reports, incident reports, UX feedback, GCRs from any spoke team), Team 100 MUST follow this triage workflow — **not ad hoc analysis**.
+
+### Trigger condition
+Team 00 presents a report with `for_hub: true` frontmatter, or explicitly routes a cross-domain finding to this session.
+
+### Step 1 — Read and classify
+Read the artifact. Classify by type and urgency:
+
+| Type | Examples | Default urgency |
+|------|----------|----------------|
+| **Methodology gap** | missing rule, undefined behavior | P2 |
+| **Iron rule improvement** | tighten / extend existing rule | P1 |
+| **Incident (recurring pattern)** | repeated drift, status mismatch | P1 |
+| **UX improvement** | command friction, workflow friction | P2 |
+| **GCR (Governance Change Request)** | explicit change request artifact | P1 |
+
+### Step 2 — Triage decision (4 outcomes)
+
+| Decision | Criteria | Action |
+|----------|----------|--------|
+| **IMPLEMENT-NOW** | Small, well-scoped, Team 00 approves in-session | Edit `core/governance/` directly; run gov-sync |
+| **OPEN-WP** | Significant scope, CANON change required, needs spec | Write LOD100 brief → Team 00 approves → add to `_aos/roadmap.yaml` |
+| **DEFER** | Valid but low priority, no active program slot | Write triage artifact to `_COMMUNICATION/team_100/`; log in `_aos/ideas.json` |
+| **REJECT** | Out of scope, duplicate, contradicts locked Iron Rule | Write rejection rationale to `_COMMUNICATION/team_100/`; notify requesting team |
+
+### Step 3 — Produce triage artifact
+Always write: `_COMMUNICATION/team_100/TRIAGE_{REPORT_ID}_{DATE}_v1.0.0.md`
+
+Required fields:
+```yaml
+report_id: {source report id}
+from_domain: {spoke domain}
+classification: {type from Step 1}
+urgency: {P1/P2/P3}
+decision: {IMPLEMENT-NOW | OPEN-WP | DEFER | REJECT}
+rationale: {one paragraph}
+action_taken: {what was done or what artifact was filed}
+team_00_approval: {in-session | artifact path | required}
+```
+
+### Step 4 — Execute decision
+- **IMPLEMENT-NOW:** Follow `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md` Phases 2–7 directly. In-session Team 00 confirmation satisfies Phase 0.5.
+- **OPEN-WP:** Write LOD100 brief; present to Team 00 for roadmap placement.
+- **DEFER / REJECT:** Artifact is sufficient; no gov changes.
+
+### Feedback report to Team 00
+After triage, present a structured summary (in-session, not a separate artifact unless the session produces multiple reports). Format:
+
+```
+## Triage Summary — [DATE]
+For each report:
+  - Report: [ID]
+  - Classification: [type]
+  - Decision: [outcome]
+  - Action: [what happened / what is next]
+```
+
+**This protocol is mandatory for ALL inbound cross-domain reports regardless of originating team or domain.**
+
 ## AOS Vision & Principles
 
 AOS is a governance framework that organizes AI agents into a functioning software development team. One human (System Designer, Team 00) defines vision; agents architect, build, validate, deliver. AOS is the team that builds products, not a product itself.
