@@ -24,6 +24,7 @@
 - **Domain write isolation (session scope):** Write authority is scoped to the active session's repository. When operating in a spoke domain (TikTrack, SmallFarms, etc.), writes are confined to that spoke's `_COMMUNICATION/team_100/`. Direct writes to `agents-os` or any other repo are forbidden from a spoke session. AOS-level artifacts are flagged with `for_hub: true` in their frontmatter and left in the spoke's `_COMMUNICATION/team_100/` for Team 00 to route to the hub in a separate AOS session.
 - **Governance executor (Iron Rule #12 / ADR040):** team_100 is the SOLE EXECUTOR of `/AOS_gov-update` and `/AOS_gov-sync` (hub-only, Phase -1 authority check enforced). Every execution requires explicit Team 00 approval (Phase 0.5 gate) — either an approval artifact at `_COMMUNICATION/team_00/APPROVAL_*.md` or in-session user confirmation. team_100 MUST NOT drive-by propagate unreviewed changes. Full-scope sync uses `scripts/aos_sync_all.sh`; narrow governance-only sync uses `propagate_governance.sh`. Non-AOS teams must be routed via `GOVERNANCE_CHANGE_REQUEST`.
 - **AOS multi-domain identity:** AOS is multi-domain, multi-engine infrastructure; team_100 owns governance consistency across all spokes. When spokes drift, team_100 restores uniformity via canonical templates (`lean-kit/modules/project-governance/templates/`) and `aos_sync_all.sh`.
+- **Multi-engine governance completeness (AOS-domain — team_100 only):** Every governance update MUST propagate to ALL engine context files across ALL environments — not only `_aos/governance/` snapshots. After every `core/governance/` edit, team_100 MUST run `scripts/aos_sync_all.sh` (full-scope) to re-render `.cursorrules` (Cursor), `SYSTEM_PROMPT.template` (system-prompt engines), spoke `CLAUDE.md` (Claude Code), and spoke `_aos/lean-kit/` copies. Partial propagation is a governance failure, not a valid shortcut. The hub's own `_aos/` is a propagation target identical to every spoke — `core/` is the SOLE edit location; hub `_aos/` is a read-only snapshot.
 
 ## Offline DB Protocol (ADR034 R8)
 
@@ -151,7 +152,7 @@ team_00_approval: {in-session | artifact path | required}
 ```
 
 ### Step 4 — Execute decision
-- **IMPLEMENT-NOW:** Follow `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md` Phases 2–7 directly. In-session Team 00 confirmation satisfies Phase 0.5.
+- **IMPLEMENT-NOW:** Follow `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md` Phases 2–7 directly. In-session Team 00 confirmation satisfies Phase 0.5. **After editing `core/governance/`, run `scripts/aos_sync_all.sh`** — multi-engine completeness rule above applies to every IMPLEMENT-NOW execution.
 - **OPEN-WP:** Write LOD100 brief; present to Team 00 for roadmap placement.
 - **DEFER / REJECT:** Artifact is sufficient; no gov changes.
 
@@ -233,4 +234,4 @@ This team authors governance contracts in `core/governance/` (SSoT).
 
 ---
 
-> **Mandate generation (V318+):** LOCKED procedure `lean-kit/modules/validation-quality/docs/AOS_GATE_MANDATE_CANON_v1.0.0.md` (policy **v1.0.2** in frontmatter; spoke: `_aos/lean-kit/.../AOS_GATE_MANDATE_CANON_v1.0.0.md`); governance `governance/directives/ADR036_AOS_GATE_MANDATE_CANON_HUB_AND_SPOKES_v1.0.0.md`. Entry points point to CANON — no duplicate policy; numbered WP options + Table A/B per CANON; **before resubmission / re-validation:** Phase **3.5** remediation matrix (FIXED/WAIVED/OPEN) — no validator routing if OPEN. Cross-engine constraint enforced at mandate time, not at verdict time.
+> **Mandate generation (V318+):** LOCKED procedure `lean-kit/modules/validation-quality/docs/AOS_GATE_MANDATE_CANON_v1.0.0.md` (policy **v1.6.0** inside; spoke: `_aos/lean-kit/.../AOS_GATE_MANDATE_CANON_v1.0.0.md`); governance `governance/directives/ADR036_AOS_GATE_MANDATE_CANON_HUB_AND_SPOKES_v1.0.0.md`. Entry points point to CANON — no duplicate policy; numbered WP options + Table A/B per CANON; **before resubmission / re-validation:** Phase **3.5** remediation matrix (FIXED/WAIVED/OPEN) — no validator routing if OPEN. Cross-engine constraint enforced at mandate time, not at verdict time.
