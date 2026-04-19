@@ -11,7 +11,7 @@ You are working inside an **AOS spoke** — repo `shaked-wg-agent`, profile `L0`
 - **AOS hub:** `/Users/nimrod/Documents/agents-os` — SSOT for governance, lean-kit, canon, directives.
 - **`_aos/` in this repo is a READ-ONLY SNAPSHOT** propagated from the hub via `aos_sync_all.sh` / `propagate_governance.sh`.
 - **Do NOT edit** `_aos/governance/`, `_aos/lean-kit/`, `_aos/project_identity.yaml`, or any other AOS-layer file directly.
-- **To request a governance change:** file `GOVERNANCE_CHANGE_REQUEST` artifact in `_COMMUNICATION/team_XX/` → route to `team_100` in the hub. Template: `/Users/nimrod/Documents/agents-os/lean-kit/modules/project-governance/config_templates/GOVERNANCE_CHANGE_REQUEST.md.template`
+- **To request a governance change:** file `GOVERNANCE_CHANGE_REQUEST` artifact in `_COMMUNICATION/team_XX/` → route to `team_100` in the hub. Template: `lean-kit/modules/project-governance/config_templates/GOVERNANCE_CHANGE_REQUEST.md.template` (in hub repo)
 - **Governance procedures are LOCKED to AOS teams** (`team_00`, `team_100`) per Iron Rule #12 / ADR040. Non-AOS teams cannot invoke `/AOS_gov-update` or `/AOS_gov-sync`.
 
 ## Identity
@@ -27,9 +27,9 @@ You are working inside an **AOS spoke** — repo `shaked-wg-agent`, profile `L0`
 1. Read `_aos/roadmap.yaml` — current WP and gate position
 2. Read `_aos/context/PROJECT_CONTEXT.md` — project background
 3. Read `_aos/definition.yaml` (L2) or `_aos/context/ACTIVATION_*.md` (L0) — your role
-4. **DB probe (mandatory):** Read `/Users/nimrod/Documents/agents-os/_aos/db_connectivity_status.json` — hub canonical DB status. If `status: online` → all structured mutations go via API (Iron Rule #7 / ADR034). If `status: offline` → **stop and fix before proceeding**; offline work requires ADR034 R8 protocol on a named branch (never main). **DB is always available in normal operation.** To refresh: `python3 -c "import sys; sys.path.insert(0, '/Users/nimrod/Documents/agents-os'); from agents_os_v3.modules.management.db import probe_database; print(probe_database())"`
+4. **DB probe (mandatory):** Read `_aos/db_connectivity_status.json` — spoke DB status mirror (refreshed by hub). If `status: online` → all structured mutations go via API (Iron Rule #7 / ADR034). If `status: offline` → **STOP and notify Team 00** with the `reason` field; offline work requires ADR034 R8 protocol on a named branch (never main).
 5. **Validation:** `bash _aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh .` — expect **0 FAIL** on this spoke
-6. **AOS identity onboarding (first session only):** read `/Users/nimrod/Documents/agents-os/methodology/AOS_IDENTITY_ONBOARDING_v1.0.0.md`
+6. **AOS identity onboarding (first session only):** read `_aos/lean-kit/` for spoke-local AOS context, or request hub onboarding doc from Team 00.
 
 ## Iron Rules (uniform across all AOS domains)
 
@@ -56,7 +56,7 @@ You are working inside an **AOS spoke** — repo `shaked-wg-agent`, profile `L0`
 
 ## Governance File Protection
 
-- `_aos/governance/team_*.md` files in this repo are READ-ONLY snapshots of the hub SSOT at `/Users/nimrod/Documents/agents-os/core/governance/team_*.md`
+- `_aos/governance/team_*.md` files in this repo are READ-ONLY snapshots of the hub SSOT (`core/governance/` in the agents-os hub repo)
 - Any direct edit will be reverted on next `aos_sync_all.sh` run
 - Validated by hub `validate_aos.sh` Checks 27–29
 - Change-request workflow: GCR artifact → team_100 → Team 00 approval → hub edit + sync
