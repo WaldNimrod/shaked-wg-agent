@@ -498,7 +498,7 @@ except Exception as e:
         [ -z "$pattern" ] && continue
         # Search in common source dirs, skip _aos/ itself and .git/
         local matches
-        matches=$(grep -rl --include="*.py" --include="*.js" --include="*.ts" --include="*.md" \
+        matches=$(grep -Frl --include="*.py" --include="*.js" --include="*.ts" --include="*.md" \
             --exclude-dir=".git" --exclude-dir="_aos" --exclude-dir="node_modules" \
             --exclude-dir=".claude" --exclude-dir="_COMMUNICATION" --exclude-dir="_communication" \
             --exclude-dir="_archive" \
