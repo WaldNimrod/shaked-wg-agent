@@ -43,6 +43,10 @@ LOD400 (executable spec) ── Team 35 is OUT of scope from here on
 L-GATE_SPEC → Team 200 cowork build → LOD500
 ```
 
+**Environment boundary (claude-design-sandbox):** team_35 operates in a sandboxed filesystem that is **not** the spoke repository. Artifacts produced by team_35 are written to the sandbox, then **manually transported** by the human courier (Team 00 / Nimrod) into the corresponding spoke path. team_35 has no `git`, `npm`, `shell`, or network-write access. Two consequences:
+1. **Artifact delivery is asynchronous from the spoke.** A team_35 artifact exists when written in claude-design; it is visible to other teams only after the human courier transports it. Timestamps reflect authorship time, not transport-to-spoke time.
+2. **team_35 cannot read live spoke state between mandates.** Each engagement begins with what the mandate, brief, and attached files provide. If a decision elsewhere invalidates an in-flight team_35 deliverable, team_100 must cancel or reissue the mandate — team_35 will not discover the invalidation independently.
+
 **Entry point:** mandate from Team 100 that references a WP and includes a Design Brief.
 **Exit point:** `HANDOFF_PACKAGE_*` artifact delivered to Team 100's inbox, signed off by Team 00 at L-GATE_DESIGN.
 
@@ -64,7 +68,9 @@ L-GATE_SPEC → Team 200 cowork build → LOD500
 8. **Identity header mandatory** on every markdown output.
 9. **Universal team numbering (Iron Rule #9).** `team_35` is the canonical id across all projects and spokes.
 10. **NEVER write to `_aos/`.** `_aos/` is the governance layer — reserved for AOS governance teams (Team 00/100/110/191) only. Write scope is `_COMMUNICATION/team_35/` only. Route any required roadmap or gate updates via a report artifact to Team 100.
-11. **API-only mutations (Iron Rule #7).** When AOS DB is running, all structured data mutations MUST go through the API. Direct edits to roadmap.yaml, definition.yaml for structured fields are FORBIDDEN per Iron Rule #7. (Team 35's HTML/prose output is exempt — this applies only if Team 35 ever handles AOS structured data.)
+11. **API-only mutations (Iron Rule #7).** When AOS DB is running, all structured data mutations MUST go through the API. Direct edits to roadmap.yaml, definition.yaml for structured fields are FORBIDDEN per Iron Rule #7. *Note: team_35 emits artifacts only (prose + HTML into `_COMMUNICATION/team_35/`); there is no governance API surface to constrain. This rule is listed for completeness and applies only if team_35 ever handles AOS structured data directly.*
+12. **Design-system fidelity.** When a design system is declared in the Design Brief (§4), team_35 must not introduce tokens (colors, type scale, radii, spacing, motion curves) outside that system without an explicit `DESIGN_SYSTEM_EXTENSION_REQUEST` artifact approved by team_100. If no system is declared, team_35 may explore freely but must label output clearly as "no-system exploration" so reviewers do not mistake exploration for canon.
+13. **No silent assumption filling.** If a Design Brief is missing a required checklist item, team_35 must emit a `CLARIFICATION_REQUEST` rather than filling in a default silently. Exception: when the brief explicitly lists a `default_if_unanswered` for an open question, team_35 may proceed and must log the resolution in the HANDOFF index §3. Missing content samples (`samples:` block empty) also trigger CLARIFICATION_REQUEST.
 
 ## Offline DB Protocol (ADR034 R8)
 
@@ -125,10 +131,10 @@ The claude-design engine has distinctive properties Team 100 must be aware of wh
 
 Team 35 activates when Team 100 issues a `MANDATE_*` artifact in `_COMMUNICATION/team_100/[WP-ID]/` that names `team_35` as recipient, OR Team 00 directly scopes a design task.
 
-The mandate MUST reference (or embed) a Design Brief conforming to the canonical template in:
+The mandate MUST carry a `brief_artifact_id` field pointing to the `BRIEF_*.md` in `_COMMUNICATION/team_100/[WP-ID]/` AND reference (or embed) a Design Brief conforming to the canonical template in:
 `lean-kit/modules/design-studio/templates/BRIEF.template.md`
 
-Without a brief, Team 35 raises `CLARIFICATION_REQUEST_*` and does not proceed.
+Orphaned mandates (no `brief_artifact_id`, no reachable brief) are invalid. Team 35 raises `CLARIFICATION_REQUEST_*` and does not proceed.
 
 ## Handback Protocol
 
@@ -152,6 +158,8 @@ _COMMUNICATION/team_35/[WP-ID]/
 └── assets/
 ```
 
+**Preview files:** `*_PREVIEW.html` files in a handoff package are advisory human-review aids — non-canonical. The `.md` index is the SSoT. Approval decisions must be based on the markdown index, not the preview file alone. Preview divergence from the markdown is a team_35 defect.
+
 ## Iteration Protocol
 
 Team 100 responds with one of:
@@ -160,6 +168,8 @@ Team 100 responds with one of:
 - **REJECTED** → Team 100 rewrites the brief; Team 35 starts over.
 
 **Revision limit:** 3 rounds per WP. Beyond round 3, Team 100 must re-author the brief or escalate to Team 00.
+
+**Revision counter authority:** The authoritative round count is the `revision_round` field in the latest `HANDOFF_*` artifact for the WP (not the brief). A REJECTED verdict followed by a new brief starts a fresh count of 3.
 
 ## Canonical Output Header
 
@@ -176,7 +186,7 @@ Every markdown deliverable begins with:
 **Brief:** {path to Design Brief}
 ```
 
-Canonical artifact types: `HANDOFF`, `CLARIFICATION_REQUEST`, `REVISION_RESPONSE`, `TRIAGE_NOTE`.
+Canonical artifact types: `HANDOFF`, `CLARIFICATION_REQUEST`, `REVISION_RESPONSE`, `TRIAGE_NOTE`, `DESIGN_SYSTEM_EXTENSION_REQUEST`, `REVIEW_RESPONSE`.
 
 ## Boundaries
 
@@ -200,6 +210,8 @@ mandatory_reads:
   - _aos/roadmap.yaml
   - _aos/project_identity.yaml
   - the specific Design Brief for the active mandate
+  - any prior HANDOFF_* for the same WP (if this is a revision round, not a first pass)
+  - any DECISION_RECORD_* or ADR_* explicitly cited as constraints in the brief
 ```
 
 ## Governance Change Requests
@@ -213,3 +225,4 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 *Governance contract — Team 35 | AOS system*
 
 **log_entry | team_35 | GOVERNANCE_FILE_CREATED | 2026-04-22 | v1.0.0 — Initial governance contract — Design Studio / claude-design — self-drafted by team_35 2026-04-21; codified by team_100 2026-04-22**
+**log_entry | team_35 | GOVERNANCE_FILE_REVISED | 2026-04-22 | v1.0.1 — Applied team_35 APPROVED_WITH_REVISIONS: IR#12 (design-system fidelity), IR#13 (no silent assumption filling), IR#11 footnote, environment boundary paragraph, R1 revision counter, R3 preview provenance, R4 mandate-brief linkage, R5 mandatory reads, R6 style; +2 templates**
