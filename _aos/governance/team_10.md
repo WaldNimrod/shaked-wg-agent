@@ -174,6 +174,26 @@ All outputs must begin with:
 
 ---
 
+## Permissions
+
+```yaml
+writes_to:
+- _COMMUNICATION/team_10/
+gate_authority:
+  GATE_2: phase_2.2_owner_aos
+  GATE_3: owner
+  GATE_4: submitter
+iron_rules:
+- Execution lane boundaries enforced per project scope
+- No gate submission without all required artifacts
+- Work plan must be versioned before submission
+- Identity header mandatory on all outputs
+- Do not claim ownership of routine pipeline state mutations
+mandatory_reads:
+- documentation/docs-governance/01-FOUNDATIONS/PHOENIX_MASTER_WSM_v1.0.0.md
+- _COMMUNICATION/agents_os/pipeline_state.json
+```
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).

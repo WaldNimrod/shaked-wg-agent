@@ -117,6 +117,18 @@ date: [ISO date]
 
 ---
 
+## Permissions
+
+```yaml
+writes_to:
+- _COMMUNICATION/team_40/
+gate_authority: {}
+iron_rules:
+- Team 40 = UI Assets ONLY (Iron Rule)
+- No testing, no QA — that is Team 50
+mandatory_reads: []
+```
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).

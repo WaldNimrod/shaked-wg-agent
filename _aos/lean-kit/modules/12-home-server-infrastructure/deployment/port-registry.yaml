@@ -1,187 +1,388 @@
 ---
-# Global Port Registry — AOS Module 12
-# SINGLE SOURCE OF TRUTH for all port allocations across all projects on waldhomeserver
-# Per Multi-Project Docker Workstation Standard (lean-kit/modules/standards-conventions/)
+# ================================================================
+# AOS Port Registry — Canonical SSoT (v2.0.0)
+# lean-kit/modules/12-home-server-infrastructure/deployment/port-registry.yaml
+# ================================================================
+# This file is the SINGLE SOURCE OF TRUTH for every long-running TCP/UDP
+# listener on every registered host across every AOS project (hub + spokes).
 #
-# CRITICAL: All new port assignments must be registered here BEFORE deployment.
-# Port conflicts are detected and resolved using this registry.
-
-server: "waldhomeserver"
-created: "2026-04-18"
-version: "1.1.0"
-
-# ============================================
-# GOVERNANCE — AOS PORT CANON
-# ============================================
-# This file is the **single source of truth** for port allocations across all
-# projects (hub + spokes) running on the workstation/server.
+# Reality must match canon. Unregistered listeners are violations, not
+# accommodations. Canon edits require joint team_60 (ops) + team_100 (arch)
+# authorship + team_00 (Principal) sign-off — see ADR-equivalent ratification
+# at _COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.0.0_2026-04-20.md.
 #
-# Binding rules for ALL teams (echoed in CLAUDE.md / AGENTS.md):
-#  R1. Every long-running listener (API, DB, dashboard, UI) MUST be registered
-#      here BEFORE first start. Ad-hoc ports are forbidden.
-#  R2. Project start scripts MUST pre-flight against this registry and fail
-#      fast if the requested port is unregistered or already held by another
-#      process. Reference implementation: scripts/start_aos_api_local.sh.
-#  R3. Conflicts: do NOT silently bump to an unregistered port. Either kill
-#      the stale holder or request a new registration via Team 60.
-#  R4. Edits to this file require Team 60 approval (DevOps & Platform).
-#  R5. validate_aos.sh Check 24 verifies this file exists, parses, and has
-#      no duplicate port assignments. CI gate for the hub.
+# SCOPE:
+#   • Listeners (processes that bind() a port) are registered here.
+#   • Outbound-only clients (Telegram bot pollers, HTTP clients, cron
+#     outbound callers) are NOT listeners and are NOT registered.
+#   • A process that opens both an outbound socket AND a listener is
+#     registered for its listener only.
+#   • Projects with no long-running listeners (static sites, sandbox
+#     shells, outbound bots) are NOT required to register. Absence here
+#     means "no listeners", not "not yet audited". A project registers
+#     on its first listener.
+#
+# Version bump rationale (v1.1.0 → v2.0.0, MAJOR):
+#   • v1.1.0 had no environment dimension and no host dimension — it
+#     could not express "TikTrack dev on mac" vs "TikTrack staging on
+#     waldhomeserver". This caused the 2026-04-20 staging deploy
+#     collision. v2.0.0 adds explicit `hosts[]` + per-project
+#     `instances[]` with (host, env) tuples and a canonical offset
+#     scheme so every environment on every host traces back to an
+#     entry here.
+#   • No port numbers for active listeners changed. Existing
+#     allocations become `env: dev` entries. Staging / production /
+#     qa slots are RESERVED via fixed offsets.
+# ================================================================
 
-# Port Priority Rule:
-# 1. TikTrack ports are IMMUTABLE (primary project)
-# 2. For conflicts between other projects: established project keeps port
-# 3. Newer project re-assigns to next available port
+registry_version: "2.2.0"
+previous_version: "2.1.0"
+last_updated: "2026-04-20"
+owner: "team_60 (ops) + team_100 (arch) — joint authorship; team_00 sign-off for each revision"
 
-ports:
-  # ============================================
-  # TikTrack (PRIMARY PROJECT — IMMUTABLE PORTS)
-  # ============================================
-  - port: 5432
-    service: "PostgreSQL"
-    project: "TikTrack-Phoenix_AOSProject"
-    protocol: "TCP"
-    scope: "localhost"
-    mode: "always-on"
-    container_name: "tiktrack-postgres-dev"
-    status: "IMMUTABLE"
-    notes: "TikTrack primary project — do NOT reassign"
+ssot_principle: >-
+  This file is the SINGLE SOURCE OF TRUTH for every listener on every
+  registered host across every AOS project. Reality must match canon.
+  Unregistered listeners are violations, not accommodations. No
+  grandfathering. Canon edits require joint team_60 + team_100
+  approval + team_00 sign-off.
 
-  - port: 8080
-    service: "Frontend (Vite)"
-    project: "TikTrack-Phoenix_AOSProject"
-    protocol: "TCP"
-    scope: "localhost"
-    mode: "always-on"
-    status: "IMMUTABLE"
-    notes: "TikTrack primary project — do NOT reassign"
+# ================================================================
+# Port range policy
+# ================================================================
+port_range_policy:
+  description: >-
+    Canonical port allocation bands for all AOS projects. New registrations
+    MUST fall within a declared band. Cross-band assignments require a canon
+    revision + rationale justification.
+  bands:
+    postgres_db:
+      range: "5400–5699"
+      notes: "AOS project Postgres ports. Base dev port + environment offsets (+0/+100/+200/+300)."
+      current: "5432–5434 (dev base); 5532–5534 (staging); 5632–5634 (prod)"
+    web_api:
+      range: "8080–8499"
+      notes: "HTTP listeners (UI, API, dashboard). Base dev + environment offsets."
+      current: "8080–8099 (dev base); 8180–8199 (staging); 8280–8299 (prod)"
+    mysql_host:
+      range: "3300–3399"
+      notes: "MySQL/MariaDB host-mapped ports (Docker port mapping). Avoid 3306 (MySQL default — conflicts with bare local installs)."
+      current: "3308 (HobbitHome)"
+    admin_utility:
+      range: "5001–5099"
+      notes: "Flask admin, utility servers. Avoid :5000 — macOS AirPlay Receiver on mac_local."
+      current: "5001 (SmallFarmsAgents admin)"
+    cache_store:
+      range: "6370–6499"
+      notes: "Redis/cache host-mapped ports. Skip 6379 (Redis default — conflicts with bare installs)."
+      current: "6380 (EyalAmit.co.il-2026), 6381 (wordpress-dev)"
+  forbidden_zones:
+    - range: "0–1023"
+      reason: "Privileged ports — root required; Linux/macOS system services"
+    - range: "3306"
+      reason: "MySQL default — conflicts with bare installs on dev machines"
+    - range: "5000"
+      reason: "macOS AirPlay Receiver (Monterey+) — avoid on mac_local-hosted services"
+    - range: "7000–7001"
+      reason: "macOS AirPlay — avoid on mac_local-hosted services"
+    - range: "32768–60999"
+      reason: "Linux ephemeral port range (waldhomeserver) — OS assigns these dynamically"
+    - range: "49152–65535"
+      reason: "macOS/IANA ephemeral range — OS assigns these dynamically"
 
-  - port: 8082
-    service: "API (FastAPI)"
-    project: "TikTrack-Phoenix_AOSProject"
-    protocol: "TCP"
-    scope: "localhost"
-    mode: "always-on"
-    status: "IMMUTABLE"
-    notes: "TikTrack primary project — do NOT reassign"
+# ================================================================
+# Hosts registered under canon
+# ================================================================
+hosts:
+  - id: mac_local
+    description: "Mac local developer workstation (Nimrod's laptop, ~/Documents)"
+    addr: "127.0.0.1"
+    reality_diff: false           # local lsof via run host, no SSH needed
+  - id: waldhomeserver
+    description: "Home server — primary dev/staging/production host for AOS projects"
+    dns: "waldhomeserver.home-nimrod.ts.net"
+    lan: "10.100.102.2"
+    tailscale: "100.125.98.56"
+    ssh_user: "nimrodw"           # waldhomeserver Linux user (differs from Mac user nimrod)
+    reality_diff: true            # SSH + ss -tlnp on CI (controlled by CHECK_24_REALITY_DIFF)
 
-  # ============================================
-  # Agents-OS (AOS HUB)
-  # ============================================
-  - port: 5434
-    service: "PostgreSQL"
-    project: "agents-os"
-    protocol: "TCP"
-    scope: "localhost,lan,tailscale"
-    mode: "always-on"
-    container_name: "aos-postgres-dev"
-    status: "ACTIVE"
-    notes: "Moved from 5432 (TikTrack conflict) on 2026-04-09"
+# ================================================================
+# Canonical environment offsets
+# ================================================================
+# Applied to each project's base_triplet. A project declaring any env
+# implicitly RESERVES all offsets in its reserved_offsets[] list
+# across every service in its base_triplet. Cross-project assignments
+# that collide with a reserved offset are FORBIDDEN.
+environment_offsets:
+  dev:        0
+  staging:  100
+  production: 200
+  qa:       300
 
-  - port: 8090
-    service: "API (FastAPI uvicorn)"
-    project: "agents-os"
-    protocol: "TCP"
-    scope: "localhost,lan,tailscale"
-    mode: "always-on"
-    status: "IMMUTABLE"
-    notes: "agents-os hub API — exclusive. Single-instance per host. Do NOT pick an alternate port without Team 60 registration."
+# ================================================================
+# Projects + instances
+# ================================================================
+# Each project declares:
+#   • base_triplet: service → base port (== dev on primary host)
+#   • reserved_offsets: [0, 100, ...] — which envs this project locks
+#     across its base ports. Inclusion prevents cross-project
+#     collisions even before an instance exists.
+#   • instances[]: concrete (host, env) bindings. Every active
+#     listener on every host MUST be expressible as an instance.
+projects:
 
-  - port: 8099
-    service: "Dashboard static files"
-    project: "agents-os"
-    protocol: "TCP"
-    scope: "localhost,lan,tailscale"
-    mode: "always-on"
-    notes: "Clean assignment"
+  - id: TikTrack-Phoenix_AOSProject
+    name: TikTrack Phoenix
+    ownership_team: "team_100 + team_60"
+    canonical_port_decision: >-
+      TEAM_00 DECISION 2026-04-20 (in-session): ui:8080 is the permanent canonical
+      port for TikTrack UI on waldhomeserver. This port is NOT to be retired or
+      reassigned. Staging offset → 8180, production → 8280 per environment_offsets.
+    base_triplet:
+      postgres: 5432
+      ui:       8080
+      api:      8082
+    reserved_offsets: [0, 100, 200, 300]
+    instances:
+      - env: dev
+        host: mac_local
+        postgres: 5432
+        ui:       8080
+        api:      8082
+        runtime_note: "docker-compose.yml (repo-local) + vite + uvicorn"
+        status: ACTIVE
+      - env: dev
+        host: waldhomeserver
+        postgres: 5432
+        ui:       8080
+        api:      8082
+        runtime_note: >-
+          nginx serving TikTrack UI at 8080 on waldhomeserver. TEAM_00 DECISION
+          2026-04-20 (revised in-session): keep 8080 as canonical dev port for
+          TikTrack on waldhomeserver — port is permanent, not to be retired.
+          API (8082) and Postgres (5432) not yet active on server.
+        status: ACTIVE
+      - env: staging
+        host: waldhomeserver
+        postgres: 5532
+        ui:       8180
+        api:      8182
+        runtime_note: "Systemd (api) + Docker (postgres) + nginx vhost or systemd `serve` — Team 60 decides; must match deploy-spec v1.1.0"
+        status: PLANNED
+        target_release: "v3.0.0 (phase1-final)"
+      - env: production
+        host: waldhomeserver
+        postgres: 5632
+        ui:       8280
+        api:      8282
+        runtime_note: "Reserved. Post-Team 51 staging QA gate."
+        status: RESERVED
 
-  # ============================================
-  # SmallFarmsAgents (SPOKE PROJECT)
-  # ============================================
-  - port: 5433
-    service: "PostgreSQL"
-    project: "SmallFarmsAgents"
-    protocol: "TCP"
-    scope: "localhost"
-    mode: "always-on"
-    container_name: "oma-postgres"
-    status: "ACTIVE"
-    notes: "Clean — no conflicts"
+  - id: agents-os
+    name: Agents-OS (AOS hub)
+    ownership_team: "team_100 + team_60"
+    base_triplet:
+      postgres:  5434
+      api:       8090
+      dashboard: 8099
+    reserved_offsets: [0, 100, 200]
+    instances:
+      - env: dev
+        host: mac_local
+        postgres:  5434
+        api:       8090
+        dashboard: 8099
+        runtime_note: "docker-compose for postgres; uvicorn for api; static serve for dashboard"
+        status: ACTIVE
+      - env: dev
+        host: waldhomeserver
+        postgres:  5434
+        api:       8090
+        dashboard: 8099
+        runtime_note: >-
+          Reality-diff 2026-04-20 confirmed ACTIVE (5434/8090/8099 all listening).
+          AOS-V321-WP-SERVER-GITOPS (planned start 2026-04-25) covers DB migration
+          hardening — not initial deployment, which already exists.
+        status: ACTIVE
+      - env: staging
+        host: waldhomeserver
+        postgres:  5534
+        api:       8190
+        dashboard: 8199
+        status: RESERVED
+      - env: production
+        host: waldhomeserver
+        postgres:  5634
+        api:       8290
+        dashboard: 8299
+        status: RESERVED
 
-  - port: 5001
-    service: "Admin UI (Flask)"
-    project: "SmallFarmsAgents"
-    protocol: "TCP"
-    scope: "localhost"
-    mode: "always-on"
-    status: "ACTIVE"
-    notes: "Clean — no conflicts"
+  - id: SmallFarmsAgents
+    name: SmallFarmsAgents
+    ownership_team: "team_100 + team_60"
+    base_triplet:
+      postgres: 5433
+      admin_ui: 5001
+      viewer:   8081
+    reserved_offsets: [0]
+    instances:
+      - env: dev
+        host: waldhomeserver
+        postgres: 5433
+        admin_ui: 5001
+        viewer:   8081
+        runtime_note: "oma-postgres container + Flask admin + static viewer (moved from 8080 on 2026-04-09)"
+        status: ACTIVE
+      - env: dev
+        host: mac_local
+        postgres: 5433
+        admin_ui: 5001
+        viewer:   8081
+        runtime_note: "oma-postgres container + Flask admin + static viewer running on mac_local"
+        status: ACTIVE
 
-  - port: 8081
-    service: "Static viewer"
-    project: "SmallFarmsAgents"
-    protocol: "TCP"
-    scope: "localhost"
-    mode: "always-on"
-    status: "ACTIVE"
-    notes: "Moved from 8080 (TikTrack conflict) on 2026-04-09"
+  - id: HobbitHome
+    name: HobbitHome
+    ownership_team: "team_100 + team_60"
+    base_triplet:
+      wordpress: 8083
+      mysql:     3308
+    reserved_offsets: [0]
+    instances:
+      - env: dev
+        host: waldhomeserver
+        wordpress: 8083
+        mysql:     3308
+        runtime_note: "Hebrew WordPress + MySQL 8 host port (3307 used elsewhere)"
+        status: ACTIVE
+      - env: dev
+        host: mac_local
+        wordpress: 8083
+        mysql:     3308
+        runtime_note: "HobbitHome WordPress + MySQL on Mac — local dev instance"
+        status: ACTIVE
 
-  # ============================================
-  # HobbitHome (SPOKE PROJECT)
-  # ============================================
-  - port: 8083
-    service: "WordPress (Apache)"
-    project: "HobbitHome"
-    protocol: "TCP"
-    scope: "localhost"
-    mode: "always-on"
-    container_name: "hobbithome-wp"
-    status: "ACTIVE"
-    notes: "Hebrew / uPress spoke; does not use 8080 (TikTrack immutable)"
+  - id: EyalAmit.co.il-2026
+    name: EyalAmit.co.il 2026
+    ownership_team: "team_100 + team_60"
+    base_triplet:
+      wordpress: 8088
+      redis:     6380
+    reserved_offsets: [0]
+    instances:
+      - env: dev
+        host: mac_local
+        wordpress: 8088
+        redis:     6380
+        runtime_note: >-
+          Active EyalAmit project — EyalAmit.co.il-2026/local/docker-compose.yml.
+          WordPress via WORDPRESS_PORT=8088. Internal MariaDB (no external port).
+          Supersedes eyalamit.co.il-legacy (retired 2026-04-20).
+        status: ACTIVE
 
-  - port: 3308
-    service: "MySQL 8"
-    project: "HobbitHome"
-    protocol: "TCP"
-    scope: "localhost"
-    mode: "always-on"
-    container_name: "hobbithome-db"
-    status: "ACTIVE"
-    notes: "Host port for mysql CLI / SQL import (3307 used elsewhere)"
+  - id: wordpress-dev
+    name: WordPress Dev Sandbox
+    ownership_team: "team_100 + team_60"
+    base_triplet:
+      wordpress:   8089
+      mysql:       3307
+      phpmyadmin:  8091
+      redis:       6381
+    reserved_offsets: [0]
+    instances:
+      - env: dev
+        host: mac_local
+        wordpress:  8089
+        mysql:      3307
+        phpmyadmin: 8091
+        redis:      6381
+        runtime_note: "Isolated WP dev sandbox — /Users/nimrod/Documents/wordpress-dev/docker-compose.yml"
+        status: ACTIVE
 
-  # ============================================
-  # RESERVED / DO NOT USE
-  # ============================================
-  # These ports are immutable per Multi-Project standard:
-  # - 5432 (TikTrack PostgreSQL — IMMUTABLE)
-  # - 8080 (TikTrack Frontend — IMMUTABLE)
-  # - 8082 (TikTrack API — IMMUTABLE)
-  # - 8090 (AOS API — shared engine)
-  # - 8081 (SmallFarmsAgents static — established 2026-04-09)
+  # eyalamit.co.il-legacy: RETIRED 2026-04-20. Out-of-band ports 9090/9091/4444/4445 freed.
+  # Containers stopped. Superseded by EyalAmit.co.il-2026 (wp:8088, redis:6380).
 
-# ============================================
-# VALIDATION RULES
-# ============================================
-validation_rules:
-  - rule_1: "No duplicate port assignments (enforced by validate_aos.sh Check 24)"
-  - rule_2: "All project deploy-spec.yaml ports must appear in this registry"
-  - rule_3: "Port conflicts resolved using Priority Rule (TikTrack immutable, then established projects)"
-  - rule_4: "New ports require Team 60 approval before registration"
-  - rule_5: "Project start scripts MUST pre-flight against this registry and against `lsof` before binding (see scripts/start_aos_api_local.sh as reference)"
-  - rule_6: "Ad-hoc port bumps (picking an unregistered port to dodge a conflict) are forbidden — kill the stale holder or register the new port first"
+# ================================================================
+# System ports allowlist
+# ================================================================
+# OS-level listeners that are NOT project listeners and NOT violations.
+# These exist on a host regardless of AOS activity. Check 24 reality-diff
+# must filter these out before comparing registry vs listeners.
+system_ports:
+  mac_local:
+    - port: 5000
+      reason: "macOS AirPlay Receiver (Monterey+) — system service, not project listener"
+    - port: 7000
+      reason: "macOS AirPlay — system service"
+    - port: 7001
+      reason: "macOS AirPlay (secondary) — system service"
+  waldhomeserver:
+    - port: 80
+      reason: "System nginx/reverse proxy — registered separately if used for AOS; system otherwise"
+    - port: 443
+      reason: "System nginx/reverse proxy TLS"
 
-# ============================================
-# DIAGNOSTICS (For Team 60 / Team 51 QA)
-# ============================================
+# ================================================================
+# Binding rules (v2.2.0)
+# ================================================================
+binding_rules:
+  R1: "Every long-running listener MUST be registered in projects[].instances[] BEFORE first start. (host, env, service_port) triplet all mandatory."
+  R2: "Project start/deploy scripts MUST pre-flight against the specific instances[] entry matching (host, env). Fail fast if the entry is missing or the port is already held by another process. Reference: scripts/start_aos_api_local.sh."
+  R3: "Conflicts: NEVER silently bump to an unregistered port. Either register a new offset via canon revision (joint team_60 + team_100 approval + team_00 sign-off) OR retire the stale holder per formal retirement protocol."
+  R4: "Canon edits require joint team_60 (ops) + team_100 (arch) authorship via GCR + team_00 sign-off. See ratification artifact at _COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.0.0_2026-04-20.md."
+  R5: "validate_aos.sh Check 24 v2 enforces: (a) schema shape; (b) no duplicate (host, port) across registry; (c) offset rule within each project; (d) reality-diff — SSH to each registered host, compare registry vs listeners; (e) reconciliation-deadline expiry → FAIL."
+  R6: "Every deploy-spec MUST declare env: explicitly and resolve ports by canon lookup, NOT hardcode them. See deploy-spec.yaml.template."
+  R7: "No host runs an unregistered listener beyond one validate_aos cycle. Drift triggers either immediate registration or retirement."
+  R8: "project_id (projects[].id) is the IMMUTABLE canonical identifier. Renaming a project requires a canon revision. Display names (name:) may change freely."
+  R9: "Registry scope = listeners. Outbound-only clients are NOT registered."
+  R10: "Cross-environment reservation: once a port is assigned to any service of any project in any environment, it is RESERVED globally. No other project may bind that port on any host in any environment, even if the original project has no instance there."
+
+# ================================================================
+# Validation
+# ================================================================
+validation:
+  check_24_v2:
+    scope:
+      - "structural: schema shape + required fields"
+      - "no-duplicate: unique (host, port) across projects[].instances[]"
+      - "offset-rule: ports within a project follow base_triplet + environment_offsets[env]"
+      - "reality-diff: SSH + ss -tlnp per active host; registry ↔ listener comparison"
+      - "reconciliation-deadline: TO_BE_RECONCILED entries past deadline → FAIL"
+    feature_flag:
+      name: "CHECK_24_REALITY_DIFF"
+      default_hub: "1"          # enabled on hub CI (SSH keys present)
+      default_spoke: "0"        # disabled on spoke dev machines (avoid SSH-key noise)
+      off_mode_result: "reality-diff SKIPped with WARN; structural/duplicate/offset still enforced"
+    first_cycle_grace:
+      description: "Until 2026-05-01, TO_BE_RECONCILED entries and newly-discovered drift report WARN, not FAIL. Cycle 2 onwards: hard FAIL."
+      expires: "2026-05-01"
+  reality_diff:
+    remote_command_linux: "ss -tlnp"
+    remote_command_fallback: "lsof -nP -iTCP -sTCP:LISTEN"
+    expected: "every instance.status=ACTIVE on host has a listener on its ports matching runtime_note; every listener on host has a matching instance."
+
+# ================================================================
+# Diagnostics
+# ================================================================
 diagnostics:
-  check_who_holds_port: "lsof -nP -iTCP:<port> -sTCP:LISTEN"
-  list_containers: "docker ps --format 'table {{.Names}}\\t{{.Ports}}'"
-  check_for_collisions: "docker ps -a --format '{{.Names}}' | sort"
-  systemctl_services: "systemctl list-units --type=service --state=running"
+  check_who_holds_port_local:  "lsof -nP -iTCP:<port> -sTCP:LISTEN"
+  check_who_holds_port_remote: "ssh <host> 'sudo ss -tlnp | grep -E \":<port>\\\\b\"'"
+  list_containers:             "docker ps --format 'table {{.Names}}\\t{{.Ports}}'"
+  systemctl_services:          "systemctl list-units --type=service --state=running"
+  lookup_canon:                "python3 lean-kit/modules/12-home-server-infrastructure/deployment/port_canon_lookup.py <project_id> <env> <host> <service>"
 
 ---
 metadata:
-  registry_owner: "Team 60 (AOS DevOps & Platform)"
-  governance_reference: "lean-kit/modules/standards-conventions/MULTI_PROJECT_DOCKER_WORKSTATION_v1.0.0.md"
-  last_updated: "2026-04-18"
-  update_protocol: "Team 60 approval required for any new port registration"
+  registry_owner:        "team_60 (AOS DevOps & Platform)"
+  arch_co_owner:         "team_100 (AOS HUB Chief System Architect)"
+  principal_sign_off:    "team_00 (Nimrod) — 2026-04-20"
+  governance_reference:  "lean-kit/modules/standards-conventions/MULTI_PROJECT_DOCKER_WORKSTATION_v1.0.0.md"
+  ratification_artifact: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.2.0_2026-04-20.md"
+  ratification_artifact_v210: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.1.0_2026-04-20.md"
+  ratification_artifact_v200: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.0.0_2026-04-20.md"
+  proposal_origin:       "TikTrack-Phoenix_AOSProject/_COMMUNICATION/team_100/PROPOSAL_PORT_CANON_TIERED_ENVIRONMENTS_v1.0.0.md"
+  approval_artifact:     "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.2.0_2026-04-20.md"
+  approval_artifact_v210: "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.1.0_2026-04-20.md"
+  approval_artifact_v200: "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.0.0_2026-04-20.md"
+  last_updated:          "2026-04-20"
+  update_protocol:       "Joint team_60 + team_100 authorship + team_00 sign-off required for any edit"

@@ -26,6 +26,7 @@
 - **NEVER write to `_aos/`** — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Write scope is `_COMMUNICATION/team_190/` only. Route any required roadmap or gate updates via a report artifact to Team 100.
 - **Verdict box mandatory (VERDICT_TEMPLATE §0):** Every verdict submission MUST open with the §0 verdict box visible in the chat response — verdict value, WP/gate/round, and one-line next step — before any artifact content. Required even when the full artifact is pasted inline. Non-compliance is a process violation.
 - **Verdict commit required:** After issuing any verdict (PASS / PASS_WITH_FINDINGS / FAIL / BLOCKED), commit the verdict artifact and all associated artifacts written in that run. Commit message format: `validate({WP_ID}/{GATE}): {VERDICT} — Team 190`. No verdict is considered delivered until committed.
+- **Command architecture (Iron Rule #13 / ADR041):** Every deterministic AOS slash command is a thin orchestrator (≤150 lines + YAML frontmatter) over a Python API endpoint in `core/modules/management/`. When performing constitutional review, verify: (a) command file ≤150 lines, (b) no inline business logic, (c) delegates to a named API endpoint. Info-barrier at `L-GATE_VALIDATE` is enforced at API layer via `POST /api/verdicts/validate` — team_190 must NOT read QA rationale/findings, only PASS/FAIL flag. Canon: `methodology/AOS_COMMAND_ARCHITECTURE_v1.0.0.md`. ADR: `governance/directives/ADR041_COMMAND_ARCHITECTURE_UNIFICATION_v1.0.0.md`.
 
 ## Offline DB Protocol (ADR034 R8)
 

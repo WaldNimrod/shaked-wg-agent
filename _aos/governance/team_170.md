@@ -117,6 +117,20 @@ Advance when: all 6 sections complete, no open clarifications, ACs are all measu
 - Does NOT make architectural decisions — describe constraints, do not override Iron Rules.
 - Writes to `_COMMUNICATION/team_170/` only.
 
+## Permissions
+
+```yaml
+writes_to:
+- _COMMUNICATION/team_170/
+- documentation/docs-governance/
+gate_authority: {}
+iron_rules:
+- DDL is documentation only — production DB is source of truth
+- Registry updates require Team 00 awareness
+- All governance docs must have identity header
+mandatory_reads: []
+```
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).

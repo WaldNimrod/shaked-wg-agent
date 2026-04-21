@@ -25,6 +25,7 @@
 - **Governance executor (Iron Rule #12 / ADR040):** team_100 is the SOLE EXECUTOR of `/AOS_gov-update` and `/AOS_gov-sync` (hub-only, Phase -1 authority check enforced). Every execution requires explicit Team 00 approval (Phase 0.5 gate) — either an approval artifact at `_COMMUNICATION/team_00/APPROVAL_*.md` or in-session user confirmation. team_100 MUST NOT drive-by propagate unreviewed changes. Full-scope sync uses `scripts/aos_sync_all.sh`; narrow governance-only sync uses `propagate_governance.sh`. Non-AOS teams must be routed via `GOVERNANCE_CHANGE_REQUEST`.
 - **AOS multi-domain identity:** AOS is multi-domain, multi-engine infrastructure; team_100 owns governance consistency across all spokes. When spokes drift, team_100 restores uniformity via canonical templates (`lean-kit/modules/project-governance/templates/`) and `aos_sync_all.sh`.
 - **Multi-engine governance completeness (AOS-domain — team_100 only):** Every governance update MUST propagate to ALL engine context files across ALL environments — not only `_aos/governance/` snapshots. After every `core/governance/` edit, team_100 MUST run `scripts/aos_sync_all.sh` (full-scope) to re-render `.cursorrules` (Cursor), `SYSTEM_PROMPT.template` (system-prompt engines), spoke `CLAUDE.md` (Claude Code), and spoke `_aos/lean-kit/` copies. Partial propagation is a governance failure, not a valid shortcut. The hub's own `_aos/` is a propagation target identical to every spoke — `core/` is the SOLE edit location; hub `_aos/` is a read-only snapshot.
+- **Command architecture (Iron Rule #13 / ADR041):** Every deterministic AOS slash command is a thin orchestrator (≤150 lines + YAML frontmatter) over a Python API endpoint in `core/modules/management/`. When building new commands or modifying existing ones, logic MUST live in SSoT modules (`verdict_helpers.py`, `mandates.py`, `project_create.py`, `archive.py`, `health.py`, `team_options.py`) — not inline in command files. Commands call endpoints: `POST /api/verdicts/qa`, `POST /api/mandates/generate`, `POST /api/projects/create`, etc. Enforced by `validate_aos.sh` Checks 30/31. Canon: `methodology/AOS_COMMAND_ARCHITECTURE_v1.0.0.md`.
 
 ## Offline DB Protocol (ADR034 R8)
 
@@ -82,6 +83,22 @@ An extension lacking both approvals is invalid. The implementing team is respons
 
 Applies only when working in the **TikTrack** product domain. Full rules: `_aos/lean-kit/modules/project-governance/TT_DOMAIN_RULES_CANON_v1.0.0.md` (hub: `lean-kit/modules/project-governance/TT_DOMAIN_RULES_CANON_v1.0.0.md`). Otherwise omit.
 
+
+## WP Closure Protocol (mandatory after L-GATE_VALIDATE PASS)
+
+When Team 190 issues an L-GATE_VALIDATE PASS verdict, team_100 MUST execute all three steps before a WP is considered closed. **Partial execution = WP is NOT closed.**
+
+| Step | Action | Reference |
+|------|--------|-----------|
+| **1. Archive mandate** | Immediately on PASS receipt — `/AOS_gate-mandate` Signal B.0 auto-detected → issue Team 191 archival mandate; do NOT advance to Step 2 until Team 191 confirms `ARCHIVE_MANIFEST.md` written | GATE_MANDATE_CANON v1.6.0 Signal B.0; Iron Rule #15; `lean-kit/modules/gate-workflow/POST_GATE_ARCHIVE_PROCEDURE.md` v1.1.0 |
+| **2. DB state transition** | `POST /api/work-packages/{wp_id}` with `{"lod_status": "LOD500_LOCKED", "status": "COMPLETE"}` — NEVER direct YAML edit when DB online | Iron Rule #7 / ADR034 |
+| **3. Multi-engine propagation** | If `core/governance/` was modified during the WP → `AOS_ACTOR_TEAM_ID=team_100 bash scripts/aos_sync_all.sh --all` | Multi-engine completeness rule (this contract) |
+
+**LOD500_LOCKED** is the terminal WP state. Reached only when: `_archive/{WP_ID}/ARCHIVE_MANIFEST.md` exists, DB `lod_status=LOD500_LOCKED`, `validate_aos.sh` Check 15 passes.
+
+**Step 3 exemption:** If `core/governance/` was NOT modified during the WP, Step 3 is skipped — but team_100 MUST explicitly verify before skipping.
+
+See: `governance/directives/ADR042_WP_CLOSURE_PROTOCOL_v1.0.0.md`
 
 ## Validation authority (GATE_2 fallback)
 

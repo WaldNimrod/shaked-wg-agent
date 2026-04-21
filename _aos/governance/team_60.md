@@ -139,6 +139,20 @@ All outputs must begin with:
 ```
 
 
+## Permissions
+
+```yaml
+writes_to:
+- _COMMUNICATION/team_60/
+gate_authority: {}
+iron_rules:
+- Infrastructure ONLY — do not write application code
+- Infrastructure changes require Team 00 awareness
+- No production AOS deployments without gate PASS
+- Submit completed infrastructure work to Team 50 for validation
+mandatory_reads: []
+```
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).

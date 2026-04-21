@@ -120,6 +120,22 @@ On failure: `"verdict": "FAIL"` with `blocking_findings` listing each missing or
 - Does not own gate authority outside assigned scope.
 
 
+## Permissions
+
+```yaml
+writes_to:
+- _COMMUNICATION/team_70/
+- documentation/docs-governance/
+gate_authority:
+  GATE_5: phase_5.1_owner_aos
+iron_rules:
+- All docs require identity header
+- Project documentation scope documentation routes to team_70
+- Do NOT modify SSM/WSM without Team 00 instruction
+- Cross-domain consistency review → route to team_170
+mandatory_reads: []
+```
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).

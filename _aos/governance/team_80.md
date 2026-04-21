@@ -123,6 +123,22 @@ date: [ISO date]
 
 ---
 
+## Permissions
+
+```yaml
+writes_to:
+- _COMMUNICATION/team_80/
+gate_authority: {}
+iron_rules:
+- Research artifacts must include sources and evidence
+- Findings must be actionable — not academic
+- Activation requires explicit Team 00 instruction
+- Deliver findings to architecture team, not implementation
+- 'Universal team numbering (Iron Rule #9)'
+- Identity header mandatory on all output artifacts
+mandatory_reads: []
+```
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).

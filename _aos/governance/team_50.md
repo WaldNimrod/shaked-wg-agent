@@ -126,6 +126,7 @@ When a mandate or AC requires **API**, **dashboard / browser**, **DB-backed** fl
 9. **API-only mutations (Iron Rule #7):** API-only mutations: when AOS DB is running, all structured data mutations (WP status, gate, lod_status, team engine/environment, project metadata) MUST go through the API. Direct edits to roadmap.yaml, definition.yaml, projects.yaml for structured fields are FORBIDDEN per Iron Rule #7.
 10. **Verdict box mandatory (VERDICT_TEMPLATE §0):** Every verdict submission MUST open with the §0 verdict box visible in the chat response — verdict value, WP/gate/round, and one-line next step — before any artifact content. Required even when the full artifact is pasted inline. Non-compliance is a process violation.
 11. **Verdict commit required:** After issuing any QA verdict, commit the verdict artifact and all associated artifacts written in that run. Commit message format: `qa({WP_ID}/{GATE}): {VERDICT} — Team 50`. No verdict is considered delivered until committed.
+12. **Command architecture (Iron Rule #13 / ADR041):** Every deterministic AOS slash command is a thin orchestrator (≤150 lines + YAML frontmatter) over a Python API endpoint in `core/modules/management/`. When invoking AOS commands, expect the command to delegate to API endpoints — not to embed file parsing or business logic inline. QA must verify AC compliance via `POST /api/verdicts/qa`. Enforced by `validate_aos.sh` Checks 30/31. Canon: `methodology/AOS_COMMAND_ARCHITECTURE_v1.0.0.md`.
 
 ---
 
@@ -212,6 +213,21 @@ Applies only when working in the **TikTrack** product domain. Full rules: `_aos/
 | CONDITIONAL-PASS | Majority PASS; minor open findings that do not block core functionality | Open findings listed; requestor team must resolve before final gate |
 | FAIL | One or more ACs cannot be verified or deliver wrong behavior | Blocking findings listed with evidence |
 | BLOCKED | Environment not accessible, or ACs are untestable | AC testability check failed; no test execution attempted |
+
+**When BLOCKED, these three fields are required in the verdict artifact (GCR-003):**
+
+```yaml
+blocked_reason_code: prerequisite_missing | environment_unavailable | ac_untestable | tooling_gap
+blocked_reason_detail: one sentence — what specifically is missing or broken
+blocked_unblock_owner: which team or artifact is needed to unblock
+```
+
+| Code | Meaning | Typical response |
+|------|---------|-----------------|
+| `prerequisite_missing` | Waiting on artifact from another team | Route back to artifact owner |
+| `environment_unavailable` | API/DB not reachable | Infra team or Team 00 |
+| `ac_untestable` | AC has no observable behavior or lacks expected result | Return to spec author (Team 110/170) |
+| `tooling_gap` | Harness cannot drive required interaction | Escalate for E2E coverage (Team 100) |
 
 ### Verdict artifact
 
@@ -417,6 +433,26 @@ archive_policy:
   note: "Evidence dirs MUST use _COMMUNICATION/team_50/evidence/[WP-ID]/ — archived at WP closure"
 ```
 
+## Permissions
+
+```yaml
+writes_to:
+- _COMMUNICATION/team_50/
+gate_authority:
+  L-GATE_SPEC: awareness_only
+  L-GATE_BUILD: awareness_only
+  L-GATE_VALIDATE: awareness_only
+  L-GATE_ELIGIBILITY: awareness_only
+iron_rules:
+- Team 50 = QA (Iron Rule)
+- Every QA run must be a FRESH test — never repeat prior findings without re-execution
+- 'GATE_4 QA evidence required: commands + outputs + exit codes'
+- 'All pytest runs: AOS_V3_E2E_RUN=1 AOS_V3_E2E_HEADLESS=1 — expected: 141 passed,
+  0 skipped, 0 failed'
+mandatory_reads:
+- _aos/governance/team_50.md
+```
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
@@ -429,6 +465,7 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-13 | v2.0.2 — Evidence hierarchy; automation-first Re-QA; MCP repositioned; mandatory read: methodology/TEAM_50_QA_AUTOMATION_AND_EVIDENCE_STANDARD_v1.0.0.md**
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-17 | v2.0.3 — Execution environment: Team 50 must start API/DB via repo scripts before API/browser mandates; no SKIP-for-not-started without attempt; no delegation to Team 00**
 **log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-19 | v2.0.4 — GCR-002: Mandatory coverage standard for L2 WPs with UI: full UI interaction sweep, DB round-trip verification, 5-scenario matrix (happy path mandatory; scenarios 4-5 N/A requires justification). Happy-path-only no longer constitutes a complete QA pass for UI WPs.**
+**log_entry | TEAM_50 | GOVERNANCE_FILE_UPDATED | 2026-04-20 | v2.0.5 — GCR-003: BLOCKED verdict requires blocked_reason_code (4 enum values) + blocked_reason_detail + blocked_unblock_owner fields. Disambiguates blocked signals for routing and dashboard surfacing.**
 
 ---
 

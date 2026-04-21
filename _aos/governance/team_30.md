@@ -17,6 +17,7 @@
 6. Identity header mandatory on all output artifacts
 7. NEVER write to `_aos/` — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Write scope is `_COMMUNICATION/team_30/` and application source directories only. Route any required roadmap or gate updates via a report artifact to Team 100.
 8. **API-only mutations (Iron Rule #7):** API-only mutations: when AOS DB is running, all structured data mutations (WP status, gate, lod_status, team engine/environment, project metadata) MUST go through the API. Direct edits to roadmap.yaml, definition.yaml, projects.yaml for structured fields are FORBIDDEN per Iron Rule #7.
+9. **Fixture discipline:** If this WP parses structured input (CSV, JSON, XML, etc.), commit `tests/fixtures/<source>/sample_complete.<ext>` + `sample_errors.<ext>` before L-GATE_BUILD routing. See `lean-kit/modules/project-governance/docs/FIXTURE_DISCIPLINE_STANDARD_v1.0.0.md`.
 
 ## Offline DB Protocol (ADR034 R8)
 
@@ -187,6 +188,22 @@ date: [ISO date]
 ```
 
 ---
+
+## Permissions
+
+```yaml
+writes_to:
+- _COMMUNICATION/team_30/
+- agents_os/ui/
+gate_authority: {}
+iron_rules:
+- Classic <script src> only — no ES modules (Iron Rule)
+- All AOS HTML pages must use agents-page-layout + agents-header contract
+- No inline <style> or <script> blocks in final deliverables
+- Preflight URL test mandatory before QA submission
+- Submit completed work to Team 50 for QA
+mandatory_reads: []
+```
 
 ## Governance Change Requests
 
