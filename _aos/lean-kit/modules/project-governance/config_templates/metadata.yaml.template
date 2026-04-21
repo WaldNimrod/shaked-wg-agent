@@ -1,0 +1,4 @@
+lean_kit_version: {{LEAN_KIT_VERSION}}
+lean_kit_source_date: '{{DATE}}'
+lean_kit_source_sha: '{{LEAN_KIT_SHA}}'
+profile: {{PROFILE}}

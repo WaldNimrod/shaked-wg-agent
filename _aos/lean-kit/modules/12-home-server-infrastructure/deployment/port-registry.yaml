@@ -168,8 +168,8 @@ projects:
         ui:       8180
         api:      8182
         runtime_note: "Systemd (api) + Docker (postgres) + nginx vhost or systemd `serve` — Team 60 decides; must match deploy-spec v1.1.0"
-        status: PLANNED
-        target_release: "v3.0.0 (phase1-final)"
+        status: ACTIVE
+        activated: "2026-04-21"
       - env: production
         host: waldhomeserver
         postgres: 5632
