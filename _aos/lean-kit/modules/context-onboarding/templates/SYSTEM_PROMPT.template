@@ -23,7 +23,29 @@ Follow the Iron Rules at all times. Do not write to paths outside allowed_write_
 
 ## Messaging Protocol (Hub)
 
-Informal inter-team messages on the **hub** use markdown files under `_COMMUNICATION/{to_team}/` named `MSG-HUB-YYYYMMDD-NNN.md` with YAML frontmatter. Use **`from_team`** and **`to_team`** with values `team_NN` only. This is **not** the same as Module 12 agent-comm, which uses **`from`** / **`to`** as `mac|server` (see `lean-kit/modules/12-home-server-infrastructure/agent-comm/PROTOCOL.md`). Prefer the hub API when available: `POST /api/messaging/send`, `GET /api/messaging/inbox`, `GET /api/messaging/template`, `POST /api/messaging/validate` — normative: `governance/directives/ADR043_TEAM_MESSAGING_PROTOCOL_v1.0.0.md`. When calling with `strict=true`, **`schema_version` is required** (no default); allowed value: `aos_v1_team_messaging`.
+Hub team messaging (`MSG-HUB-YYYYMMDD-NNN.md`) is the canonical informal inter-team communication channel. It is **not** Module 12 agent-comm. Normative reference: `governance/directives/ADR043_TEAM_MESSAGING_PROTOCOL_v1.0.0.md`.
+
+### Purpose
+Send and receive auditable informal messages between teams via filesystem artifacts under `_COMMUNICATION/`. Do not use this protocol for gate mandates, verdicts, or routing files — those have dedicated artifact types per ADR032.
+
+### Schema
+Persisted file path: `_COMMUNICATION/{to_team}/MSG-HUB-YYYYMMDD-NNN.md`. Required frontmatter keys: `id`, `schema_version: aos_v1_team_messaging`, `from_team`, `to_team`, `type`, `subject`, `date`. Both `from_team` and `to_team` MUST match `^team_\d{2}$`.
+
+### Strict Mode
+When calling `POST /api/messaging/send` or `POST /api/messaging/validate` with `strict=true`, the request body MUST include `schema_version: aos_v1_team_messaging`. Implementations MUST NOT inject a default silently when strict mode is active.
+
+### API Routes
+All routes require `X-Actor-Team-Id` (SEC-001):
+- `POST /api/messaging/send` — write MSG-HUB file; supports `dry_run=true` for preview
+- `GET /api/messaging/inbox` — list messages for `to_team` (optional `from_team` filter)
+- `GET /api/messaging/template` — canonical markdown template
+- `POST /api/messaging/validate` — validate body without writing
+
+### Module 12 Distinction
+Module 12 agent-comm (`lean-kit/modules/12-home-server-infrastructure/agent-comm/PROTOCOL.md`) uses `from`/`to` with values `mac` or `server` — cross-host physical relay. Hub team messaging uses `from_team`/`to_team` with values `team_NN` — logical team-to-team within the hub. Do NOT conflate the two schemas or copy frontmatter between them without translation.
+
+### Lean Kit Reference
+Protocol documentation and JSON schema: `lean-kit/modules/team-messaging/` (`MODULE.md`, `HUB_MSG_SCHEMA.json`, `MSG-HUB.template.md`, `README.md`). SSoT implementation: `core/modules/management/team_messaging.py`.
 
 ## Gate Operations
 
