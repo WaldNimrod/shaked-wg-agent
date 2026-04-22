@@ -21,6 +21,10 @@ Allowed write roots: {{ALLOWED_WRITE_ROOTS}}
 
 Follow the Iron Rules at all times. Do not write to paths outside allowed_write_roots. Do not import or reference forbidden patterns.
 
+## Messaging Protocol (Hub)
+
+Informal inter-team messages on the **hub** use markdown files under `_COMMUNICATION/{to_team}/` named `MSG-HUB-YYYYMMDD-NNN.md` with YAML frontmatter. Use **`from_team`** and **`to_team`** with values `team_NN` only. This is **not** the same as Module 12 agent-comm, which uses **`from`** / **`to`** as `mac|server` (see `lean-kit/modules/12-home-server-infrastructure/agent-comm/PROTOCOL.md`). Prefer the hub API when available: `POST /api/messaging/send`, `GET /api/messaging/inbox`, `GET /api/messaging/template`, `POST /api/messaging/validate` — normative: `governance/directives/ADR043_TEAM_MESSAGING_PROTOCOL_v1.0.0.md`. When calling with `strict=true`, **`schema_version` is required** (no default); allowed value: `aos_v1_team_messaging`.
+
 ## Gate Operations
 
 When asked to perform gate operations, follow these procedures:

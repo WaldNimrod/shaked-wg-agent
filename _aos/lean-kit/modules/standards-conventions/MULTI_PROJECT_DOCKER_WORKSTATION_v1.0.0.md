@@ -2,8 +2,8 @@
 standard: 11.2
 id: multi-project-docker
 title: Multi-Project Docker Workstation
-version: 1.2.0
-date: 2026-04-20
+version: 1.0.0
+date: 2026-04-09
 origin: SmallFarmsAgents domain (identified issue)
 canonical_owner: Team 100 (Chief System Architect)
 applies_to: Every AOS-managed project that runs Docker services locally
@@ -28,43 +28,23 @@ For conflicts between non-TikTrack projects: the established project keeps its p
 
 ## AOS Multi-Project Port Registry
 
-**This table is a human-readable summary. The authoritative SSoT is `port-registry.yaml` v2.2.0.**
-
-### Port bands
-
-| Band | Range | Purpose |
-|------|-------|---------|
-| postgres_db | 5432–5499 | Project Postgres ports (dev base; staging +100; prod +200) |
-| web_api | 8080–8499 | HTTP listeners — UI, API, dashboard, tooling |
-| mysql_host | 3307–3399 | MySQL/MariaDB Docker host-mapped ports |
-| cache_store | 6370–6499 | Redis/cache Docker host-mapped ports |
-| admin_utility | 5001–5099 | Flask admin, misc UI |
-
-**Forbidden:** 0–1023 (privileged), 3306 (MySQL default), 5000 (macOS AirPlay), 6379 (Redis default), 7000–7001 (macOS AirPlay), ephemeral ranges.
-
-### Canonical port assignments (dev base)
+All known port assignments for AOS-managed projects. This table is the single source of truth.
 
 | Project | Service | Host Port | Container Name | Notes |
 |---------|---------|-----------|----------------|-------|
-| TikTrack | PostgreSQL | **5432** | `tiktrack-phoenix-postgres-dev` | IMMUTABLE |
+| TikTrack | PostgreSQL | **5432** | `tiktrack-postgres-dev` | IMMUTABLE (primary project) |
 | TikTrack | API (FastAPI) | **8082** | — | IMMUTABLE |
 | TikTrack | Frontend (Vite) | **8080** | — | IMMUTABLE |
-| agents-os | PostgreSQL | **5434** | `aos-postgres-dev` | |
-| agents-os | API (uvicorn) | **8090** | — | |
-| agents-os | Dashboard static | **8099** | — | |
-| SmallFarmsAgents | PostgreSQL | **5433** | `oma-postgres` | waldhomeserver + mac_local |
-| SmallFarmsAgents | Admin UI (Flask) | **5001** | — | |
-| SmallFarmsAgents | Static viewer | **8081** | — | |
-| HobbitHome | WordPress (Apache) | **8083** | `hobbithome-wp` | waldhomeserver + mac_local |
-| HobbitHome | MySQL 8 | **3308** | `hobbithome-db` | |
-| EyalAmit.co.il-2026 | WordPress | **8088** | `local-wordpress-1` | mac_local only |
-| EyalAmit.co.il-2026 | Redis | **6380** | — | mac_local only |
-| wordpress-dev | WordPress | **8089** | `wordpress-dev` | mac_local sandbox |
-| wordpress-dev | MySQL | **3307** | `wordpress-mysql` | mac_local sandbox |
-| wordpress-dev | phpMyAdmin | **8091** | `wordpress-phpmyadmin` | mac_local sandbox |
-| wordpress-dev | Redis | **6381** | `wordpress-redis` | mac_local sandbox |
+| TikTrack + agents-os | AOS API (uvicorn) | **8090** | — | Shared by design — same engine |
+| agents-os | PostgreSQL | **5434** | `aos-postgres-dev` | Moved from 5432 (TikTrack conflict, 2026-04-09) |
+| agents-os | Dashboard static | **8099** | — | Clean |
+| SmallFarmsAgents | PostgreSQL | **5433** | `oma-postgres` | Clean |
+| SmallFarmsAgents | Admin UI (Flask) | **5001** | — | Clean |
+| SmallFarmsAgents | Static viewer | **8081** | — | Moved from 8080 (TikTrack conflict, 2026-04-09) |
+| HobbitHome | WordPress (Apache) | **8083** | `hobbithome-wp` | Hebrew / uPress spoke; do not use 8080 (TikTrack) |
+| HobbitHome | MySQL 8 (host bind) | **3308** | `hobbithome-db` | Host port for `mysql` CLI / SQL import (3307 used elsewhere on workstation) |
 
-**Reserved / do not use on any host or environment:** 5432 · 8080 · 8081 · 8082 · 8090 (and all environment offsets thereof).
+**Reserved / do not use:** 5432 (TikTrack PG), 8080 (TikTrack frontend), 8081 (SmallFarmsAgents static), 8082 (TikTrack API), 8090 (AOS API).
 
 ## Per-Project Requirements
 
@@ -125,65 +105,5 @@ Each project maintains its own instance of this standard, aligned with the canon
 
 ---
 
-## Appendix A — Port canon v2.2.0 (tiered environments + cross-env reservation)
-
-Port-registry canon history:
-- **v2.0.0** (2026-04-20): tiered per-host, per-environment — `hosts[]` + `projects[].instances[]`
-- **v2.1.0** (2026-04-20): SSH key, HobbitHome mac_local, system_ports allowlist, port_range_policy bands
-- **v2.2.0** (2026-04-20): R10 cross-env reservation rule, cache_store band, EyalAmit.co.il-2026, wordpress-dev, SFA mac_local; legacy retired; TikTrack postgres corrected to canon 5432
-
-### Canonical environment offsets
-
-| Environment | Offset | Example (TikTrack api=8082) |
-|---|---|---|
-| dev        | **+0**   | 8082 |
-| staging    | **+100** | 8182 |
-| production | **+200** | 8282 |
-| qa         | **+300** | 8382 |
-
-Rule: a project that registers any env implicitly **reserves all four offsets**
-across its `base_triplet`. Cross-project assignments within reserved offsets are FORBIDDEN.
-Enforced by `validate_aos.sh` Check 24 v2.
-
-### Binding rules (summary)
-
-| Rule | Statement |
-|------|-----------|
-| R1 | Every long-running listener MUST be registered before first start |
-| R2 | Start scripts MUST pre-flight against the instances[] entry; fail fast if missing or held |
-| R3 | Never silently bump to an unregistered port |
-| R4 | Canon edits require joint team_60 + team_100 + team_00 sign-off |
-| R5 | validate_aos.sh Check 24 enforces schema, duplicates, offset rule, reality-diff |
-| R6 | Every deploy-spec MUST declare `env:` explicitly and resolve ports via canon lookup |
-| R7 | No host runs an unregistered listener beyond one validate_aos cycle |
-| R8 | `project_id` is immutable; display names may change freely |
-| R9 | Registry scope = listeners only; outbound-only clients are NOT registered |
-| **R10** | **Cross-env reservation: a port assigned to any project in any environment is RESERVED globally — no other project may bind it on any host or env, even if the original project has no instance there** |
-
-### SSoT-no-grandfathering (Team 00 directive 2026-04-20)
-
-> "הקאנון חייב להיות מקור האמת וכל הסביבות מחוייבות אליו."
-
-- Every listener on every registered host MUST match a `projects[].instances[]` entry.
-- Unregistered listeners = FAIL, not "legacy carve-out".
-- Reality diff via `ss -tlnp` / `lsof` is mandatory; drift = FAIL after first-cycle grace (2026-05-01).
-- Canon edits require joint team_60 (ops) + team_100 (arch) + team_00 sign-off.
-
-### Resolution flow (all deploy scripts)
-
-1. Deploy-spec declares `project:` + `env:` + `target.host:` (MANDATORY).
-2. Deploy script calls `port_canon_lookup.py <project> <env> <host> <service>` per port.
-3. Lookup failure → deploy fails fast; register via canon revision first.
-4. Hardcoded ports in deploy-specs are a `validate_aos.sh` violation.
-
-### Hub sources
-
-- Registry: `lean-kit/modules/12-home-server-infrastructure/deployment/port-registry.yaml`
-- Helper: `lean-kit/modules/12-home-server-infrastructure/deployment/port_canon_lookup.py`
-- Template: `lean-kit/modules/12-home-server-infrastructure/deployment/deploy-spec.yaml.template`
-- Ratification: `_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.2.0_2026-04-20.md`
-
----
-
-*AOS Standard 11.2 | Multi-Project Docker Workstation | v1.2.0 | 2026-04-20*
-*v1.2.0: port table updated for v2.2.0 canon (R10, cache_store band, all registered projects).*
+*AOS Standard 11.2 | Multi-Project Docker Workstation | v1.0.0 | 2026-04-09*
+*Origin: SmallFarmsAgents domain. Canonicalized by Team 100.*

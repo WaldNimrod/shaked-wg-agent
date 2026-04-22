@@ -249,7 +249,7 @@ check_a6() {
 check_a7() {
     local symlink_dir="$HOME/.claude/commands"
     if [ ! -d "$symlink_dir" ]; then
-        log_fail "A7" "~/.claude/commands/ directory not found"
+        log_skip "A7" "~/.claude/commands/ not present — global symlink check skipped (dev machine only)"
         return
     fi
     if ! load_manifest; then
@@ -288,6 +288,17 @@ check_a8() {
         "/Users/nimrod/Documents/TikTrack-Phoenix_AOSProject"
         "/Users/nimrod/Documents/SmallFarmsAgents"
     )
+    local any_spoke=0
+    for spoke in "${spokes[@]}"; do
+        if [ -d "$spoke" ]; then
+            any_spoke=1
+            break
+        fi
+    done
+    if [ "$any_spoke" -eq 0 ]; then
+        log_skip "A8" "Principal spoke working copies not mounted — additionalDirectories check skipped"
+        return
+    fi
     local missing_spokes=0
     local hub_path="$PROJECT_ROOT"
     for spoke in "${spokes[@]}"; do

@@ -6,8 +6,8 @@
 #
 # Every file listed MUST exist at: <project-root>/.claude/commands/<file>
 # =============================================================================
-version: "1.1.0"
-last_reviewed: "2026-04-21"
+version: "1.0.0"
+last_reviewed: "2026-04-15"
 description: "Canonical list of Claude Code AOS methodology command files (AOS_*.md)"
 
 expected_command_files:
@@ -24,6 +24,5 @@ expected_command_files:
   - AOS_project-init.md
   - AOS_qa.md
   - AOS_send.md
-  - AOS_SendMail.md
   - AOS_server.md
   - AOS_validate.md

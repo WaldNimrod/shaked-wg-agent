@@ -1,9 +1,9 @@
 ---
 id: AOS_GATE_MANDATE_CANON
-version: v1.7.0
+version: v1.6.0
 status: LOCKED
 date: '2026-04-17'
-amended: '2026-04-20'
+amended: '2026-04-19'
 amendment_note: >-
   v1.0.1 — Mandatory numbered WP options; default WP row first in Table A;
   explicit default-gate line before Table B.
@@ -16,7 +16,6 @@ amendment_note: >-
   v1.4.1 — Phase 4: session-continuity override added. When the resubmission target is the same team that issued the prior rejection and that session is still active (same window, in-chat routing, no cold-start), apply [1] MINIMAL regardless of round number.
   v1.5.0 — Phase 2.5 added: L-GATE_BUILD builder assignment policy — combined vs separate mandate when assigned_builder includes both backend (team_20) and frontend (team_30). Decision based on delivery independence principle: combined when all ACs require both simultaneously; separate when QA can stage backend PASS before frontend exists.
   v1.6.0 — Phase 1: LOD400 hard gate for L-GATE_BUILD (GCR-001). Mandatory lod400_ref check before any L-GATE_BUILD mandate is issued. Absent lod400_ref = BLOCK with action: route Team 110 for LOD400 creation first.
-  v1.7.0 — GCR-004: L-GATE_*_REMEDIATION gate pattern canonicalized (named gate for architect-direct delivery under Team 00 waiver; downstream validators must treat substitutes list as satisfied). GCR-005: LOD500 living-document requirement — executor team must update LOD500 at every L-GATE_BUILD round; staleness is a FAIL finding at L-GATE_VALIDATE.
 authority: Team 00 (principal) + Team 100 (chief architect)
 scope: >-
   Binding for all AOS methodology deployments: agents-os hub, spoke projects (all domains),
@@ -167,8 +166,6 @@ Generate mandate for {NEXT_GATE}?
 2. Team 191 completed archival → `lod_status=LOD500_LOCKED` in roadmap + ARCHIVE_MANIFEST.md written
 
 Signal B.0 must run before Signal B-next. Skipping it is non-canonical and must be explicitly recorded.
-
-**LOD500 living-document requirement (GCR-005 / v1.7.0):** LOD500 is a living document — not a one-time snapshot. At every L-GATE_BUILD round completion (PASS, FAIL, or REMEDIATION), the executor team (Team 20/30 for standard rounds; Team 100 for remediation rounds) MUST update LOD500 to reflect all material changes made during that round: new files, renamed components, new test suites, schema changes, new dependencies, new env requirements. Incremental per-round updates are required. Team 190 L-GATE_VALIDATE validation MUST verify LOD500 currency against the latest code state. Staleness is a FAIL finding tagged `GOV-LOD500-N`.
 
 **Confirmation prompt:**
 ```
@@ -535,31 +532,6 @@ Wait for user input. If `[Y]` or Enter → proceed with detected values.
    Then continue to Phase 4+ and generate **RESUBMISSION** mandate + routing with §6 Resolved findings populated from this matrix.
 
 **Non-interactive:** Still perform steps 1–3 and emit the matrix; if OPEN → STOP with matrix; if all clear → proceed.
-
----
-
-## Gate pattern: L-GATE_*_REMEDIATION (GCR-004 / v1.7.0)
-
-**When used:** Team 100 (or any team under explicit Team 00 waiver) delivers fixes directly into the spoke codebase — bypassing the standard Team 20/Team 30 builder cycle — typically to break a prolonged re-round loop.
-
-**Required `gate_history` entry fields:**
-
-```yaml
-- gate: L-GATE_B_REMEDIATION        # or L-GATE_V_REMEDIATION, etc.
-  result: COMPLETE
-  date: "YYYY-MM-DD"
-  executor: team_100                  # or waivered team
-  executor_engine: claude | codex | cursor | …
-  waiver_ref: "_COMMUNICATION/team_00/APPROVAL_*.md"   # optional; path to Team 00 authorization
-  substitutes:                        # artifacts this replaces
-    - "BUILD_REPORT_R{N}_v1.0.0.md (team_20)"
-    - "BUILD_REPORT_R{N}_v1.0.0.md (team_30)"
-  notes: "File list, self-test summary, validate_aos.sh result"
-```
-
-**Downstream validator rule (Team 50, Team 190):** Treat `L-GATE_*_REMEDIATION: COMPLETE` as satisfying every artifact listed in `substitutes`. Do NOT re-raise those as missing prerequisites — their absence is expected and authorized by this pattern.
-
-**Authority constraint:** Only `team_100` or a team holding an explicit Team 00 approval artifact may author a `L-GATE_*_REMEDIATION` entry. Ad-hoc adoption of this pattern by builder teams (20, 30, 110) without authorization is a process violation.
 
 ---
 

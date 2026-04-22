@@ -1,8 +1,8 @@
 # Lean Kit Version
 
-**version:** 3.2.0
-**date:** 2026-04-20
-**status:** RELEASED — V323 Command Architecture Unification (Iron Rule #13 / ADR041): all AOS slash commands refactored to thin orchestrators over Python API endpoints; 8 SSoT modules; Checks 30/31; IDEA-039 project links dashboard
+**version:** 3.3.0
+**date:** 2026-04-21
+**status:** RELEASED — AOS-V327 Hub Team Messaging: `team_messaging.py`, `/api/messaging/*` routes, `lean-kit/modules/team-messaging/`, ADR043, SYSTEM_PROMPT Messaging Protocol; validate_aos Checks 32/33 (handoff API drift + advisory MSG naming)
 
 ## Contents status
 
@@ -32,6 +32,7 @@
 | 3.1.9 | 2026-04-17 | Post-bundle gap resolution (BUNDLE-V316-V317-V318): V318 validators wired into validate_aos.sh as checks 21-23 (advisory, module 07); validate_lod.py --min-lod flag (AC-006 resolution); DB advance prerequisite validation (_validate_advance_prerequisites); /ideas/groom API endpoint + page-ideas.js API-first; 4 surgical fixes (idea_groom.sh has_issues, archive_gate_artifacts.sh _deep cap, prompt_staleness_check.sh heredoc argv, validate_gates.py dead code comment); check_19 SKIP for hub-only DB checker on spokes; GATE_REGISTRY.md v1.2.0. Hub: 20 PASS / 3 SKIP / 0 FAIL. Both spokes: 0 FAIL. |
 | 3.1.10 | 2026-04-17 | Module 08 operational KB: `docs/WP_DB_CANONICAL_TRACK_LOD_v1.0.0.md` documents canonical `work_packages.track` / `lod_status` mapping for `POST /api/work-packages` (V320 NB hierarchy closure). MODULE.md check-suite wording clarified. Physical `_aos/lean-kit` snapshot aligned. |
 | 3.2.0 | 2026-04-20 | **Command Architecture Unification (V323 / ADR041 / Iron Rule #13):** every AOS slash command is now a thin orchestrator (≤150 lines + YAML frontmatter) over a Python API endpoint. 8 SSoT modules: `verdict_helpers.py`, `mandates.py`, `project_create.py`, `archive.py`, `health.py`, `governance_sync.py`, `team_options.py`. New endpoints: `/api/verdicts/qa`, `/api/verdicts/validate`, `/api/mandates/generate`, `/api/projects/create`, `/api/artifacts/archive`, `/api/health`, `/api/decisions`, `/api/governance/sync`. validate_aos.sh Checks 30/31 enforce the pattern. Iron Rule #13 added to all 9 team contracts. IDEA-039: per-project quick links (label+url) in portfolio dashboard with GitHub auto-chip. |
+| 3.3.0 | 2026-04-21 | **Hub Team Messaging (V327 / ADR043):** `core/modules/management/team_messaging.py` + `POST/GET /api/messaging/*` (send, inbox, template, validate); hub MSG files `MSG-HUB-YYYYMMDD-NNN.md` with `from_team`/`to_team` (distinct from Module 12 `mac|server`). `lean-kit/modules/team-messaging/` bundle; Messaging Protocol in `SYSTEM_PROMPT.template`. validate_aos.sh: Check 32 (`AOS_handoff.md` must reference `/api/prompts/generate`, Iron Rule #11); Check 33 WARN-only scan for ambiguous `MSG-*.md` names under `_COMMUNICATION/`. |
 
 ## Snapshot model
 

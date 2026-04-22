@@ -97,18 +97,6 @@ version: v1.0.0
 
 ---
 
-## If Verdict = BLOCKED (complete only when returning BLOCKED)
-
-> Remove this section if verdict is PASS / CONDITIONAL-PASS / FAIL.
-
-| Field | Value |
-|-------|-------|
-| `blocked_reason_code` | `prerequisite_missing` \| `environment_unavailable` \| `ac_untestable` \| `tooling_gap` |
-| `blocked_reason_detail` | [one sentence — what specifically is missing or broken] |
-| `blocked_unblock_owner` | [team or artifact needed to unblock] |
-
----
-
 ## Notes for Team 50
 
 [Any context Team 50 needs that is not in the spec — known issues, areas of concern, recent changes that may affect behavior, etc.]

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agents-os.local/schemas/hub_team_messaging_v1.json",
+  "title": "AOS Hub Team Message (frontmatter)",
+  "type": "object",
+  "required": ["id", "schema_version", "from_team", "to_team", "type", "subject", "date"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^MSG-HUB-\\d{8}-\\d{3}$",
+      "description": "Unique message id (per recipient inbox)"
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "aos_v1_team_messaging"
+    },
+    "from_team": {
+      "type": "string",
+      "pattern": "^team_\\d{2}$"
+    },
+    "to_team": {
+      "type": "string",
+      "pattern": "^team_\\d{2}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["informal", "task", "routing", "status", "question"]
+    },
+    "subject": { "type": "string", "minLength": 1 },
+    "date": { "type": "string", "description": "ISO-8601 UTC timestamp" },
+    "related_wp": { "type": "string" },
+    "expects_response": {
+      "type": "boolean",
+      "description": "When true, sender session awaits a RESPONSE file; status auto-sets to AWAITING_RESPONSE"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["SENT", "AWAITING_RESPONSE", "RESPONSE_RECEIVED"],
+      "description": "Delivery tracking state — managed by APScheduler msg_response_scan"
+    },
+    "responded_at": {
+      "type": "string",
+      "description": "ISO-8601 UTC timestamp set by mark_response_received()"
+    }
+  },
+  "additionalProperties": true
+}

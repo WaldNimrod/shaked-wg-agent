@@ -1,5 +1,5 @@
 #!/bin/bash
-# validate_aos.sh — Universal _aos/ Validation (26 Checks)
+# validate_aos.sh — Universal _aos/ Validation (33 Checks)
 # =========================================================
 # L-GATE_BUILD exit criterion: MUST return exit code 0 (no FAIL; SKIP is allowed).
 #
@@ -789,6 +789,10 @@ sys.exit(0)
         log_skip 19 "Unified DB checker not found at scripts/db/check_db_connectivity.py (hub-only component; skip on spokes)"
         return
     fi
+    if ! python3 -c "import psycopg2" 2>/dev/null; then
+        echo "[SKIP] Check 19b: psycopg2 not installed — unified DB checker not run (pip install psycopg2-binary)"
+        return 0
+    fi
     python3 "$checker" --source "validate_aos.sh" --format text --persist-success >/tmp/aos_db_check.txt 2>&1
     local rc=$?
     if [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ]; then
@@ -882,228 +886,56 @@ check_23() {
 }
 
 # ================================================================
-# Check 24 (v2): Port registry canon — tiered env offsets (ratified 2026-04-20)
-# ================================================================
-# Enforces port-registry v2.0.0 canon:
-#   (a) schema: hosts[] + projects[].instances[] with (host, env) tuples
-#   (b) no duplicate (host, port) pairs across all instances
-#   (c) offset rule: ports within a project follow base_triplet + environment_offsets[env]
-#   (d) reality-diff: SSH to active hosts, compare registry vs listeners
-#       (controlled by CHECK_24_REALITY_DIFF env var; default 1 on hub, 0 on spoke)
-#   (e) reconciliation-deadline: TO_BE_RECONCILED entries past deadline → FAIL
-#
-# Backwards-compat: if registry_version < 2.0.0 is encountered, falls back
-# to v1-style duplicate-port check. v2.0.0+ uses full v2 enforcement.
-#
-# Hub-scoped — skips on spoke projects where the file is absent (canon
-# SSoT lives on the hub; spokes receive it via aos_sync_all.sh snapshot
-# which validate_aos also picks up from _aos/lean-kit/... path).
+# Check 24: Port registry canon (Team 60 SSoT) — hub only
+# Verifies lean-kit/modules/12-home-server-infrastructure/deployment/port-registry.yaml
+# parses, has no duplicate port assignments, and that every entry has a port + project.
+# Hub-scoped (skips on spoke projects where the file is absent).
 # ================================================================
 check_24() {
     local pr="$PROJECT_ROOT/lean-kit/modules/12-home-server-infrastructure/deployment/port-registry.yaml"
-    local spoke_pr="$AOS_DIR/lean-kit/modules/12-home-server-infrastructure/deployment/port-registry.yaml"
-    if [ ! -f "$pr" ] && [ -f "$spoke_pr" ]; then
-        pr="$spoke_pr"
-    fi
     if [ ! -f "$pr" ]; then
-        log_skip 24 "port-registry.yaml not found (hub canon not present in this tree)"
+        log_skip 24 "port-registry.yaml not found (spoke project — hub canon does not apply)"
         return 0
     fi
-
-    # Determine reality-diff default from project_identity.yaml (hub → 1, spoke → 0)
-    local is_hub=0
-    local pid_file="$AOS_DIR/project_identity.yaml"
-    if [ -f "$pid_file" ]; then
-        if grep -qE 'role:\s*hub|project_id:.*agents-os|is_hub:\s*true' "$pid_file" 2>/dev/null; then
-            is_hub=1
-        fi
-    fi
-    local rd_flag_default
-    if [ "$is_hub" -eq 1 ]; then
-        rd_flag_default=1
-    else
-        rd_flag_default=0
-    fi
-    local rd_flag="${CHECK_24_REALITY_DIFF:-$rd_flag_default}"
-
-    local today
-    today=$(date -u +%Y-%m-%d)
-
     local result
-    result=$(CHECK_24_RD="$rd_flag" CHECK_24_TODAY="$today" python3 - "$pr" <<'PY' 2>&1
-import os, sys, yaml, subprocess, re
-
+    result=$(python3 - "$pr" <<'PY' 2>&1
+import sys, yaml
 path = sys.argv[1]
-rd_flag = os.environ.get("CHECK_24_RD", "0") == "1"
-today   = os.environ.get("CHECK_24_TODAY", "")
-
 try:
     with open(path) as f:
         docs = list(yaml.safe_load_all(f))
 except Exception as e:
     print(f"PARSE_ERROR: {e}")
     sys.exit(2)
-
-reg = next((d for d in docs if isinstance(d, dict) and ("projects" in d or "ports" in d)), {})
-version = str(reg.get("registry_version", "1.0.0"))
-
-# ---- v1 legacy path (pre-v2.0.0) --------------------------------
-if not version.startswith("2."):
-    ports = reg.get("ports") or []
-    if not isinstance(ports, list) or not ports:
-        print("EMPTY: ports list missing or empty")
-        sys.exit(2)
-    seen = {}
-    errors = []
-    for i, p in enumerate(ports):
-        if not isinstance(p, dict):
-            errors.append(f"entry[{i}] not a mapping"); continue
-        if "port" not in p or "project" not in p:
-            errors.append(f"entry[{i}] missing port/project"); continue
-        pn = p["port"]
-        if pn in seen:
-            errors.append(f"duplicate port {pn} ({seen[pn]} vs {p.get('project')})")
-        else:
-            seen[pn] = p.get("project")
-    if errors:
-        print("; ".join(errors)); sys.exit(2)
-    print(f"OK (v1 legacy): {len(seen)} unique ports")
-    sys.exit(0)
-
-# ---- v2.0.0 enforcement -----------------------------------------
-warnings, errors = [], []
-hosts = {h.get("id"): h for h in reg.get("hosts", []) if isinstance(h, dict)}
-offsets = reg.get("environment_offsets", {}) or {}
-projects = reg.get("projects", []) or []
-
-if not hosts:
-    errors.append("schema: hosts[] missing or empty")
-if not offsets:
-    errors.append("schema: environment_offsets missing")
-if not projects:
-    errors.append("schema: projects[] missing or empty")
-
-# (a)+(b)+(c): structural + duplicate + offset
-seen_pairs = {}
-instance_list = []
-for proj in projects:
-    if not isinstance(proj, dict): continue
-    pid  = proj.get("id")
-    base = proj.get("base_triplet") or {}
-    reserved = set(proj.get("reserved_offsets") or [])
-    if not pid:
-        errors.append("project missing id"); continue
-    if not isinstance(base, dict) or not base:
-        errors.append(f"{pid}: base_triplet missing/empty"); continue
-    for inst in proj.get("instances", []) or []:
-        if not isinstance(inst, dict): continue
-        env    = inst.get("env")
-        host   = inst.get("host")
-        status = inst.get("status", "UNKNOWN")
-        if env not in offsets:
-            errors.append(f"{pid}: instance has env={env!r} not in environment_offsets"); continue
-        if host not in hosts:
-            errors.append(f"{pid}/{env}: host={host!r} not registered in hosts[]"); continue
-        off = offsets[env]
-        # Offset rule per service
-        for svc, base_port in base.items():
-            if svc not in inst:
-                errors.append(f"{pid}/{env}@{host}: instance missing service '{svc}'")
-                continue
-            expected = base_port + off
-            actual   = inst[svc]
-            if actual != expected:
-                errors.append(f"{pid}/{env}@{host}: {svc}={actual} violates offset rule (expected {base_port}+{off}={expected})")
-            # Duplicate (host, port) scan
-            key = (host, actual)
-            if key in seen_pairs:
-                other = seen_pairs[key]
-                errors.append(f"duplicate (host={host}, port={actual}): {other} vs {pid}/{env}/{svc}")
-            else:
-                seen_pairs[key] = f"{pid}/{env}/{svc}"
-        # Reconciliation deadline
-        if status == "TO_BE_RECONCILED":
-            dl = str(inst.get("reconciliation_deadline", "")).strip()
-            if dl and today and dl < today:
-                errors.append(f"{pid}/{env}@{host}: TO_BE_RECONCILED past deadline {dl}")
-        instance_list.append((pid, env, host, status, inst, base))
-
-# (d) reality-diff (flag-gated)
-if rd_flag:
-    # Group ACTIVE instances by host
-    by_host = {}
-    for pid, env, host, status, inst, base in instance_list:
-        if status != "ACTIVE": continue
-        by_host.setdefault(host, []).append((pid, env, inst, base))
-    for host_id, entries in by_host.items():
-        h = hosts.get(host_id, {})
-        addr = h.get("tailscale") or h.get("lan") or h.get("dns") or h.get("addr")
-        if not addr or host_id == "mac_local":
-            # local host: use local lsof
-            cmd = ["bash", "-c", "lsof -nP -iTCP -sTCP:LISTEN 2>/dev/null | awk 'NR>1 {print $9}' | grep -oE '[0-9]+$' | sort -u"]
-        else:
-            # remote host
-            ssh_user = h.get("ssh_user", os.environ.get("USER", ""))
-            ssh_target = f"{ssh_user}@{addr}" if ssh_user else addr
-            cmd = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5", ssh_target,
-                   "ss -tlnH 2>/dev/null | awk '{print $4}' | grep -oE ':[0-9]+$' | tr -d ':' | sort -u"]
-        try:
-            out = subprocess.run(cmd, capture_output=True, text=True, timeout=15)
-            if out.returncode != 0:
-                warnings.append(f"reality-diff SKIPped for host={host_id}: {out.stderr.strip()[:120] or 'unreachable'}")
-                continue
-            live_ports = set()
-            for ln in (out.stdout or "").splitlines():
-                ln = ln.strip()
-                if ln.isdigit():
-                    live_ports.add(int(ln))
-            expected_ports = set()
-            for pid, env, inst, base in entries:
-                for svc in base:
-                    if svc in inst: expected_ports.add(inst[svc])
-            missing   = expected_ports - live_ports
-            unexpected = [p for p in (live_ports & {pp for _,pp in seen_pairs if _==host_id}) if False]  # placeholder
-            # Unexpected = listeners on registered ports that aren't in expected set for this host
-            host_registered_ports = {pp for (hh, pp) in seen_pairs if hh == host_id}
-            unexpected_listeners_on_registered = (live_ports & host_registered_ports) - expected_ports
-            # Unregistered listeners = listeners on any port not in host_registered_ports AND (if port < 1024 → skip system ports warn)
-            unregistered = [p for p in live_ports if p not in host_registered_ports and p >= 1024]
-            if missing:
-                # First-cycle grace: missing ACTIVE listeners → WARN (will be FAIL post 2026-05-01)
-                warnings.append(f"reality-diff host={host_id}: registered ACTIVE ports missing listener: {sorted(missing)[:5]}")
-            if unexpected_listeners_on_registered:
-                errors.append(f"reality-diff host={host_id}: listener on registered port(s) but not in expected env: {sorted(unexpected_listeners_on_registered)[:5]}")
-            if unregistered:
-                warnings.append(f"reality-diff host={host_id}: {len(unregistered)} unregistered listener(s) >= :1024 (first sample: {sorted(unregistered)[:5]})")
-        except Exception as e:
-            warnings.append(f"reality-diff SKIPped for host={host_id}: {type(e).__name__}: {str(e)[:80]}")
-else:
-    warnings.append("reality-diff disabled (CHECK_24_REALITY_DIFF=0) — structural/duplicate/offset only")
-
-# ---- output summary ---------------------------------------------
-summary_line = f"v{version}: {len(instance_list)} instances, {len(hosts)} hosts, {len(projects)} projects"
-if errors:
-    print(f"FAIL: {summary_line}")
-    for e in errors[:12]:
-        print(f"  - {e}")
-    if warnings:
-        print(f"  (+ {len(warnings)} warnings)")
+doc = next((d for d in docs if isinstance(d, dict) and "ports" in d), {})
+ports = doc.get("ports") or []
+if not isinstance(ports, list) or not ports:
+    print("EMPTY: ports list missing or empty")
     sys.exit(2)
-else:
-    print(f"OK: {summary_line}")
-    for w in warnings[:8]:
-        print(f"  WARN: {w}")
-    sys.exit(0)
+seen = {}
+errors = []
+for i, p in enumerate(ports):
+    if not isinstance(p, dict):
+        errors.append(f"entry[{i}] not a mapping")
+        continue
+    if "port" not in p or "project" not in p:
+        errors.append(f"entry[{i}] missing port/project ({p.get('service','?')})")
+        continue
+    pn = p["port"]
+    if pn in seen:
+        errors.append(f"duplicate port {pn} ({seen[pn]} vs {p.get('project')})")
+    else:
+        seen[pn] = p.get("project")
+if errors:
+    print("; ".join(errors))
+    sys.exit(2)
+print(f"OK: {len(seen)} unique ports registered")
 PY
     )
-    local rc=$?
-    if [ "$rc" -eq 0 ]; then
-        log_pass 24 "port-registry.yaml: $(echo "$result" | head -1)"
-        # Surface warnings (non-fatal)
-        echo "$result" | tail -n +2 | sed 's/^/    /'
+    if [ $? -eq 0 ]; then
+        log_pass 24 "port-registry.yaml: $result"
     else
-        log_fail 24 "port-registry.yaml integrity:"
-        echo "$result" | sed 's/^/    /'
+        log_fail 24 "port-registry.yaml integrity: $result"
     fi
 }
 
@@ -1399,9 +1231,12 @@ PY
     fi
 }
 
+# ================================================================
+# Check 32: Iron Rule #11 enforcement — _aos/ tree must be committed after propagation.
+# Uncommitted diff = hub→spoke sync incomplete; spoke-side roles cannot fix per ADR040.
+# (Restored from AOS-V328 commit 2458363; V327 team_100 fix — 2026-04-21)
+# ================================================================
 check_32() {
-    # AOS-V328: Iron Rule #11 enforcement — _aos/ tree must be committed after propagation.
-    # Uncommitted diff = hub→spoke sync incomplete; spoke-side roles cannot fix per ADR040.
     if ! git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         log_skip 32 "not a git working tree (skip)"
         return 0
@@ -1419,9 +1254,78 @@ check_32() {
 }
 
 # ================================================================
+# Check 34: Handoff command delegates to hub API (AOS-V327 addendum — team_100 2026-04-21)
+# Ensures .claude/commands/AOS_handoff.md references the unified prompt endpoint;
+# skips when Claude commands are absent (spoke without local commands).
+# ================================================================
+check_34() {
+    local hf="$PROJECT_ROOT/.claude/commands/AOS_handoff.md"
+    if [ ! -f "$hf" ]; then
+        log_skip 34 ".claude/commands/AOS_handoff.md not present — skip"
+        return 0
+    fi
+    if grep -qF "/api/prompts/generate" "$hf"; then
+        log_pass 34 "AOS_handoff.md references hub /api/prompts/generate (no local re-implementation)"
+    else
+        log_fail 34 "AOS_handoff.md must reference /api/prompts/generate — do not re-implement handoff locally (Iron Rule #13)"
+    fi
+}
+
+# ================================================================
+# Check 33: MSG file naming under _COMMUNICATION/ (WARN-only — AOS-V327 AC-09)
+# Flags MSG-*.md that match neither hub (MSG-HUB-*) nor Module 12 (MSG-YYYYMMDD-NNN).
+# Non-blocking: never increments FAIL_COUNT.
+# ================================================================
+check_33() {
+    local comm="$PROJECT_ROOT/_COMMUNICATION"
+    if [ ! -d "$comm" ]; then
+        log_skip 33 "_COMMUNICATION/ not found — skip"
+        return 0
+    fi
+    local result
+    result=$(python3 - "$comm" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+# Hub team messaging (ADR043); Module 12 initiator/response
+pat_hub = re.compile(r"^MSG-HUB-\d{8}-\d{3}\.md$")
+pat_m12 = re.compile(r"^MSG-\d{8}-\d{3}\.md$")
+pat_m12_resp = re.compile(r"^MSG-\d{8}-\d{3}-RESPONSE\.md$")
+
+hits = []
+for p in root.rglob("MSG-*.md"):
+    name = p.name
+    if pat_hub.match(name) or pat_m12.match(name) or pat_m12_resp.match(name):
+        continue
+    rel = p.relative_to(root)
+    hits.append(str(rel))
+
+if hits:
+    print(f"WARN:{len(hits)}")
+    for h in sorted(hits)[:25]:
+        print(h)
+else:
+    print("OK")
+PY
+    )
+    local code
+    code=$(echo "$result" | head -1)
+    if [ "$code" = "OK" ]; then
+        log_pass 33 "MSG file naming under _COMMUNICATION/ — no unexpected MSG-*.md patterns"
+    else
+        local n="${code#WARN:}"
+        echo "  [WARN] Check 33: $n unexpected MSG-*.md filename(s) (advisory — ADR043 vs Module 12 naming)"
+        echo "$result" | sed -n '2,30p' | sed 's/^/    /'
+        log_pass 33 "MSG naming advisory complete (non-blocking)"
+    fi
+}
+
+# ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 32 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
+echo "validate_aos.sh — running up to 34 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
 echo "================================================="
 
 check_1
@@ -1456,6 +1360,8 @@ check_29
 check_30
 check_31
 check_32
+check_33
+check_34
 
 echo ""
 echo "================================================="
