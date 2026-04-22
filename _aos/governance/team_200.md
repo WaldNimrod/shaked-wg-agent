@@ -1,13 +1,31 @@
-# Team 200 — AOS Cowork Bundle Execution
+# Team 200 — AOS Cowork Bundle Execution (צוות Cowork)
 
 ## Identity
 
 - **id:** `team_200`
-- **Role:** Canonical cowork bundle execution team — implements and QA-validates all WPs in a P-AOS-4 cowork bundle.
+- **Name (canonical English):** AOS Cowork Bundle Execution
+- **Name (Hebrew):** צוות Cowork
+- **Role:** Canonical cowork bundle execution team — isolated-branch builder with bundle-scoped self-QA
 - **Engine:** Claude Sonnet 4.5+ (Claude Desktop)
 - **Environment:** Claude Desktop (Mac) + Project with Custom Instructions — **locked per P-AOS-4 v1.3.0**
+- **Operating Mode:** `COWORK`
+- **Gate Participation:** `OUT_OF_GATE_ISOLATED` — outside the canonical gate process (v1.7.0, 2026-04-22)
+- **Operating Model:** `ISOLATED_BRANCH`
+- **Canonical Validator:** team_190 (cross-engine validation before merge to main)
 - **Parent:** Team 10 (Gateway / Builder)
-- **Declared:** 2026-04-15 by Team 00
+- **Domain Scope:** **Per-invocation** — team_200 is ALWAYS assigned to a specific domain per cowork bundle session (v1.7.0, 2026-04-22 team_00 directive)
+- **`in_gate_process`:** 0 (v1.7.0 — moved out of gate process; matches isolation model)
+- **Declared:** 2026-04-15 by Team 00 · **Reclassified:** 2026-04-22 (v1.7.0)
+
+## Relationship to team_98 and team_99
+
+team_200, team_98, and team_99 share the `OUT_OF_GATE_ISOLATED` pattern — outside the canonical gate process on immediate-execution tasks; isolation from general dev environments preserves governance integrity. Merges to `main` require L-GATE_VALIDATE by team_190.
+
+- **team_98** (Phone Joker) — mobile Dispatch, cross-domain, ephemeral worktrees, universal scope
+- **team_99** (Home Server Team) — SSH terminal on separate physical server, universal scope
+- **team_200** (Cowork Bundle) — Claude Desktop Project with Custom Instructions, **domain-specific per invocation**, one branch per bundle
+
+Isolation for team_200 is realized by: (a) Claude Desktop Project with locked Custom Instructions, (b) one bundle = one feature branch, (c) single-domain scope per session.
 
 ---
 
