@@ -1,0 +1,80 @@
+---
+# ================================================================
+# AOS deploy-spec.yaml — canonical template (v1.1.0)
+# Per port-registry canon v2.0.0 (2026-04-20)
+# ================================================================
+# Lives at: <project-root>/_aos/deploy-spec.yaml
+# Owner: Team 60 (spoke); ratified by Team 100 (spoke or hub).
+#
+# A deploy-spec describes ONE environment on ONE host for ONE project.
+# If your project deploys to multiple (host, env) pairs, author one
+# deploy-spec per pair (e.g. deploy-spec.dev.mac.yaml + deploy-spec.staging.server.yaml)
+# OR a single file with `envs:` map (see §Multi-env pattern below).
+#
+# KEY RULE: ports are NEVER hardcoded. They are resolved from the
+# port-registry canon at deploy time via port_canon_lookup.py:
+#
+#   port_canon_lookup.py <project_id> <env> <host_id> <service_name>
+#
+# Deploy scripts MUST call the helper (Python import OR bash+yq) and
+# fail fast if the (project, env, host, service) tuple is not
+# registered in canon.
+# ================================================================
+
+deploy_spec_version: "1.1.0"
+
+# --- Project + environment identity (MANDATORY) -----------------
+project: "<project-id>"              # MUST match projects[].id in port-registry
+env:     "<dev|staging|production|qa>"  # MUST be a key in environment_offsets
+target:
+  host: "<host-id>"                  # MUST match hosts[].id (e.g. mac_local, waldhomeserver)
+
+# --- Services ---------------------------------------------------
+# Ports are resolved at deploy time; these lookup tokens are
+# placeholders that deploy scripts MUST replace via canon lookup.
+#
+# Either use the explicit helper call (shell/CI):
+#   PORT=$(python3 port_canon_lookup.py "<project>" "<env>" "<host>" "<service>")
+# OR the !lookup tag pattern consumed by the deploy pipeline:
+services:
+  postgres:
+    image: "postgres:16"
+    port:  "!lookup postgres"         # resolved at deploy time; canon is SSoT
+    volumes:
+      - "./data/postgres:/var/lib/postgresql/data"
+  api:
+    runtime: "systemd"                 # or docker / bare uvicorn
+    port:    "!lookup api"
+    healthcheck: "/api/health"
+  ui:
+    runtime: "nginx-vhost"             # or vite / static-serve
+    port:    "!lookup ui"
+
+# --- Environment file -------------------------------------------
+# Secrets NEVER in deploy-spec. Reference .env only.
+env_file: ".env.<env>"                 # e.g. .env.staging
+
+# --- Optional: multi-env single-file pattern --------------------
+# If you prefer a single file declaring several (host, env) pairs,
+# use `envs:` map. Only ONE pair is deployed per invocation via
+# `--env` flag. Canon lookup still applies.
+# envs:
+#   dev-mac:
+#     env: dev
+#     target: { host: mac_local }
+#   staging:
+#     env: staging
+#     target: { host: waldhomeserver }
+
+# --- Pre-flight contract (enforced by deploy script) ------------
+preflight:
+  - "canon_lookup_all_services"       # every service.port must resolve from canon
+  - "port_free_on_host"                # ss/lsof on target host confirms no holder
+  - "port_registry_version >= 2.0.0"  # canon version gate
+
+# --- Metadata ---------------------------------------------------
+metadata:
+  authored_by: "team_60 (<spoke-or-hub>)"
+  canon_reference: "lean-kit/modules/12-home-server-infrastructure/deployment/port-registry.yaml"
+  canon_version_required: "2.0.0"
+  ratification: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.0.0_2026-04-20.md"

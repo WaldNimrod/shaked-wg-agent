@@ -907,29 +907,62 @@ try:
 except Exception as e:
     print(f"PARSE_ERROR: {e}")
     sys.exit(2)
-doc = next((d for d in docs if isinstance(d, dict) and "ports" in d), {})
-ports = doc.get("ports") or []
-if not isinstance(ports, list) or not ports:
+# Support both v1.x flat `ports:` list and v2.0+ `projects:` structure
+doc = next((d for d in docs if isinstance(d, dict)), {})
+if "ports" in doc:
+    # v1.x format: flat list under ports:
+    ports_flat = doc.get("ports") or []
+    if not isinstance(ports_flat, list) or not ports_flat:
+        print("EMPTY: ports list missing or empty")
+        sys.exit(2)
+    seen = {}
+    errors = []
+    for i, p in enumerate(ports_flat):
+        if not isinstance(p, dict):
+            errors.append(f"entry[{i}] not a mapping")
+            continue
+        if "port" not in p or "project" not in p:
+            errors.append(f"entry[{i}] missing port/project ({p.get('service','?')})")
+            continue
+        pn = p["port"]
+        if pn in seen:
+            errors.append(f"duplicate port {pn} ({seen[pn]} vs {p.get('project')})")
+        else:
+            seen[pn] = p.get("project")
+    if errors:
+        print("; ".join(errors))
+        sys.exit(2)
+    print(f"OK: {len(seen)} unique ports registered (v1 format)")
+elif "projects" in doc:
+    # v2.0+ format: projects list with instances
+    projects = doc.get("projects") or []
+    if not isinstance(projects, list) or not projects:
+        print("EMPTY: projects list missing or empty")
+        sys.exit(2)
+    seen = {}
+    errors = []
+    for proj in projects:
+        if not isinstance(proj, dict):
+            continue
+        for inst in (proj.get("instances") or []):
+            for port_entry in (inst.get("ports") or []):
+                if not isinstance(port_entry, dict):
+                    continue
+                pn = port_entry.get("port")
+                if pn is None:
+                    continue
+                proj_id = proj.get("project_id", proj.get("id", "?"))
+                if pn in seen:
+                    errors.append(f"duplicate port {pn} ({seen[pn]} vs {proj_id})")
+                else:
+                    seen[pn] = proj_id
+    if errors:
+        print("; ".join(errors))
+        sys.exit(2)
+    print(f"OK: {len(seen)} unique ports registered (v2 format)")
+else:
     print("EMPTY: ports list missing or empty")
     sys.exit(2)
-seen = {}
-errors = []
-for i, p in enumerate(ports):
-    if not isinstance(p, dict):
-        errors.append(f"entry[{i}] not a mapping")
-        continue
-    if "port" not in p or "project" not in p:
-        errors.append(f"entry[{i}] missing port/project ({p.get('service','?')})")
-        continue
-    pn = p["port"]
-    if pn in seen:
-        errors.append(f"duplicate port {pn} ({seen[pn]} vs {p.get('project')})")
-    else:
-        seen[pn] = p.get("project")
-if errors:
-    print("; ".join(errors))
-    sys.exit(2)
-print(f"OK: {len(seen)} unique ports registered")
 PY
     )
     if [ $? -eq 0 ]; then

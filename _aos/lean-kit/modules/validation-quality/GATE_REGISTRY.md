@@ -135,7 +135,7 @@ Maps each Tier 1 gate operation command to its equivalent in each engine environ
 
 **Machine-readable inventory (SSoT):** `lean-kit/modules/validation-quality/schemas/aos_commands_manifest.yaml` — enforced by `validate_aos_commands.sh`.
 
-**Complete AOS command name index (Tier 1 + Tier 2, ADR031):** `/AOS_archive`, `/AOS_decide`, `/AOS_domain-health`, `/AOS_gate-mandate`, `/AOS_gate-status`, `/AOS_gov-sync`, `/AOS_gov-update`, `/AOS_handoff`, `/AOS_help`, `/AOS_mail`, `/AOS_project-init`, `/AOS_qa`, `/AOS_send`, `/AOS_server`, `/AOS_validate`.
+**Complete AOS command name index (Tier 1 + Tier 2, ADR031):** `/AOS_archive`, `/AOS_decide`, `/AOS_domain-health`, `/AOS_gate-mandate`, `/AOS_gate-status`, `/AOS_gov-sync`, `/AOS_gov-update`, `/AOS_handoff`, `/AOS_help`, `/AOS_mail`, `/AOS_project-init`, `/AOS_qa`, `/AOS_send` *(deprecated → `/AOS_SendMail`)*, `/AOS_SendMail`, `/AOS_server`, `/AOS_validate`.
 
 **Engine resolution:** All commands resolve team-engine mapping dynamically from `core/definition.yaml` (hub) or `_aos/team_assignments.yaml` (spoke). Never hardcoded.
 

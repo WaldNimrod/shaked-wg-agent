@@ -202,3 +202,23 @@ stage_mapping: "LOD100–LOD400"    # full funnel in one WP (small/clear sources
 - PLA_CONTENT_SUBSTRATE.md (`methodology/lifecycle-archetypes/`) — gate mapping, AC-CS-01..06
 - nimrod-book `core/15_LIFECYCLE_WP.md` — first domain implementation
 - nimrod-book `CLAUDE.md` — session startup integration
+
+## Terminology Gloss — CONTENT_SUBSTRATE (temporary, per AOS-V329 scope)
+
+Generic AOS lean-kit vocabulary originally designed for SOFTWARE projects.
+For CONTENT_SUBSTRATE domains, read these aliases:
+
+| Generic term | Read as | Meaning |
+|--------------|---------|---------|
+| implementation | **corpus file update** | Writing / updating markdown + JSON per LOD400 spec |
+| build | **corpus assembly** | Assembling verified corpus from approved LOD400 units |
+| integration | **cross-source merge** | Merging content across GPT / Claude / critic engine outputs |
+| CI / automated tests | **corpus QA** | AC-CS-01..06 validation by a different engine than the builder |
+| deploy | **publish snapshot** | Versioned Markdown + JSON + Context Pack bundle |
+| bug fix | **corpus correction** | Fixing factual / consistency defects in approved corpus |
+
+**Status:** Temporary short-term fix. AOS-V329-WP-CONTENT-ARCHETYPE-POLISH
+scope includes producing a full lexicon and **removing this gloss** as a prelude.
+
+**Rule:** When a lean-kit template or artifact uses the generic term, agents in
+CONTENT_SUBSTRATE domains substitute the CONTENT_SUBSTRATE meaning.
