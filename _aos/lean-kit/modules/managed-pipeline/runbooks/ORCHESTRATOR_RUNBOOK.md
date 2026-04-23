@@ -763,6 +763,9 @@ Save to: _COMMUNICATION/team_90/CLOSURE_VALIDATION_{WP-ID}.md
 1. Update roadmap.yaml: `status: COMPLETE`, `current_lean_gate: COMPLETE`, `lod_status: LOD500`
 2. Archive all _COMMUNICATION artifacts: move to `_COMMUNICATION/99-ARCHIVE/{WP-ID}/`
 3. Log final gate_history entry: `{gate: L25-PH6, result: AS_MADE_LOCK, date: today}`
+4. **If WP shipped new/modified `.claude/commands/AOS_*.md`:** run command shipping checklist (mandatory):
+   `lean-kit/modules/project-governance/docs/WP_COMMAND_SHIPPING_CHECKLIST_v1.0.0.md`
+   Key steps: git push → propagate_governance → MSG to team_99 with `git pull /data/projects/agents-os`
 
 ```
 Notify Nimrod:

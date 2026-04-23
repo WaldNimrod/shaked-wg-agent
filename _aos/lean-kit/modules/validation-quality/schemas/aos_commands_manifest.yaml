@@ -7,12 +7,13 @@
 # Every file listed MUST exist at: <project-root>/.claude/commands/<file>
 # =============================================================================
 version: "1.1.0"
-last_reviewed: "2026-04-21"
+last_reviewed: "2026-04-23"
 description: "Canonical list of Claude Code AOS methodology command files (AOS_*.md)"
 
 expected_command_files:
   - AOS_archive.md
   - AOS_decide.md
+  - AOS_dispatch.md
   - AOS_domain-health.md
   - AOS_gate-mandate.md
   - AOS_gate-status.md

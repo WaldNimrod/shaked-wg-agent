@@ -150,8 +150,10 @@ Applies only when working in the **TikTrack** product domain. Full rules: `_aos/
 - `/server --backup` — backup status
 - `/server --cc` — open Claude Code in continue mode on server
 - `/server --ssh` — interactive SSH session
-- `/mail` — check incoming messages from server
-- `/send` — send message to server agent
+- `/AOS_mail` — check incoming messages (canonical; replaces retired `/mail`)
+- `/AOS_mail --watch MSG-ID` — watch for response to a specific message (SSE + poll fallback)
+- `/AOS_SendMail` — send message to a team (canonical; replaces retired `/send`)
+- `/AOS_dispatch team_XX "task"` — send task MSG + show activation prompt + watch command
 
 **Managed services:**
 - aos-api — AOS dashboard and pipeline API
@@ -172,7 +174,7 @@ Applies only when working in the **TikTrack** product domain. Full rules: `_aos/
 - Mac outbox → server inbox: `~/Documents/_agent_comm/outbox/` → `~/agent_comm/inbox/`
 - Server outbox → Mac inbox: `~/agent_comm/outbox/` → `~/Documents/_agent_comm/inbox/`
 - Message format: `MSG-YYYYMMDD-NNN.md` with YAML frontmatter (id, from, to, date, type, priority)
-- Use `/mail` to pull, `/send` to push
+- Use `/AOS_mail` to check inbox, `/AOS_SendMail` to send
 
 ## Trigger Protocol
 Submit completion via canonical artifact in `_COMMUNICATION/team_99/`.

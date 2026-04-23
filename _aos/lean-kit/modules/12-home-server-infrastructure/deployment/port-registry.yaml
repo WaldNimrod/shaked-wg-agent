@@ -35,9 +35,9 @@
 #     qa slots are RESERVED via fixed offsets.
 # ================================================================
 
-registry_version: "2.2.0"
-previous_version: "2.1.0"
-last_updated: "2026-04-20"
+registry_version: "2.3.0"
+previous_version: "2.2.0"
+last_updated: "2026-04-23"
 owner: "team_60 (ops) + team_100 (arch) — joint authorship; team_00 sign-off for each revision"
 
 ssot_principle: >-
@@ -299,6 +299,33 @@ projects:
         runtime_note: "Isolated WP dev sandbox — /Users/nimrod/Documents/wordpress-dev/docker-compose.yml"
         status: ACTIVE
 
+  - id: agros-insite
+    name: "Agros Insite"
+    ownership_team: "team_110 + team_100"
+    base_triplet:
+      api:      8084
+      postgres: 5436        # Phase B only; Phase A = no DB listener
+    reserved_offsets: [0, 100, 200]
+    instances:
+      - env: staging
+        host: waldhomeserver
+        api:      8184
+        postgres: 5536
+        runtime_note: >-
+          FastAPI/uvicorn under systemd (agros-insite-api.service).
+          Docker postgres:16-alpine (Phase B only — no DB listener in Phase A).
+          Cloudflare Tunnel → 127.0.0.1:8184.
+          Deploy per agros-insite/_COMMUNICATION/team_110/DEPLOY-S001-P001-WP001/DEPLOY_SPEC_AGROS_v1.0.0.md.
+        status: RESERVED    # → ACTIVE after first successful staging deploy
+      - env: production
+        host: waldhomeserver
+        api:      8284
+        postgres: 5636
+        runtime_note: >-
+          Production. Cloudflare Tunnel (Agros.nimrod.bio) → 127.0.0.1:8284.
+          Team 200 QA PASS required before activation.
+        status: RESERVED    # → ACTIVE after Team 200 QA PASS + team_00 go/no-go
+
   # eyalamit.co.il-legacy: RETIRED 2026-04-20. Out-of-band ports 9090/9091/4444/4445 freed.
   # Containers stopped. Superseded by EyalAmit.co.il-2026 (wp:8088, redis:6380).
 
@@ -377,12 +404,13 @@ metadata:
   arch_co_owner:         "team_100 (AOS HUB Chief System Architect)"
   principal_sign_off:    "team_00 (Nimrod) — 2026-04-20"
   governance_reference:  "lean-kit/modules/standards-conventions/MULTI_PROJECT_DOCKER_WORKSTATION_v1.0.0.md"
-  ratification_artifact: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.2.0_2026-04-20.md"
+  ratification_artifact: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.3.0_2026-04-23.md"
+  ratification_artifact_v220: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.2.0_2026-04-20.md"
   ratification_artifact_v210: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.1.0_2026-04-20.md"
   ratification_artifact_v200: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.0.0_2026-04-20.md"
   proposal_origin:       "TikTrack-Phoenix_AOSProject/_COMMUNICATION/team_100/PROPOSAL_PORT_CANON_TIERED_ENVIRONMENTS_v1.0.0.md"
   approval_artifact:     "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.2.0_2026-04-20.md"
   approval_artifact_v210: "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.1.0_2026-04-20.md"
   approval_artifact_v200: "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.0.0_2026-04-20.md"
-  last_updated:          "2026-04-20"
+  last_updated:          "2026-04-23"
   update_protocol:       "Joint team_60 + team_100 authorship + team_00 sign-off required for any edit"

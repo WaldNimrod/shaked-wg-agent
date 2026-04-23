@@ -17,6 +17,8 @@
 #   2 = conflicts detected (in --dry-run mode)
 #
 # See: methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md
+# If a WP shipped new/modified .claude/commands/AOS_*.md: also run
+#   lean-kit/modules/project-governance/docs/WP_COMMAND_SHIPPING_CHECKLIST_v1.0.0.md
 
 set -uo pipefail
 
