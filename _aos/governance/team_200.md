@@ -48,6 +48,9 @@ Team 200 is a **specialization** of Team 10 (Gateway / Builder Mode B) — it in
 Team 200 executes one bundle per session:
 
 1. **Read startup files** (session startup sequence from bundle doc §8)
+
+   > **Mandatory context file (step 0):** Before executing any bundle task, read `_COMMUNICATION/team_200/AOS_COWORK_CONTEXT_v1.0.0.md` — full project map, write permissions, active WPs, engine map, and Iron Rules for every Cowork session. This file lives in `agents-os/_COMMUNICATION/team_200/` (hub) and is propagated to spoke `_COMMUNICATION/team_200/` via `aos_sync_all.sh`.
+
 2. **Per WP in bundle order:**
    - **Phase 3 — Build:** Implement all LOD400 deliverables
    - **Gate:** Run gate shell block — must exit 0
@@ -189,6 +192,8 @@ iron_rules:
 mandatory_reads:
 - core/definition.yaml
 - _aos/governance/team_200.md
+- methodology/AOS_CONCEPT_AND_PRINCIPLES.md
+- _COMMUNICATION/team_200/AOS_COWORK_CONTEXT_v1.0.0.md
 ```
 
 ## Canonical Output Header
