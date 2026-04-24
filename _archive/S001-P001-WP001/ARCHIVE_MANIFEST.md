@@ -1,3 +1,10 @@
+---
+closure_type: STANDARD
+work_package_id: S001-P001-WP001
+archived_at: 2026-04-24
+archived_by: team_191 (Git, Archive & File Governance)
+mandate: MANDATE_SWG_CLOSURE_BACKFILL_v1.0.md
+---
 # ARCHIVE_MANIFEST — S001-P001-WP001
 
 - **Archived:** 2026-04-15

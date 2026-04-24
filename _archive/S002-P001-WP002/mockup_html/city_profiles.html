@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stadtdefinitionen — City Definitions Mockup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">WP002 — City Definitions</a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link active" href="city_profiles.html">Stadtdefinitionen</a></li>
+                <li class="nav-item"><a class="nav-link" href="source_mapping.html">Quellenregistrierung</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <h1 class="mb-3">Stadtdefinitionen <span class="badge bg-secondary fs-6 align-middle">CityDefinition</span></h1>
+        <p class="text-muted mb-4">Globale geographische Definitionen. Enthalten keine Benutzereinstellungen (Budget, Di&auml;t, Tram) &mdash; diese sind im Suchprofil.</p>
+
+        <div class="card">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Stadt</th>
+                            <th>city_id</th>
+                            <th>Bounding Box</th>
+                            <th>PLZ-Anzahl</th>
+                            <th>Verf&uuml;gbare Quellen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Basel</strong></td>
+                            <td><code>basel</code></td>
+                            <td>7.51&ndash;7.66 / 47.52&ndash;47.60</td>
+                            <td>27</td>
+                            <td>wgzimmer, flatfox, tutti</td>
+                        </tr>
+                        <tr>
+                            <td><a href="zurich_profile.html" class="text-decoration-none fw-bold">Z&uuml;rich</a></td>
+                            <td><code>zurich</code></td>
+                            <td>8.47&ndash;8.62 / 47.34&ndash;47.42</td>
+                            <td>25</td>
+                            <td>wgzimmer, flatfox, wg-gesucht</td>
+                        </tr>
+                        <tr>
+                            <td><a href="bern_profile.html" class="text-decoration-none fw-bold">Bern</a></td>
+                            <td><code>bern</code></td>
+                            <td>7.39&ndash;7.49 / 46.92&ndash;46.97</td>
+                            <td>18</td>
+                            <td>wgzimmer, flatfox</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <strong>Hinweis:</strong> Budget, Di&auml;t, Tram-Linien und weitere Suchkriterien werden im
+            <a href="../../S002-P001-WP001/mockup_html/profile_detail.html">Suchprofil (SearchProfile)</a> definiert, nicht in der Stadtdefinition.
+        </div>
+
+        <a href="index.html" class="btn btn-outline-secondary mt-3">&larr; Zur&uuml;ck zur Sitemap</a>
+    </div>
+</body>
+</html>
