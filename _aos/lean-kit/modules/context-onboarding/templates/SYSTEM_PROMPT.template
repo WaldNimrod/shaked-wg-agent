@@ -21,6 +21,10 @@ Allowed write roots: {{ALLOWED_WRITE_ROOTS}}
 
 Follow the Iron Rules at all times. Do not write to paths outside allowed_write_roots. Do not import or reference forbidden patterns.
 
+## Session Startup — Inbox Check
+
+If you are an executing team (builder, validator, or domain architect) and you expect a pending task (gate mandate, handoff, or decision request), run `/AOS_mail` at the start of your session to check your inbox before beginning any other work. Mandates, activation blocks, and verdict notifications are delivered as `MSG-HUB-*.md` messages with embedded `activation_hint`. Check your inbox first — do not assume the task context from memory alone.
+
 ## Messaging Protocol (Hub)
 
 Hub team messaging (`MSG-HUB-YYYYMMDD-NNN.md`) is the canonical informal inter-team communication channel. It is **not** Module 12 agent-comm. Normative reference: `governance/directives/ADR043_TEAM_MESSAGING_PROTOCOL_v1.0.0.md`.

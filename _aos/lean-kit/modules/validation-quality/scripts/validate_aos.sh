@@ -1356,9 +1356,195 @@ PY
 }
 
 # ================================================================
+# Check 35: QA_REQUEST enum lint (advisory — AOS-V324-WP-QA-ENUM-LINT)
+# Validates verdict/confidence/blocked_reason_code in QA_REQUEST.md
+# artifacts. Non-blocking: never increments FAIL_COUNT.
+# ================================================================
+check_35() {
+    local script="$SCRIPT_DIR/validate_qa_request_enums.py"
+    if [ ! -f "$script" ]; then
+        log_skip 35 "validate_qa_request_enums.py not found — skip"
+        return 0
+    fi
+    local result
+    result=$(python3 "$script" "$PROJECT_ROOT" 2>&1)
+    local warns
+    warns=$(echo "$result" | grep -c "^WARN:" || true)
+    if [ "$warns" -gt 0 ]; then
+        echo "  [WARN] Check 35: $warns QA_REQUEST enum violation(s) (advisory — non-blocking)"
+        echo "$result" | grep "^WARN:" | head -25 | sed 's/^/    /'
+        log_pass 35 "QA enum lint advisory complete ($warns violation(s) — non-blocking)"
+    else
+        log_pass 35 "QA_REQUEST enum lint — all values valid (or no QA_REQUEST files found)"
+    fi
+}
+
+# Check 36: MSG branch independence — ADR043 v1.1.0 §4 + §5
+# Verify that every command that sends/reads MSGs references msg_preflight.sh
+# (API-first pre-flight) and, for sending commands, msg_deliver_file (branch-safe
+# push to origin/main in the fallback path).
+check_36() {
+    local helper_src="lean-kit/modules/team-messaging/scripts/msg_preflight.sh"
+    local helper_snapshot="_aos/lean-kit/modules/team-messaging/scripts/msg_preflight.sh"
+    local missing=0
+    local details=""
+
+    # Helper script must exist at both SSoT and snapshot paths
+    # (PROJECT_ROOT, not AOS_DIR — helper lives at <root>/lean-kit/... and <root>/_aos/lean-kit/...)
+    if [ ! -f "$PROJECT_ROOT/$helper_src" ]; then
+        missing=$((missing+1))
+        details="${details}\n    [MISSING] $helper_src"
+    fi
+    if [ ! -f "$PROJECT_ROOT/$helper_snapshot" ]; then
+        missing=$((missing+1))
+        details="${details}\n    [MISSING] $helper_snapshot"
+    fi
+
+    # Sending commands must reference msg_preflight.sh AND msg_deliver_file
+    local send_cmds="AOS_SendMail AOS_gate-mandate AOS_qa AOS_validate AOS_handoff"
+    for cmd in $send_cmds; do
+        local f="$PROJECT_ROOT/.claude/commands/${cmd}.md"
+        if [ ! -f "$f" ]; then continue; fi
+        if ! grep -q "msg_preflight.sh" "$f"; then
+            missing=$((missing+1))
+            details="${details}\n    [MISSING preflight ref] .claude/commands/${cmd}.md"
+        fi
+        if ! grep -q "msg_deliver_file\|branch-safe" "$f"; then
+            missing=$((missing+1))
+            details="${details}\n    [MISSING branch-safe ref] .claude/commands/${cmd}.md"
+        fi
+    done
+
+    # Reading commands must reference msg_preflight.sh (read side)
+    for cmd in AOS_mail; do
+        local f="$PROJECT_ROOT/.claude/commands/${cmd}.md"
+        if [ ! -f "$f" ]; then continue; fi
+        if ! grep -q "msg_preflight.sh" "$f"; then
+            missing=$((missing+1))
+            details="${details}\n    [MISSING preflight ref] .claude/commands/${cmd}.md"
+        fi
+    done
+
+    if [ "$missing" -gt 0 ]; then
+        log_fail 36 "MSG branch independence — $missing gap(s) in preflight/branch-safe wiring (ADR043 v1.1.0 §4/§5):$details"
+    else
+        log_pass 36 "MSG branch independence — all send/read commands wired to msg_preflight.sh + msg_deliver_file (ADR043 v1.1.0 §4/§5)"
+    fi
+}
+
+# Check 37: Multi-domain routing wired — ADR043 v1.1.0 §6 / MSG-DOMAIN-ROUTING-FIX
+# Verify the messaging API + helper script honor project_id (header / body / param)
+# so spoke sessions land MSGs in the spoke's _COMMUNICATION/, not the hub's.
+check_37() {
+    local missing=0
+    local details=""
+
+    local server_module="$PROJECT_ROOT/core/modules/management/team_messaging.py"
+    if [ -f "$server_module" ]; then
+        if ! grep -q "_root_for_project\|project_id" "$server_module"; then
+            missing=$((missing+1))
+            details="${details}\n    [server] team_messaging.py missing project_id threading"
+        fi
+    fi
+
+    local routes_file="$PROJECT_ROOT/core/modules/management/dashboard_routes.py"
+    if [ -f "$routes_file" ]; then
+        if ! grep -q "X-Project-Id" "$routes_file"; then
+            missing=$((missing+1))
+            details="${details}\n    [routes] dashboard_routes.py missing X-Project-Id header dep"
+        fi
+    fi
+
+    for helper in \
+        "lean-kit/modules/team-messaging/scripts/msg_preflight.sh" \
+        "_aos/lean-kit/modules/team-messaging/scripts/msg_preflight.sh" ; do
+        local f="$PROJECT_ROOT/$helper"
+        if [ -f "$f" ]; then
+            if ! grep -q "msg_detect_project_id" "$f"; then
+                missing=$((missing+1))
+                details="${details}\n    [client] $helper missing msg_detect_project_id"
+            fi
+            if ! grep -q "msg_curl" "$f"; then
+                missing=$((missing+1))
+                details="${details}\n    [client] $helper missing msg_curl wrapper"
+            fi
+        fi
+    done
+
+    if [ "$missing" -gt 0 ]; then
+        log_fail 37 "Multi-domain routing wiring incomplete — $missing gap(s) (ADR043 v1.1.0 §6):$details"
+    else
+        log_pass 37 "Multi-domain routing wired — server threads project_id, routes accept X-Project-Id, helper auto-detects spoke (ADR043 v1.1.0 §6)"
+    fi
+}
+
+# Check 38: ADR043 v1.2.0 §6 + §7 + archive endpoint wired (AOS-MSG-FOLLOWUPS-WP001)
+# Verify: (a) ADR043 v1.2.0 active with §6/§7 formal text; (b) archive_message
+# service function exists; (c) POST /messaging/archive route exists; (d) /AOS_mail
+# Phase 4 references the new endpoint (not the old 404-returning path).
+check_38() {
+    local missing=0
+    local details=""
+
+    # (a) ADR043 v1.2.0 active + formal §6 / §7 text
+    local adr_active="$PROJECT_ROOT/governance/directives/ADR043_TEAM_MESSAGING_PROTOCOL_v1.2.0.md"
+    local adr_v110="$PROJECT_ROOT/governance/directives/ADR043_TEAM_MESSAGING_PROTOCOL_v1.1.0.md"
+    if [ ! -f "$adr_active" ]; then
+        missing=$((missing+1))
+        details="${details}\n    [ADR043] v1.2.0 not present at governance/directives/"
+    else
+        if ! grep -q '^## 6. Multi-Domain Routing' "$adr_active"; then
+            missing=$((missing+1))
+            details="${details}\n    [ADR043] §6 Multi-Domain Routing not found in v1.2.0"
+        fi
+        if ! grep -q '^## 7. Single-MSG Archive Endpoint' "$adr_active"; then
+            missing=$((missing+1))
+            details="${details}\n    [ADR043] §7 Single-MSG Archive Endpoint not found in v1.2.0"
+        fi
+    fi
+    if [ -f "$adr_v110" ]; then
+        missing=$((missing+1))
+        details="${details}\n    [ADR043] v1.1.0 still active at governance/directives/ (should be archived)"
+    fi
+
+    # (b) Service: archive_message function
+    local server="$PROJECT_ROOT/core/modules/management/team_messaging.py"
+    if [ -f "$server" ] && ! grep -q 'def archive_message' "$server"; then
+        missing=$((missing+1))
+        details="${details}\n    [server] team_messaging.py missing archive_message()"
+    fi
+
+    # (c) Route: POST /messaging/archive
+    local routes="$PROJECT_ROOT/core/modules/management/dashboard_routes.py"
+    if [ -f "$routes" ] && ! grep -q '/messaging/archive' "$routes"; then
+        missing=$((missing+1))
+        details="${details}\n    [routes] dashboard_routes.py missing POST /messaging/archive"
+    fi
+
+    # (d) AOS_mail Phase 4 references the new endpoint
+    local aos_mail="$PROJECT_ROOT/.claude/commands/AOS_mail.md"
+    if [ -f "$aos_mail" ]; then
+        if ! grep -q '/api/messaging/archive' "$aos_mail"; then
+            missing=$((missing+1))
+            details="${details}\n    [client] AOS_mail.md Phase 4 not wired to /api/messaging/archive"
+        fi
+        if grep -q '/api/messaging/{team_id}/archive' "$aos_mail"; then
+            missing=$((missing+1))
+            details="${details}\n    [client] AOS_mail.md Phase 4 still references the old 404 path"
+        fi
+    fi
+
+    if [ "$missing" -gt 0 ]; then
+        log_fail 38 "ADR043 v1.2.0 / archive endpoint wiring incomplete — $missing gap(s) (AOS-MSG-FOLLOWUPS-WP001):$details"
+    else
+        log_pass 38 "ADR043 v1.2.0 §6+§7 published, archive endpoint wired end-to-end (AOS-MSG-FOLLOWUPS-WP001)"
+    fi
+}
+
+# ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 34 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
+echo "validate_aos.sh — running up to 38 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
 echo "================================================="
 
 check_1
@@ -1395,6 +1581,10 @@ check_31
 check_32
 check_33
 check_34
+check_35
+check_36
+check_37
+check_38
 
 echo ""
 echo "================================================="

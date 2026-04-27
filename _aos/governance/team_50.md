@@ -249,6 +249,8 @@ Required sections in the report:
 
 **Canonical methodology:** `methodology/TEAM_50_QA_AUTOMATION_AND_EVIDENCE_STANDARD_v1.0.0.md` (AOS Hub).
 
+**E2E evidence standard:** `lean-kit/modules/testing-e2e/docs/TEAM_50_E2E_STANDARD_v1.0.0.md` — defines when E2E evidence is required (file upload, complex interaction, MCP-untestable flows) vs. when screenshot + snapshot suffices, and how E2E reports attach to QA_REQUEST. See AOS-V324-WP-E2E-SCAFFOLD.
+
 **Order of proof:** (1) **Automated** checks — API + headless browser (`curl`, Selenium/Playwright, **exit code 0**) → (2) **registered** npm/pytest scripts → (3) **MCP browser** for exploratory checks → (4) **screenshots** only when explicitly required.
 
 **Re-QA / regression:** Do **not** use MCP screenshot loops as the **only** proof for the same deterministic AC on every run. Add or run a **focused automated script** and attach logs to the verdict.

@@ -15,7 +15,8 @@
 - **Parent:** Team 10 (Gateway / Builder)
 - **Domain Scope:** **Per-invocation** — team_200 is ALWAYS assigned to a specific domain per cowork bundle session (v1.7.0, 2026-04-22 team_00 directive)
 - **`in_gate_process`:** 0 (v1.7.0 — moved out of gate process; matches isolation model)
-- **Declared:** 2026-04-15 by Team 00 · **Reclassified:** 2026-04-22 (v1.7.0)
+- **Version:** v2.0.0 (2026-04-27 — IR-11..14 added per ADR046/ADR047 promotion bundle; M-3 Cowork canonical merge)
+- **Declared:** 2026-04-15 by Team 00 · **Reclassified:** 2026-04-22 (v1.7.0) · **Amended:** 2026-04-27 (v2.0.0)
 
 ## Relationship to team_98 and team_99
 
@@ -89,6 +90,10 @@ The environment is **non-negotiable** — P-AOS-4 v1.3.0 explicitly prohibits ot
 8. **Bundle scope is absolute** — implement ONLY the WPs listed in the bundle document. Do NOT initiate new features, new WPs, or architectural work outside the bundle, even if the idea seems useful or related.
 9. **NEVER write to `_aos/`** — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Write scope is `_COMMUNICATION/team_200/` and `_COMMUNICATION/team_50/` (QA verdicts within bundle scope) only. Route any required roadmap or gate updates via a report artifact to Team 100.
 10. **API-only mutations** — when the AOS DB is running, ALL mutations to structured data (WP status, gate, lod_status, team engine/environment, project metadata) MUST go through the API. Direct file edits to `roadmap.yaml`, `definition.yaml`, or `projects.yaml` for structured fields are FORBIDDEN per Iron Rule #7.
+11. **Memory OFF for canonical bundles (IR-11)** — Claude Memory MUST be disabled at project creation for any Cowork bundle that produces canonical AOS artifacts (governance, ADRs, WPs, validators, gate verdicts). Memory is GA + opt-OUT + project+global scoped; silent context accumulation hazards SSoT integrity. Non-canonical exploratory bundles MAY enable Memory but MUST mark it explicitly in `PROJECT_INSTRUCTIONS.md`. Reference: `_aos/config/cowork_session_parameters.yaml` `memory_policy`.
+12. **No canonical state in Memory or Project knowledge (IR-12)** — Canonical state lives only in `_COMMUNICATION/team_200/` artifacts (filesystem). Memory and Project knowledge are derived/working surfaces only — never authoritative for governance, gate, or WP state. Any need to "remember" a canonical fact across sessions MUST go through the filesystem SSoT, not the chat-side memory.
+13. **90-min wall-clock cap is depletion-aligned (IR-13)** — The 90-minute Cowork session cap is calibrated to the Max-20x empirical burn curve (COW-6.3); it is NOT an arbitrary policy. Heavy work that exceeds 90 min MUST split into a follow-up bundle OR route to terminal-managed (TC-12.4 → claude-code) per ADR047. Reference: `_aos/config/cowork_session_parameters.yaml` `wall_clock`.
+14. **Off-peak preference for heavy bundles (IR-14)** — Heavy / context-large Cowork bundles SHOULD be scheduled OUTSIDE the 08:00–14:00 ET weekday peak window per Anthropic capacity guidance (COW-6.8). Peak-window execution remains permitted but is advisory-flagged; bundles that exceed 60 min in-peak SHOULD be deferred or split. Reference: `_aos/config/cowork_session_parameters.yaml` `budget_signals.peak_window_et`.
 
 ---
 
@@ -189,6 +194,10 @@ iron_rules:
 - No spoke repos — do NOT touch TikTrack, AOS-Sandbox-*, SmallFarmsAgents
 - 'Recovery when blocked: WIP commit + BLOCKER_LOG.md, no improvised fixes'
 - WP_STATUS.md MANDATORY after each QA commit — machine-readable checkpoint artifact
+- 'IR-11: Memory OFF for canonical bundles (project-creation enforcement)'
+- 'IR-12: No canonical state in Memory or Project knowledge — filesystem SSoT only'
+- 'IR-13: 90-min wall-clock cap is depletion-aligned (Max-20x burn curve), not arbitrary'
+- 'IR-14: Off-peak preference for heavy bundles — avoid 08:00-14:00 ET weekday peak window'
 mandatory_reads:
 - core/definition.yaml
 - _aos/governance/team_200.md
@@ -218,4 +227,13 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 - To request changes: create `GOVERNANCE_CHANGE_REQUEST` in `_COMMUNICATION/team_200/`
 - See: `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 
+## Changelog
+
+| Version | Date | Change |
+|---|---|---|
+| v1.0.0 | 2026-04-16 | Governance file created; AOS Cowork Bundle Execution; V320-WP6 immediate fix |
+| v1.7.0 | 2026-04-22 | Reclassified to OUT_OF_GATE_ISOLATED; per-invocation domain scope; in_gate_process=0 |
+| **v2.0.0** | **2026-04-27** | **IR-11..14 added per ADR046/ADR047 promotion bundle (M-3 Cowork canonical merge): Memory OFF default, filesystem SSoT, depletion-aligned 90-min cap, off-peak preference. Companion config: `_aos/config/cowork_session_parameters.yaml`.** |
+
 **log_entry | TEAM_200 | GOVERNANCE_FILE_CREATED | 2026-04-16 | v1.0.0 — AOS Cowork Bundle Execution; V320-WP6 immediate fix**
+**log_entry | TEAM_200 | GOVERNANCE_FILE_AMENDED | 2026-04-27 | v2.0.0 — IR-11..14 (Memory/SSoT/cap/peak); ADR046+ADR047 companion**

@@ -24,7 +24,18 @@
     },
     "type": {
       "type": "string",
-      "enum": ["informal", "task", "routing", "status", "question"]
+      "enum": [
+        "informal",
+        "task",
+        "task_response",
+        "routing",
+        "status",
+        "question",
+        "session_activation",
+        "gate_response",
+        "notification"
+      ],
+      "description": "task=mandate/work-order; task_response=verdict/completion; session_activation=handoff activation block; gate_response=gate PASS/FAIL result; notification=informational no-response"
     },
     "subject": { "type": "string", "minLength": 1 },
     "date": { "type": "string", "description": "ISO-8601 UTC timestamp" },
@@ -41,6 +52,19 @@
     "responded_at": {
       "type": "string",
       "description": "ISO-8601 UTC timestamp set by mark_response_received()"
+    },
+    "in_response_to": {
+      "type": "string",
+      "pattern": "^MSG-HUB-\\d{8}-\\d{3}$",
+      "description": "ID of the message this is responding to — used by task_response types for thread linking"
+    },
+    "activation_hint": {
+      "type": "string",
+      "description": "Full activation block (copy-paste ready) for the recipient to start their work session. Used by /AOS_mail to display to the receiving team. ADR032 §3.5."
+    },
+    "mandate_ref": {
+      "type": "string",
+      "description": "Path to the formal mandate artifact this MSG delivers or references. Pattern: _COMMUNICATION/team_{ID}/MANDATE_*.md. Enables machine-readable MSG↔MANDATE linkage (G-6)."
     }
   },
   "additionalProperties": true
