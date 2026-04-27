@@ -98,7 +98,27 @@ print(' '.join(out))
     read -r -a ACTIVE_MODULES_LIST <<< "$(echo "$py_out" | tail -1)"
 }
 
+# --- Hub vs spoke context (Checks 36, 38) --------------------------------------
+# Hub (e.g. agents-os): top-level lean-kit/ and governance/directives/ hold
+# canonical SSoT; _aos/lean-kit/ (and after propagation) _aos/governance/directives/
+# are read-only snapshots for validation parity.
+# Spoke projects: no top-level lean-kit/; validation uses _aos/lean-kit/ and
+# _aos/governance/directives/ only. Requiring both hub-style and snapshot paths
+# in spokes caused false FAILs.
+detect_context() {
+    if [ -d "$PROJECT_ROOT/core" ] && [ -d "$PROJECT_ROOT/lean-kit" ] && [ -f "$PROJECT_ROOT/scripts/aos_sync_all.sh" ]; then
+        CONTEXT=hub
+    elif [ -d "$PROJECT_ROOT/_aos" ]; then
+        CONTEXT=spoke
+    else
+        CONTEXT=unknown
+        echo "  [WARN] detect_context: could not classify project root — using spoke path rules" >&2
+    fi
+    export CONTEXT
+}
+
 load_active_modules
+detect_context
 
 # Return 0 if this check should run; 1 if skipped (already logged).
 _require_active_modules() {
@@ -1389,15 +1409,17 @@ check_36() {
     local missing=0
     local details=""
 
-    # Helper script must exist at both SSoT and snapshot paths
-    # (PROJECT_ROOT, not AOS_DIR — helper lives at <root>/lean-kit/... and <root>/_aos/lean-kit/...)
-    if [ ! -f "$PROJECT_ROOT/$helper_src" ]; then
-        missing=$((missing+1))
-        details="${details}\n    [MISSING] $helper_src"
-    fi
+    # Snapshot path is required in hub and spoke (PROJECT_ROOT, not AOS_DIR)
     if [ ! -f "$PROJECT_ROOT/$helper_snapshot" ]; then
         missing=$((missing+1))
         details="${details}\n    [MISSING] $helper_snapshot"
+    fi
+    # Hub: also require top-level SSoT path (spokes have no lean-kit/ at project root)
+    if [ "$CONTEXT" = "hub" ]; then
+        if [ ! -f "$PROJECT_ROOT/$helper_src" ]; then
+            missing=$((missing+1))
+            details="${details}\n    [MISSING] $helper_src"
+        fi
     fi
 
     # Sending commands must reference msg_preflight.sh AND msg_deliver_file
@@ -1487,11 +1509,18 @@ check_38() {
     local details=""
 
     # (a) ADR043 v1.2.0 active + formal §6 / §7 text
-    local adr_active="$PROJECT_ROOT/governance/directives/ADR043_TEAM_MESSAGING_PROTOCOL_v1.2.0.md"
-    local adr_v110="$PROJECT_ROOT/governance/directives/ADR043_TEAM_MESSAGING_PROTOCOL_v1.1.0.md"
+    # Hub: governance/directives/; spoke: _aos/governance/directives/ (after propagation)
+    local adr_dir
+    if [ "$CONTEXT" = "hub" ]; then
+        adr_dir="$PROJECT_ROOT/governance/directives"
+    else
+        adr_dir="$PROJECT_ROOT/_aos/governance/directives"
+    fi
+    local adr_active="$adr_dir/ADR043_TEAM_MESSAGING_PROTOCOL_v1.2.0.md"
+    local adr_v110="$adr_dir/ADR043_TEAM_MESSAGING_PROTOCOL_v1.1.0.md"
     if [ ! -f "$adr_active" ]; then
         missing=$((missing+1))
-        details="${details}\n    [ADR043] v1.2.0 not present at governance/directives/"
+        details="${details}\n    [ADR043] v1.2.0 not present under ${adr_dir#$PROJECT_ROOT/}/"
     else
         if ! grep -q '^## 6. Multi-Domain Routing' "$adr_active"; then
             missing=$((missing+1))
@@ -1504,7 +1533,7 @@ check_38() {
     fi
     if [ -f "$adr_v110" ]; then
         missing=$((missing+1))
-        details="${details}\n    [ADR043] v1.1.0 still active at governance/directives/ (should be archived)"
+        details="${details}\n    [ADR043] v1.1.0 still active under ${adr_dir#$PROJECT_ROOT/}/ (should be archived)"
     fi
 
     # (b) Service: archive_message function
@@ -1544,7 +1573,7 @@ check_38() {
 # ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 38 checks on $AOS_DIR (active_modules mode: $ACTIVE_MODULES_MODE)"
+echo "validate_aos.sh — running up to 38 checks on $AOS_DIR (active_modules: $ACTIVE_MODULES_MODE, context: ${CONTEXT:-?})"
 echo "================================================="
 
 check_1

@@ -2,7 +2,10 @@
 # propagate_governance.sh — Governance propagation with conflict detection & verification
 # =======================================================================================
 # Iron Rule #11: Governance flows source → snapshot.
-# Source: AOS Project core/governance/ → all spoke _aos/governance/ targets.
+# Source: AOS Project core/governance/ (team_*.md) and governance/directives/ (ADR*.md)
+#         → all spoke _aos/governance/ and _aos/governance/directives/ targets.
+# Team 60: joint operations / infrastructure authorship for ADR→spoke snapshot path
+#         (parallels port-registry and validate_aos spoke parity).
 #
 # Usage:
 #   propagate_governance.sh --all                     # propagate to all registered targets
@@ -152,6 +155,13 @@ if [ "$MODE" = "legacy" ]; then
   TARGETS=("$LEGACY_SPOKE/_aos/governance")
 fi
 
+# ADR directive snapshot source (hub: governance/directives/ADR*.md)
+if [ "$MODE" = "legacy" ]; then
+  DIRECTIVE_SOURCE="${LEGACY_AOS}/governance/directives"
+else
+  DIRECTIVE_SOURCE="${AOS_ROOT}/governance/directives"
+fi
+
 # ─── Helpers ─────────────────────────────────────────────────────────────────────
 
 log() { echo "$@"; }
@@ -203,6 +213,33 @@ detect_conflicts() {
     fi
   done
 
+  if [ -d "$DIRECTIVE_SOURCE" ]; then
+    for src_file in "$DIRECTIVE_SOURCE"/ADR*.md; do
+      [ -f "$src_file" ] || continue
+      local adr_base tgt_d
+      adr_base=$(basename "$src_file")
+      tgt_d="$target/directives/$adr_base"
+      if [ ! -f "$tgt_d" ]; then
+        continue
+      fi
+      local src_hash_d tgt_hash_d
+      src_hash_d=$(md5_hash "$src_file")
+      tgt_hash_d=$(md5_hash "$tgt_d")
+      if [ "$src_hash_d" != "$tgt_hash_d" ]; then
+        CONFLICTS_FOUND=$((CONFLICTS_FOUND + 1))
+        conflicts=$((conflicts + 1))
+        log "  CONFLICT: directives/$adr_base in $name (source=$src_hash_d target=$tgt_hash_d)"
+        report "| $name | directives/$adr_base | $src_hash_d | $tgt_hash_d | CONFLICT |"
+        if [ "$SHOW_DIFF" = true ]; then
+          echo "--- diff: $name/directives/$adr_base ---"
+          diff -u "$tgt_d" "$src_file" || true
+          echo "--- end diff ---"
+          echo ""
+        fi
+      fi
+    done
+  fi
+
   return $conflicts
 }
 
@@ -223,9 +260,23 @@ propagate_target() {
     count=$((count + 1))
   done
 
+  local adr_copied=0
+  if [ -d "$DIRECTIVE_SOURCE" ]; then
+    mkdir -p "$target/directives"
+    for src_file in "$DIRECTIVE_SOURCE"/ADR*.md; do
+      [ -f "$src_file" ] || continue
+      cp "$src_file" "$target/directives/"
+      adr_copied=$((adr_copied + 1))
+    done
+  fi
+  if [ "$adr_copied" -gt 0 ]; then
+    count=$((count + adr_copied))
+  fi
+
   FILES_PROPAGATED=$((FILES_PROPAGATED + count))
-  log "  Copied $count files → $name"
-  report "| $name | $count files | OK |"
+  local team_n=$((count - adr_copied))
+  log "  Copied → $name: $team_n team_*.md + $adr_copied ADR (total $count)"
+  report "| $name | $count files (team + directives) | OK |"
 }
 
 # ─── Phase 4: Verification ──────────────────────────────────────────────────────
@@ -259,10 +310,42 @@ verify_target() {
     fi
   done
 
+  if [ -d "$DIRECTIVE_SOURCE" ]; then
+    for src_file in "$DIRECTIVE_SOURCE"/ADR*.md; do
+      [ -f "$src_file" ] || continue
+      local adr_base
+      adr_base=$(basename "$src_file")
+      local tgt_adr="$target/directives/$adr_base"
+      if [ ! -f "$tgt_adr" ]; then
+        fail "  MISSING: $name/directives/$adr_base"
+        errors=$((errors + 1))
+        report "| $name | directives/$adr_base | MISSING |"
+        continue
+      fi
+      local s_ha t_ha
+      s_ha=$(md5_hash "$src_file")
+      t_ha=$(md5_hash "$tgt_adr")
+      if [ "$s_ha" != "$t_ha" ]; then
+        fail "  MISMATCH: $name/directives/$adr_base"
+        errors=$((errors + 1))
+        report "| $name | directives/$adr_base | MISMATCH |"
+      fi
+    done
+  fi
+
   VERIFICATION_ERRORS=$((VERIFICATION_ERRORS + errors))
   if [ $errors -eq 0 ]; then
-    log "  Verified: $name — all files MATCH"
-    report "| $name | ALL MATCH | $(ls "$SOURCE"/team_*.md | wc -l | tr -d ' ') files |"
+    local tc ac f
+    tc=$(ls "$SOURCE"/team_*.md 2>/dev/null | wc -l | tr -d ' ')
+    ac=0
+    if [ -d "$DIRECTIVE_SOURCE" ]; then
+      for f in "$DIRECTIVE_SOURCE"/ADR*.md; do
+        [ -f "$f" ] || continue
+        ac=$((ac + 1))
+      done
+    fi
+    log "  Verified: $name — all files MATCH (team: $tc, ADR: $ac)"
+    report "| $name | ALL MATCH | team $tc + ADR $ac |"
   fi
 
   return $errors
@@ -320,13 +403,24 @@ if [ ! -d "$SOURCE" ]; then
 fi
 
 SRC_COUNT=$(ls "$SOURCE"/team_*.md 2>/dev/null | wc -l | tr -d ' ')
-log "Source files: $SRC_COUNT"
+ADR_SRC_COUNT=0
+if [ -d "$DIRECTIVE_SOURCE" ]; then
+  for f in "$DIRECTIVE_SOURCE"/ADR*.md; do
+    [ -f "$f" ] || continue
+    ADR_SRC_COUNT=$((ADR_SRC_COUNT + 1))
+  done
+else
+  warn "ADR directive source not found: $DIRECTIVE_SOURCE — ADR propagation will be skipped"
+fi
+log "Source: $SRC_COUNT team_*.md from $SOURCE"
+log "ADR directives: $ADR_SRC_COUNT file(s) from $DIRECTIVE_SOURCE"
 log ""
 
 report "# Governance Propagation Report"
 report ""
 report "**Date:** $(timestamp)"
-report "**Source:** \`$SOURCE\` ($SRC_COUNT files)"
+report "**Team contracts:** \`$SOURCE\` ($SRC_COUNT files)"
+report "**ADR directives:** \`$DIRECTIVE_SOURCE\` ($ADR_SRC_COUNT files)"
 report "**Mode:** $MODE | Dry-run: $DRY_RUN"
 report ""
 
