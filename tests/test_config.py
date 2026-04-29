@@ -163,6 +163,78 @@ def test_load_city_regex(cfg_root: Path) -> None:
         _load_city("INVALID")
 
 
+def test_load_profile_report_title_he(cfg_root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(config_module, "DATA_DIR", cfg_root)
+    (cfg_root / "profiles").mkdir(parents=True, exist_ok=True)
+    (cfg_root / "profiles" / "t-report-he.json").write_text(
+        json.dumps(
+            {
+                "profile_id": "t-report-he",
+                "profile_name": "Internal",
+                "report_title_he": "כותרת עברית",
+                "city_id": "basel",
+                "move_in_from": "2026-06-01",
+                "budget_min": 200,
+                "budget_max": 1000,
+                "preferred_roommate_age": "young",
+                "rental_duration": "permanent",
+                "diet": "vegan",
+                "smoking_policy": "non_smoking",
+                "transit_lines": [],
+                "custom_tags": [],
+                "language_policy": {},
+                "retention_days": 30,
+                "enabled_sources": ["flatfox"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    p = _load_profile("t-report-he")
+    assert p.report_title_he == "כותרת עברית"
+
+
+def test_load_city_infers_il_when_country_missing_and_currency_ils(
+    cfg_root: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Older deployments may lack country on city JSON; ILS implies IL for report locale."""
+    monkeypatch.setattr(config_module, "DATA_DIR", cfg_root)
+    (cfg_root / "cities").mkdir(parents=True, exist_ok=True)
+    (cfg_root / "cities" / "infer-il.json").write_text(
+        json.dumps(
+            {
+                "city_id": "infer-il",
+                "city_name": "Test",
+                "bounding_box": {"west": 1, "east": 2, "south": 3, "north": 4},
+                "available_sources": ["homeless"],
+                "currency": "ILS",
+            }
+        ),
+        encoding="utf-8",
+    )
+    c = _load_city("infer-il")
+    assert c.country == "IL"
+    assert c.currency == "ILS"
+
+
+def test_load_city_settlement_allowlist(cfg_root: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(config_module, "DATA_DIR", cfg_root)
+    (cfg_root / "cities").mkdir(parents=True, exist_ok=True)
+    (cfg_root / "cities" / "dror-test.json").write_text(
+        json.dumps(
+            {
+                "city_id": "dror-test",
+                "city_name": "Dror Test",
+                "bounding_box": {"west": 1, "east": 2, "south": 3, "north": 4},
+                "available_sources": ["homeless"],
+                "filters": {"settlements": ["בנימינה", "חיפה"]},
+            }
+        ),
+        encoding="utf-8",
+    )
+    city = _load_city("dror-test")
+    assert city.settlement_allowlist == ["בנימינה", "חיפה"]
+
+
 def test_load_profile_custom_tags_limit(cfg_root: Path) -> None:
     _write_profile_default(cfg_root, custom_tags=["a", "b", "c", "d"])
     with pytest.raises(ValueError):

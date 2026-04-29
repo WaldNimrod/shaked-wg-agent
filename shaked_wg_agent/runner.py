@@ -131,10 +131,14 @@ def _publish(cfg: ProjectConfig) -> str | None:
             profile_name=cfg.profile.profile_name,
             project_end=cfg.agent.project_end,
             currency=cfg.city.currency,
+            country=cfg.city.country,
+            city_name=cfg.city.city_name,
+            report_title_he=cfg.profile.report_title_he,
+            profile_id=cfg.profile.profile_id,
         )
         tmp = Path(tempfile.mkdtemp()) / "index.html"
         tmp.write_text(html, encoding="utf-8")
-        public_url = upload_report(tmp)
+        public_url = upload_report(tmp, profile_id=cfg.profile.profile_id)
         return public_url
     except MissingCredentialsError:
         return None
@@ -177,7 +181,7 @@ def run_scan(
                 listing_dict = scraped_listing.to_dict()
                 listing_dict["city_id"] = cfg.city.city_id
                 listing_dict["profile_id"] = cfg.profile.profile_id
-                listing_dict["relevance_score"] = score_listing(listing_dict, cfg.profile)
+                listing_dict["relevance_score"] = score_listing(listing_dict, cfg.profile, cfg.city)
                 action, saved = upsert_listing(listing_dict)
                 active_ids.add(saved["listing_id"])
                 if action == "new":

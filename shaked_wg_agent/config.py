@@ -45,6 +45,8 @@ class CityDefinition:
     country: str = "CH"
     currency: str = "CHF"
     zip_filter: list[str] = field(default_factory=list)
+    # If non-empty, listings must match at least one settlement substring (district/title/location).
+    settlement_allowlist: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -103,6 +105,8 @@ class SearchProfile:
     retention_days: int = 30
     enabled_sources: list[str] = field(default_factory=list)
     notifications: NotificationConfig | None = None
+    # Hebrew client-facing title for published HTML when country is IL (optional).
+    report_title_he: str | None = None
 
 
 @dataclass
@@ -212,6 +216,15 @@ def _load_city(city_id: str) -> CityDefinition:
         raise FileNotFoundError(f"City definition not found: {path}")
     raw = json.loads(path.read_text(encoding="utf-8"))
     bb = raw["bounding_box"]
+    filters = raw.get("filters") or {}
+    settlements = list(filters.get("settlements") or [])
+
+    currency = raw.get("currency", "CHF")
+    country = raw.get("country")
+    if country is None or country == "":
+        # Infer IL when Shekel is set but country omitted (older city JSON on edge servers).
+        country = "IL" if str(currency).upper() == "ILS" else "CH"
+
     return CityDefinition(
         city_id=raw["city_id"],
         city_name=raw["city_name"],
@@ -222,9 +235,10 @@ def _load_city(city_id: str) -> CityDefinition:
             north=float(bb["north"]),
         ),
         available_sources=list(raw["available_sources"]),
-        country=raw.get("country", "CH"),
-        currency=raw.get("currency", "CHF"),
+        country=str(country),
+        currency=currency,
         zip_filter=list(raw.get("zip_filter", [])),
+        settlement_allowlist=settlements,
     )
 
 
@@ -282,6 +296,7 @@ def _load_profile(profile_id: str) -> SearchProfile:
     profile = SearchProfile(
         profile_id=raw["profile_id"],
         profile_name=raw["profile_name"],
+        report_title_he=raw.get("report_title_he"),
         city_id=raw["city_id"],
         move_in_from=raw["move_in_from"],
         budget_min=int(budget_min_val),

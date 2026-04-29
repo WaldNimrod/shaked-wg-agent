@@ -21,6 +21,25 @@ UPLOAD_PATH = "wp-content/uploads/shaked-wg"
 REMOTE_FILENAME = "index.html"
 
 
+def resolve_upload_path(profile_id: str) -> str:
+    """Remote directory on uPress (under site root) for the published index.html.
+
+    Priority:
+    1. ``UPRESS_UPLOAD_PATH`` env — full override (used by ops / CI).
+    2. Per-profile defaults — ``dror`` → ``…/shaked-wg/dror`` so it does not overwrite Basel.
+    3. Any other profile → ``…/shaked-wg`` (e.g. ``default`` / Shaked Basel).
+
+    Public URLs: ``{UPRESS_PUBLIC_BASE}/{path}/index.html``
+    """
+    override = (os.environ.get("UPRESS_UPLOAD_PATH") or "").strip().strip("/")
+    if override:
+        return override
+    base = UPLOAD_PATH.strip().strip("/")
+    if profile_id == "dror":
+        return f"{base}/dror"
+    return base
+
+
 class MissingCredentialsError(EnvironmentError):
     """Raised when FTPS credentials are not configured."""
 
@@ -89,18 +108,22 @@ def _upload_file(ftp: ReusedSessionFTP_TLS, local_path: Path, remote_path: str) 
     raise RuntimeError(f"Upload failed after {MAX_RETRIES} attempts: {last_exc}") from last_exc
 
 
-def upload_report(html_path: Path) -> str:
+def upload_report(html_path: Path, profile_id: str = "default") -> str:
     """Upload index.html to upress and return the public URL.
 
     Reads credentials from environment variables:
       UPRESS_SFTP_HOST, UPRESS_SFTP_PORT, UPRESS_SFTP_USER, UPRESS_SFTP_PASS
       UPRESS_PUBLIC_BASE  (default: https://www.nimrod.bio)
+      UPRESS_UPLOAD_PATH  (optional — overrides per-profile path from ``resolve_upload_path``)
+
+    The remote folder is chosen by :func:`resolve_upload_path` so each profile has a
+    stable public URL without manual env when using ``python -m shaked_wg_agent run --profile …``.
 
     Returns the public URL of the uploaded file.
     Raises MissingCredentialsError or RuntimeError on failure.
     """
     public_base = os.environ.get("UPRESS_PUBLIC_BASE", "https://www.nimrod.bio").rstrip("/")
-    upload_path = os.environ.get("UPRESS_UPLOAD_PATH", UPLOAD_PATH)
+    upload_path = resolve_upload_path(profile_id)
     remote_file = f"{upload_path}/{REMOTE_FILENAME}"
     public_url = f"{public_base}/{upload_path}/{REMOTE_FILENAME}"
 

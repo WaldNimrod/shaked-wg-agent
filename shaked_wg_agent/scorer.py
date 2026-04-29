@@ -15,8 +15,31 @@ import math
 from datetime import UTC, date, datetime
 from typing import Any
 
-from shaked_wg_agent.config import SearchProfile
+from shaked_wg_agent.config import CityDefinition, SearchProfile
 from shaked_wg_agent.locale import get_locale
+
+
+def _settlement_haystack(listing: dict[str, Any]) -> str:
+    """Concatenate location fields used to match Hebrew settlement names."""
+    parts = [
+        str(listing.get("district") or ""),
+        str(listing.get("location_text") or ""),
+        str(listing.get("title") or ""),
+        str(listing.get("summary") or ""),
+    ]
+    return " ".join(parts)
+
+
+def _settlement_allowed(listing: dict[str, Any], allowlist: list[str]) -> bool:
+    """True if haystack contains at least one allowlisted settlement substring."""
+    if not allowlist:
+        return True
+    hay = _settlement_haystack(listing)
+    for name in allowlist:
+        n = name.strip()
+        if n and n in hay:
+            return True
+    return False
 
 
 def _vegan_score(signal: str, country: str = "CH") -> int:
@@ -132,15 +155,26 @@ def _budget_ok(price: int | None, profile: SearchProfile) -> bool:
     return profile.budget_min <= price <= profile.budget_max
 
 
-def score_listing(listing: dict[str, Any], profile: SearchProfile) -> int:
+def score_listing(
+    listing: dict[str, Any],
+    profile: SearchProfile,
+    city: CityDefinition | None = None,
+) -> int:
     """Compute relevance score (0–100) for a single listing.
 
-    Returns 0 if the listing fails the budget hard gate.
+    Returns 0 if the listing fails the budget hard gate or settlement allowlist (when configured).
     """
     price = listing.get("price")
     if price is None:
         price = listing.get("price_chf")
     if not _budget_ok(price, profile):
+        return 0
+
+    if (
+        city is not None
+        and city.settlement_allowlist
+        and not _settlement_allowed(listing, city.settlement_allowlist)
+    ):
         return 0
 
     lines = _listing_transit_lines(listing)
@@ -156,8 +190,12 @@ def score_listing(listing: dict[str, Any], profile: SearchProfile) -> int:
     return min(100, total)
 
 
-def score_all(listings: list[dict[str, Any]], profile: SearchProfile) -> list[dict[str, Any]]:
+def score_all(
+    listings: list[dict[str, Any]],
+    profile: SearchProfile,
+    city: CityDefinition | None = None,
+) -> list[dict[str, Any]]:
     """Re-score all listings in-place and return sorted (highest first)."""
     for lst in listings:
-        lst["relevance_score"] = score_listing(lst, profile)
+        lst["relevance_score"] = score_listing(lst, profile, city)
     return sorted(listings, key=lambda x: x.get("relevance_score", 0), reverse=True)

@@ -88,7 +88,7 @@
         "enabled": true
       },
       "dror-carmel-region": {
-        "search_url": "https://www.homeless.co.il/rent/",
+        "search_url": "https://www.homeless.co.il/rent/inumber1=41",
         "connection_method": "search_params",
         "enabled": true
       }

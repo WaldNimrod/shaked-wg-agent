@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from shaked_wg_agent.config import LanguagePolicy, SearchProfile
+from shaked_wg_agent.config import BoundingBox, CityDefinition, LanguagePolicy, SearchProfile
 from shaked_wg_agent.scorer import (
     _available_score,
     _budget_ok,
@@ -226,6 +226,38 @@ def test_score_listing_accepts_legacy_tram_key(base_profile: SearchProfile) -> N
         "url_status": "direct",
     }
     assert score_listing(lst, base_profile) > 0
+
+
+@pytest.fixture()
+def il_city_allowlist() -> CityDefinition:
+    return CityDefinition(
+        city_id="test-il",
+        city_name="Test IL",
+        bounding_box=BoundingBox(34.0, 35.0, 32.0, 33.0),
+        available_sources=["homeless"],
+        country="IL",
+        currency="ILS",
+        settlement_allowlist=["בנימינה", "חיפה"],
+    )
+
+
+def test_score_listing_settlement_gate_blocks(
+    perfect_listing: dict,
+    base_profile: SearchProfile,
+    il_city_allowlist: CityDefinition,
+) -> None:
+    perfect_listing["district"] = "תל אביב"
+    perfect_listing["title"] = "דירה להשכרה"
+    assert score_listing(perfect_listing, base_profile, il_city_allowlist) == 0
+
+
+def test_score_listing_settlement_gate_allows(
+    perfect_listing: dict,
+    base_profile: SearchProfile,
+    il_city_allowlist: CityDefinition,
+) -> None:
+    perfect_listing["district"] = "בנימינה גבעת עדה"
+    assert score_listing(perfect_listing, base_profile, il_city_allowlist) > 0
 
 
 # ---------------------------------------------------------------------------

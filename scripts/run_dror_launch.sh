@@ -2,8 +2,8 @@
 set -euo pipefail
 
 PROFILE_ID="${1:-dror}"
+# Optional: Python now maps profile dror → …/shaked-wg/dror without this env.
 UPLOAD_PATH="${DROR_UPLOAD_PATH:-wp-content/uploads/shaked-wg/dror}"
-
 export UPRESS_UPLOAD_PATH="${UPLOAD_PATH}"
 
 echo "Running scan for profile: ${PROFILE_ID}"
