@@ -22,5 +22,11 @@
     "digest_max_listings": 5,
     "min_score_threshold": 40,
     "channels": []
-  }
+  },
+  "age": 18,
+  "occupation_status": "student",
+  "studies_field": "chemistry (planned)",
+  "studies_institution": "Universität Basel",
+  "studies_start": "2026-09",
+  "move_in_optimal": "2026-06-01"
 }

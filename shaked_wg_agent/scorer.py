@@ -15,7 +15,13 @@ import math
 from datetime import UTC, date, datetime
 from typing import Any
 
-from shaked_wg_agent.config import CityDefinition, SearchProfile
+from shaked_wg_agent.config import (
+    AGE_MATCH_BONUS,
+    MOVE_IN_OPTIMAL_BONUS,
+    STUDENT_BONUS,
+    CityDefinition,
+    SearchProfile,
+)
 from shaked_wg_agent.locale import get_locale
 
 
@@ -148,6 +154,46 @@ def _url_score(url_status: str) -> int:
     return mapping.get(url_status.lower() if url_status else "", 3)
 
 
+def _profile_bonuses(listing: dict[str, Any], profile: SearchProfile) -> int:
+    """Return M1 additive bonuses: age match, student orientation, move-in optimal."""
+    bonus = 0
+
+    age_min = listing.get("roommate_age_min")
+    age_max = listing.get("roommate_age_max")
+    if (
+        profile.age is not None
+        and age_min is not None
+        and age_max is not None
+        and age_min <= profile.age <= age_max
+    ):
+        bonus += AGE_MATCH_BONUS
+
+    if profile.occupation_status == "student" and listing.get("is_student_oriented"):
+        bonus += STUDENT_BONUS
+
+    if (
+        profile.move_in_optimal is not None
+        and listing.get("available_from") == profile.move_in_optimal
+    ):
+        bonus += MOVE_IN_OPTIMAL_BONUS
+
+    return bonus
+
+
+def _age_hard_exclude(listing: dict[str, Any], profile: SearchProfile) -> bool:
+    """Return True if listing's age range excludes the profile's age (hard exclude).
+
+    TODO M5: gender_restriction hard-exclude
+    """
+    if profile.age is None:
+        return False
+    age_min = listing.get("roommate_age_min")
+    if age_min is not None and profile.age < age_min:
+        return True
+    age_max = listing.get("roommate_age_max")
+    return age_max is not None and profile.age > age_max
+
+
 def _budget_ok(price: int | None, profile: SearchProfile) -> bool:
     """Return False if price is outside budget (hard gate)."""
     if price is None:
@@ -177,6 +223,9 @@ def score_listing(
     ):
         return 0
 
+    if _age_hard_exclude(listing, profile):
+        return -1
+
     lines = _listing_transit_lines(listing)
     total = (
         _vegan_score(listing.get("vegan_signal", ""), listing.get("country", "CH"))
@@ -185,6 +234,7 @@ def score_listing(
         + _freshness_score(listing.get("posted_date"), listing.get("first_seen_at"))
         + _available_score(listing.get("available_from"), profile.move_in_from)
         + _url_score(listing.get("url_status", ""))
+        + _profile_bonuses(listing, profile)
     )
 
     return min(100, total)

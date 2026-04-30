@@ -6,13 +6,18 @@ import logging
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 
 _ID_RE = re.compile(r"^[a-z][a-z0-9-]{0,29}$")
+
+# M1 scoring weight constants
+AGE_MATCH_BONUS: int = 30
+STUDENT_BONUS: int = 20
+MOVE_IN_OPTIMAL_BONUS: int = 30
 
 _VALID_RENTAL = frozenset({"temporary", "short", "permanent"})
 _VALID_SMOKING = frozenset({"non_smoking", "smoking_ok", ""})
@@ -107,6 +112,13 @@ class SearchProfile:
     notifications: NotificationConfig | None = None
     # Hebrew client-facing title for published HTML when country is IL (optional).
     report_title_he: str | None = None
+    # M1: personal attributes for age/student/move-in scoring
+    age: int | None = None
+    occupation_status: Literal["student", "working", "mixed"] | None = None
+    studies_field: str | None = None
+    studies_institution: str | None = None
+    studies_start: str | None = None  # "YYYY-MM"
+    move_in_optimal: str | None = None  # "YYYY-MM-DD"
 
 
 @dataclass
@@ -311,6 +323,12 @@ def _load_profile(profile_id: str) -> SearchProfile:
         retention_days=raw.get("retention_days", 30),
         enabled_sources=list(raw.get("enabled_sources") or []),
         notifications=notifications,
+        age=raw.get("age"),
+        occupation_status=raw.get("occupation_status"),
+        studies_field=raw.get("studies_field"),
+        studies_institution=raw.get("studies_institution"),
+        studies_start=raw.get("studies_start"),
+        move_in_optimal=raw.get("move_in_optimal"),
     )
     _validate_search_profile_fields(profile)
     return profile

@@ -5,9 +5,11 @@ import pytest
 
 from shaked_wg_agent.config import BoundingBox, CityDefinition, LanguagePolicy, SearchProfile
 from shaked_wg_agent.scorer import (
+    _age_hard_exclude,
     _available_score,
     _budget_ok,
     _freshness_score,
+    _profile_bonuses,
     _roommate_score,
     _transit_score,
     _url_score,
@@ -291,3 +293,150 @@ def test_available_score_boundary_aug31() -> None:
 
 def test_available_score_boundary_sep1() -> None:
     assert _available_score("2026-09-01", "2026-06-01") == 5
+
+
+# ---------------------------------------------------------------------------
+# M1: age match bonus, student bonus, move-in optimal bonus, hard excludes
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def student_profile() -> SearchProfile:
+    return SearchProfile(
+        profile_id="test-student",
+        profile_name="Student Test",
+        city_id="basel",
+        move_in_from="2026-06-01",
+        budget_min=200,
+        budget_max=1000,
+        preferred_roommate_age="young",
+        rental_duration="permanent",
+        diet="",
+        smoking_policy="",
+        transit_lines=[],
+        custom_tags=[],
+        language_policy=LanguagePolicy(),
+        retention_days=30,
+        enabled_sources=[],
+        notifications=None,
+        age=18,
+        occupation_status="student",
+        move_in_optimal="2026-06-01",
+    )
+
+
+def test_age_match_bonus(student_profile: SearchProfile) -> None:
+    """Profile age 18 within range 16–25 → +30 bonus."""
+    listing = {"roommate_age_min": 16, "roommate_age_max": 25}
+    bonus = _profile_bonuses(listing, student_profile)
+    assert bonus >= 30
+
+
+def test_age_no_match_no_bonus(student_profile: SearchProfile) -> None:
+    """Profile age 18 outside range 20–30 → no age bonus, but NOT excluded via _profile_bonuses."""
+    listing = {"roommate_age_min": 20, "roommate_age_max": 30}
+    bonus = _profile_bonuses(listing, student_profile)
+    # age 18 < min 20 → no age bonus (hard exclude is separate)
+    assert bonus == 0 or bonus == 20  # could still get student bonus if is_student_oriented
+
+
+def test_age_null_skips_check() -> None:
+    """When profile.age is None, age bonuses and excludes are skipped gracefully."""
+    profile = SearchProfile(
+        profile_id="null-age",
+        profile_name="Null Age",
+        city_id="basel",
+        move_in_from="2026-06-01",
+        budget_min=200,
+        budget_max=1000,
+        preferred_roommate_age="any",
+        rental_duration="permanent",
+        diet="",
+        smoking_policy="",
+        transit_lines=[],
+        custom_tags=[],
+        language_policy=LanguagePolicy(),
+        retention_days=30,
+        enabled_sources=[],
+        notifications=None,
+        age=None,
+    )
+    listing = {"roommate_age_min": 16, "roommate_age_max": 25, "price": 500}
+    # No exception; no hard exclude
+    assert not _age_hard_exclude(listing, profile)
+    score = score_listing(listing, profile)
+    assert score >= 0
+
+
+def test_move_in_optimal_bonus(student_profile: SearchProfile) -> None:
+    """available_from matches move_in_optimal → +30 bonus."""
+    listing = {"available_from": "2026-06-01"}
+    bonus = _profile_bonuses(listing, student_profile)
+    assert bonus >= 30
+
+
+def test_move_in_optimal_no_match(student_profile: SearchProfile) -> None:
+    """available_from differs from move_in_optimal → no move-in bonus."""
+    listing = {"available_from": "2026-07-01"}
+    # Strip to just move_in_optimal check by using a profile with only that field
+    profile = SearchProfile(
+        profile_id="test-mio",
+        profile_name="MIO Test",
+        city_id="basel",
+        move_in_from="2026-06-01",
+        budget_min=200,
+        budget_max=1000,
+        preferred_roommate_age="any",
+        rental_duration="permanent",
+        diet="",
+        smoking_policy="",
+        transit_lines=[],
+        custom_tags=[],
+        language_policy=LanguagePolicy(),
+        retention_days=30,
+        enabled_sources=[],
+        notifications=None,
+        move_in_optimal="2026-06-01",
+    )
+    bonus = _profile_bonuses(listing, profile)
+    assert bonus == 0
+
+
+def test_student_bonus(student_profile: SearchProfile) -> None:
+    """Student profile + is_student_oriented listing → +20 bonus."""
+    listing = {"is_student_oriented": True}
+    bonus = _profile_bonuses(listing, student_profile)
+    assert bonus >= 20
+
+
+def test_hard_exclude_age_below_min(student_profile: SearchProfile) -> None:
+    """Profile age 18 < roommate_age_min 20 → score -1."""
+    listing = {"roommate_age_min": 20, "price": 500}
+    score = score_listing(listing, student_profile)
+    assert score == -1
+
+
+def test_hard_exclude_age_above_max() -> None:
+    """Profile age 30 > roommate_age_max 25 → score -1."""
+    profile = SearchProfile(
+        profile_id="old-searcher",
+        profile_name="Old Searcher",
+        city_id="basel",
+        move_in_from="2026-06-01",
+        budget_min=200,
+        budget_max=1000,
+        preferred_roommate_age="any",
+        rental_duration="permanent",
+        diet="",
+        smoking_policy="",
+        transit_lines=[],
+        custom_tags=[],
+        language_policy=LanguagePolicy(),
+        retention_days=30,
+        enabled_sources=[],
+        notifications=None,
+        age=30,
+    )
+    listing = {"roommate_age_max": 25, "price": 500}
+    score = score_listing(listing, profile)
+    assert score == -1

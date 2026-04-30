@@ -29,5 +29,11 @@
     "digest_max_listings": 20,
     "min_score_threshold": 0,
     "channels": []
-  }
+  },
+  "age": null,
+  "occupation_status": null,
+  "studies_field": null,
+  "studies_institution": null,
+  "studies_start": null,
+  "move_in_optimal": null
 }

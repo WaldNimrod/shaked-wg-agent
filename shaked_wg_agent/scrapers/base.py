@@ -47,6 +47,10 @@ class ScrapedListing:
     url_status: str = "direct"
     recovery_query: str = ""
     posted_date: str | None = None
+    # M1: age-range and student-orientation fields (set by scrapers that expose them)
+    roommate_age_min: int | None = None
+    roommate_age_max: int | None = None
+    is_student_oriented: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to listing dict compatible with listings.json schema."""
@@ -72,6 +76,9 @@ class ScrapedListing:
             "full_description": self.full_description,
             "recovery_query": self.recovery_query,
             "posted_date": self.posted_date,
+            "roommate_age_min": self.roommate_age_min,
+            "roommate_age_max": self.roommate_age_max,
+            "is_student_oriented": self.is_student_oriented,
             "status": "neu",
             "note": "",
             "relevance_score": 0,

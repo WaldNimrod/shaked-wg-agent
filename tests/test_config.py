@@ -360,3 +360,33 @@ def test_import_old_names_raise() -> None:
         exec("from shaked_wg_agent.config import AgentConfig", {})
     with pytest.raises(ImportError):
         exec("from shaked_wg_agent.config import Source", {})
+
+
+# ---------------------------------------------------------------------------
+# M1: age / studies / move_in_optimal profile fields
+# ---------------------------------------------------------------------------
+
+
+def test_profile_age_field() -> None:
+    """default.json must have age == 18 (Shaked's age)."""
+    p = _load_profile("default")
+    assert p.age == 18
+
+
+def test_profile_age_null() -> None:
+    """dror.json must have age == None (not applicable)."""
+    p = _load_profile("dror")
+    assert p.age is None
+
+
+def test_profile_studies_fields() -> None:
+    """default.json must have student occupation and correct institution."""
+    p = _load_profile("default")
+    assert p.occupation_status == "student"
+    assert p.studies_institution == "Universität Basel"
+
+
+def test_profile_move_in_optimal() -> None:
+    """default.json must have move_in_optimal == '2026-06-01'."""
+    p = _load_profile("default")
+    assert p.move_in_optimal == "2026-06-01"
