@@ -838,6 +838,13 @@ work_packages:
     result: PASS
     date: '2026-04-30'
     notes: Build complete. haiku internal L-GATE_BUILD+VALIDATE R1 PASS. Awaiting external L-GATE_V.
+  - gate: L-GATE_V
+    result: PASS_WITH_FINDINGS
+    date: '2026-04-30'
+    validator: team_190
+    validator_engine: GPT-5.2 (Cursor Agent)
+    engine_waiver: PENDING_TEAM_00
+    findings: M2-F01 MINOR (AC2 prose vs tests) — fixed in 7c47fee. No blocking findings.
   notes: >
     Add full_description: str (≥500 chars) to ScrapedListing dataclass.
     Extend flatfox REST/HTML and wgzimmer Playwright extractors.
@@ -870,6 +877,13 @@ work_packages:
     result: PASS
     date: '2026-04-30'
     notes: Build complete (submitForm() strategy + li.search-mate-entry). haiku internal PASS. Awaiting external L-GATE_V.
+  - gate: L-GATE_V
+    result: PASS_WITH_FINDINGS
+    date: '2026-04-30'
+    validator: team_190
+    validator_engine: GPT-5.2 (Cursor Agent)
+    engine_waiver: PENDING_TEAM_00
+    findings: M3-F01 MINOR (live reCAPTCHA not re-proven) — acknowledged operational risk, tracked S005-P005-WP001.
   notes: >
     wgzimmer_pw.py returned 0 listings on run-20260429-213722-f1bd and prior run.
     Diagnose selector drift vs anti-bot escalation.
@@ -902,6 +916,13 @@ work_packages:
     result: PASS
     date: '2026-04-30'
     notes: Build complete (age/student/move_in bonuses + hard excludes). haiku internal PASS. Awaiting external L-GATE_V.
+  - gate: L-GATE_V
+    result: PASS_WITH_FINDINGS
+    date: '2026-04-30'
+    validator: team_190
+    validator_engine: GPT-5.2 (Cursor Agent)
+    engine_waiver: PENDING_TEAM_00
+    findings: M1-F01 MINOR (stale TODO comment) — fixed in 7c47fee. No blocking findings.
   notes: >
     Add age, occupation_status, studies_field, studies_institution, studies_start,
     move_in_optimal to SearchProfile in config.py.
@@ -936,6 +957,13 @@ work_packages:
     result: PASS
     date: '2026-04-30'
     notes: Build complete (outreach.py + CLI + html badges + Closed section). haiku internal 18/18 PASS. Awaiting external L-GATE_V.
+  - gate: L-GATE_V
+    result: PASS
+    date: '2026-04-30'
+    validator: team_190
+    validator_engine: GPT-5.2 (Cursor Agent)
+    engine_waiver: PENDING_TEAM_00
+    findings: No findings.
   notes: >
     Extend status enum: contacted, replied, viewed, rejected, replied_negative.
     CLI subcommands: mark-contacted, mark-replied, mark-rejected, mark-viewed.
@@ -970,6 +998,13 @@ work_packages:
     result: PASS
     date: '2026-04-30'
     notes: Build complete (extractors/negative_signals.py, 34 tests, recall 100%, precision 100%). haiku internal 20/20 PASS. Awaiting external L-GATE_V.
+  - gate: L-GATE_V
+    result: PASS
+    date: '2026-04-30'
+    validator: team_190
+    validator_engine: GPT-5.2 (Cursor Agent)
+    engine_waiver: PENDING_TEAM_00
+    findings: No findings.
   notes: >
     New extractor: shaked_wg_agent/extractors/negative_signals.py.
     Patterns DE/EN/IT/FR: gender-only WG, Wochenaufenthalter, Zwischenmiete <6mo.
