@@ -22,6 +22,7 @@ from shaked_wg_agent.config import (
     CityDefinition,
     SearchProfile,
 )
+from shaked_wg_agent.extractors.negative_signals import detect_negative_signals
 from shaked_wg_agent.locale import get_locale
 
 
@@ -226,6 +227,23 @@ def score_listing(
     if _age_hard_exclude(listing, profile):
         return -1
 
+    # M5: Negative-signal autofilter — run after age hard-exclude (early return saves time).
+    _neg_text = listing.get("full_description") or listing.get("summary") or ""
+    signals = detect_negative_signals(_neg_text)
+
+    # Gender: exclude only when restriction conflicts with profile (Shaked is female).
+    # men_only → hard exclude. women_only → keep (Shaked is female).
+    if signals["men_only"]:
+        return -1
+
+    # Tenant type: Shaked needs permanent accommodation.
+    if signals["wochenaufenthalter"] or signals["business_only"]:
+        return -1
+
+    # Short Zwischenmiete: exclude.
+    if signals["zwischenmiete_short"]:
+        return -1
+
     lines = _listing_transit_lines(listing)
     total = (
         _vegan_score(listing.get("vegan_signal", ""), listing.get("country", "CH"))
@@ -237,7 +255,15 @@ def score_listing(
         + _profile_bonuses(listing, profile)
     )
 
+    # Advisory penalty (not a hard exclude).
+    if signals["religion_preference"]:
+        total -= 10
+
     return min(100, total)
+
+
+# M4: statuses that are excluded from the active ranked list
+_CLOSED_STATUSES: frozenset[str] = frozenset({"rejected", "replied_negative"})
 
 
 def score_all(
@@ -245,7 +271,15 @@ def score_all(
     profile: SearchProfile,
     city: CityDefinition | None = None,
 ) -> list[dict[str, Any]]:
-    """Re-score all listings in-place and return sorted (highest first)."""
-    for lst in listings:
+    """Re-score all listings in-place and return sorted (highest first).
+
+    Listings with status 'rejected' or 'replied_negative' are excluded from
+    the ranked portion and appended at the end (unranked) so they are preserved
+    but never appear in the top-N selection.
+    """
+    active = [lst for lst in listings if lst.get("status") not in _CLOSED_STATUSES]
+    closed = [lst for lst in listings if lst.get("status") in _CLOSED_STATUSES]
+    for lst in active:
         lst["relevance_score"] = score_listing(lst, profile, city)
-    return sorted(listings, key=lambda x: x.get("relevance_score", 0), reverse=True)
+    ranked = sorted(active, key=lambda x: x.get("relevance_score", 0), reverse=True)
+    return ranked + closed

@@ -184,6 +184,56 @@ def cmd_list() -> None:
     console.print(f"\n[dim]{len(listings)} listings total[/dim]")
 
 
+def cmd_mark_contacted(args: argparse.Namespace) -> None:
+    """Mark a listing as contacted."""
+    from shaked_wg_agent.outreach import mark_contacted
+
+    try:
+        mark_contacted(args.listing_id, note=args.note)
+        console.print(f"Updated listing {args.listing_id}: status → contacted")
+    except KeyError:
+        console.print(f"[red]Listing not found: {args.listing_id}[/red]")
+        raise SystemExit(1) from None
+
+
+def cmd_mark_replied(args: argparse.Namespace) -> None:
+    """Mark a listing as replied (positive or negative)."""
+    from shaked_wg_agent.outreach import mark_replied
+
+    positive = args.positive
+    new_status = "replied" if positive else "replied_negative"
+    try:
+        mark_replied(args.listing_id, positive=positive)
+        console.print(f"Updated listing {args.listing_id}: status → {new_status}")
+    except KeyError:
+        console.print(f"[red]Listing not found: {args.listing_id}[/red]")
+        raise SystemExit(1) from None
+
+
+def cmd_mark_viewed(args: argparse.Namespace) -> None:
+    """Mark a listing as viewed in person."""
+    from shaked_wg_agent.outreach import mark_viewed
+
+    try:
+        mark_viewed(args.listing_id, note=args.note)
+        console.print(f"Updated listing {args.listing_id}: status → viewed")
+    except KeyError:
+        console.print(f"[red]Listing not found: {args.listing_id}[/red]")
+        raise SystemExit(1) from None
+
+
+def cmd_mark_rejected(args: argparse.Namespace) -> None:
+    """Remove a listing from consideration."""
+    from shaked_wg_agent.outreach import mark_rejected
+
+    try:
+        mark_rejected(args.listing_id, reason=args.reason)
+        console.print(f"Updated listing {args.listing_id}: status → rejected")
+    except KeyError:
+        console.print(f"[red]Listing not found: {args.listing_id}[/red]")
+        raise SystemExit(1) from None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Shaked WG Basel search agent",
@@ -205,6 +255,40 @@ def main() -> None:
         cmd_list()
 
     p_list.set_defaults(func=_cmd_list)
+
+    # M4: outreach lifecycle subcommands
+    p_mc = sub.add_parser("mark-contacted", help="mark listing as contacted")
+    p_mc.add_argument("listing_id", type=str)
+    p_mc.add_argument("--note", type=str, default=None, help="optional note")
+    p_mc.set_defaults(func=cmd_mark_contacted)
+
+    p_mr = sub.add_parser("mark-replied", help="mark listing as replied")
+    p_mr.add_argument("listing_id", type=str)
+    grp = p_mr.add_mutually_exclusive_group()
+    grp.add_argument(
+        "--positive",
+        dest="positive",
+        action="store_true",
+        default=True,
+        help="landlord replied positively (default)",
+    )
+    grp.add_argument(
+        "--negative",
+        dest="positive",
+        action="store_false",
+        help="landlord declined or Shaked declined",
+    )
+    p_mr.set_defaults(func=cmd_mark_replied)
+
+    p_mv = sub.add_parser("mark-viewed", help="mark listing as viewed in person")
+    p_mv.add_argument("listing_id", type=str)
+    p_mv.add_argument("--note", type=str, default=None, help="optional note")
+    p_mv.set_defaults(func=cmd_mark_viewed)
+
+    p_mrej = sub.add_parser("mark-rejected", help="remove listing from consideration")
+    p_mrej.add_argument("listing_id", type=str)
+    p_mrej.add_argument("--reason", type=str, default=None, help="optional rejection reason")
+    p_mrej.set_defaults(func=cmd_mark_rejected)
 
     args = parser.parse_args()
     args.func(args)

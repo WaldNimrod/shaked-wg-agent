@@ -19,6 +19,12 @@ _STATUS_BADGE_DE = {
     "kontaktiert": ("primary", "kontaktiert"),
     "neu": ("secondary", "neu"),
     "abgesagt": ("danger", "abgesagt"),
+    # M4: outreach lifecycle statuses
+    "contacted": ("primary", "📤 Contacted"),
+    "replied": ("success", "💬 Replied"),
+    "replied_negative": ("danger", "❌ Declined"),
+    "viewed": ("warning", "👀 Viewed"),
+    "rejected": ("secondary", "🚫 Removed"),
 }
 _STATUS_BADGE_HE = {
     "favorit": ("success", "⭐ מועדף"),
@@ -26,7 +32,16 @@ _STATUS_BADGE_HE = {
     "kontaktiert": ("primary", "נוצר קשר"),
     "neu": ("secondary", "חדש"),
     "abgesagt": ("danger", "בוטל"),
+    # M4: outreach lifecycle statuses
+    "contacted": ("primary", "📤 פנייה נשלחה"),
+    "replied": ("success", "💬 ענה"),
+    "replied_negative": ("danger", "❌ סירב"),
+    "viewed": ("warning", "👀 נצפה"),
+    "rejected": ("secondary", "🚫 הוסר"),
 }
+
+# M4: statuses that place a listing in the "Closed" section
+_CLOSED_STATUSES: frozenset[str] = frozenset({"rejected", "replied_negative"})
 
 # Hebrew display names for listing source keys (UI chrome only).
 _SOURCE_LABEL_HE = {
@@ -952,8 +967,11 @@ def generate_report(
     ctx = ReportUiContext(il=he)
 
     sorted_listings = sorted(listings, key=lambda x: x.get("relevance_score", 0), reverse=True)
-    visible_listings = [lst for lst in sorted_listings if lst.get("relevance_score", 0) > 0]
-    hidden_count = len(sorted_listings) - len(visible_listings)
+    # M4: separate closed (rejected/declined) listings before visibility filter
+    closed_listings = [lst for lst in sorted_listings if lst.get("status") in _CLOSED_STATUSES]
+    open_listings = [lst for lst in sorted_listings if lst.get("status") not in _CLOSED_STATUSES]
+    visible_listings = [lst for lst in open_listings if lst.get("relevance_score", 0) > 0]
+    hidden_count = len(open_listings) - len(visible_listings)
     verified_listings = [
         lst
         for lst in visible_listings
@@ -987,7 +1005,10 @@ def generate_report(
 
     rows_verified = "".join(_table_row(lst, he) for lst in verified_listings)
     rows_unverified = "".join(_table_row(lst, he) for lst in unverified_listings)
+    # M4: closed listings get dimmed rows and their own modals
+    rows_closed = "".join(_table_row(lst, he) for lst in closed_listings)
     modals = "".join(_modal(lst, ctx) for lst in visible_listings)
+    modals += "".join(_modal(lst, ctx) for lst in closed_listings)
 
     cur_esc = _html.escape(str(currency))
     esc_city = _html.escape(city_name) if city_name else ""
@@ -1035,6 +1056,13 @@ def generate_report(
         unverified_alert = (
             "<strong>שים לב:</strong> המודעות בטווח התקציב והאזור אך לא אומתו במלואן "
             "(בדיקת HTTP ממתינה או אין קישור ישיר). יש לבדוק במקור לפני יצירת קשר."
+        )
+        # M4: closed section labels
+        closed_title = "🗄️ סגורות / נדחו"
+        closed_sub = f"{len(closed_listings)} מודעות — נדחו או שהמשא ומתן הסתיים"
+        closed_alert = (
+            "<strong>ארכיון:</strong> מודעות אלו סומנו כ«נדחו» או «סירב» ואינן פעילות לחיפוש. "
+            "הן מוצגות כאן לצורכי תיעוד בלבד."
         )
         hidden_msg = (
             f"+ {hidden_count} מודעות מוסתרות (מחוץ לתקציב או מחוץ לרשימת היישובים / ציון 0)"
@@ -1090,6 +1118,14 @@ def generate_report(
             "vollständig verifiziert werden (z.B. Verifikation ausstehend, URL-Status unklar "
             "oder <code>verified_active</code> nicht gesetzt). "
             "Direkt auf der Quellseite prüfen, bevor du Kontakt aufnimmst."
+        )
+        # M4: closed section labels
+        closed_title = "🗄️ Geschlossene Inserate"
+        closed_sub = f"{len(closed_listings)} Inserate — abgelehnt oder Kontakt abgebrochen"
+        closed_alert = (
+            "<strong>Archiv:</strong> Diese Inserate wurden als «abgelehnt» oder «abgesagt» "
+            "markiert und erscheinen nicht im aktiven Ranking. "
+            "Sie werden zur Nachverfolgung hier angezeigt."
         )
         hidden_msg = (
             f"+ {hidden_count} weitere Inserate ausgeblendet (Außerhalb Budget / Score 0)"
@@ -1282,6 +1318,38 @@ def generate_report(
   ''' if unverified_listings else ''}
 
   {f'<p class="text-muted small mt-2 text-center">{hidden_msg}</p>' if hidden_count else ''}
+
+  {f'''
+  <div class="d-flex align-items-center gap-2 mb-2 mt-4" style="opacity:0.7">
+    <span class="badge bg-secondary fs-6 px-3 py-2">{closed_title}</span>
+    <span class="text-muted small">{closed_sub}</span>
+  </div>
+  <div class="alert alert-secondary border-secondary mb-2 py-2 px-3 small" style="opacity:0.7">
+    {closed_alert}
+  </div>
+  <div class="card stat-card mb-2" style="opacity:0.55">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-secondary">
+          <tr>
+            <th style="width:32px"></th>
+            <th>{th_score}</th>
+            <th>{th_status}</th>
+            <th>{th_price}</th>
+            <th>{th_district}</th>
+            <th>{th_tram}</th>
+            <th>{th_vegan}</th>
+            <th>{th_title}</th>
+          </tr>
+        </thead>
+        <tbody id="listings-tbody-closed">
+{rows_closed}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  ''' if closed_listings else ''}
+
   <p class="text-muted small mt-2 text-center">
     {_html.escape(footer_line)}
   </p>
