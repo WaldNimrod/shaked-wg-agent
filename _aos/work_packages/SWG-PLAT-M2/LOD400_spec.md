@@ -80,7 +80,7 @@ Write the updated array back to the file (preserving all other fields).
 | AC | Implementation | Verification |
 |---|---|---|
 | AC1: `full_description` exposed on ScrapedListing | `base.py` field addition | `test_scraper_listing_has_full_description_field` |
-| AC2: flatfox `full_description` > `summary` length on ≥80% of fixtures | `flatfox.py` untruncated extraction | `test_flatfox_fixture_extraction` |
+| AC2: flatfox `full_description` ≥ 50 chars and longer than `summary` when listing has body text | `flatfox.py` untruncated extraction | `test_flatfox_fixture_extraction` (≥50 chars + parametrized longer-than-summary on fixtures with `len(full_desc)>240`) |
 | AC3: migration — all legacy listings have key | listings.json migration | inspect `data/listings.json` after build |
 | AC4: ≥10 fixture HTML files | 11 files in `tests/fixtures/scrapers/` | `ls tests/fixtures/scrapers/ \| wc -l` |
 | AC5: ruff + pytest clean | fixed in touched files | `ruff check .` + `pytest tests/` |

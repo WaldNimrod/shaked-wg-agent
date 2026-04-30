@@ -182,10 +182,7 @@ def _profile_bonuses(listing: dict[str, Any], profile: SearchProfile) -> int:
 
 
 def _age_hard_exclude(listing: dict[str, Any], profile: SearchProfile) -> bool:
-    """Return True if listing's age range excludes the profile's age (hard exclude).
-
-    TODO M5: gender_restriction hard-exclude
-    """
+    """Return True if listing's age range excludes the profile's age (hard exclude)."""
     if profile.age is None:
         return False
     age_min = listing.get("roommate_age_min")
