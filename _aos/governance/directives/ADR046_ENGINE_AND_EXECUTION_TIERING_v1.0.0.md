@@ -198,3 +198,8 @@ EngineAdapter enforces vendor-distinctness on `vendor` field at runtime; advisor
 ---
 
 *Promoted 2026-04-27 with team_00 approval. Authored by team_100; canonical placement by team_110.*
+
+---
+
+**see_amendment:** `governance/directives/ADR046_ENGINE_AND_EXECUTION_TIERING_v1.1.0_AMENDMENT.md`
+*Amendment v1.1.0 (2026-04-30) — additive only; extends `access_method` enum with 4 new Cursor entry point values: `sdk`, `cursor_ide_routed`, `cursor_ide_cloud`, `cursor_ide_bg`. This v1.0.0 document content is unchanged.*

@@ -17,6 +17,20 @@
 - **domain scope:** universal — invoked per WP under mandate from Team 100 (per team_00 authorization)
 - **gate authority:** none — producer role, feeds the gate process but never validates it
 
+## Track Model Cross-Reference (v4.0.0 — ADR044)
+
+team_35 (Design Studio) maps to the **CONTENT track** in the v4.0.0 Track Model:
+
+- **CONTENT track default writer:** For WPs classified as CONTENT track (non-code artifact production: book chapters, presentations, video, design), team_35 is the **default writer team**. The CONTENT track path is: LOD100 → LOD200 → shipped artifact (no LOD400/500).
+- **PIPELINE_FEEDER gate participation:** team_35's existing `gate_participation: PIPELINE_FEEDER` maps directly to the CONTENT track's gate model — L-GATE_SPEC → L-GATE_DELIVER (custom). Team 35 produces artifacts that feed the pipeline but does not operate gates, consistent with CONTENT track design.
+- **CONTENT track examples:** nimrod-book chapters, microgreens blender design, Eyal Amit content, dispatch bot UX docs — all are CONTENT track WPs.
+- **Handoff routing:** CONTENT track WPs route team_35 artifacts via `HANDOFF_PACKAGE_*` to `_COMMUNICATION/team_35/[WP-ID]/`, then team_100 folds them into the LOD200/300 package. This flow is unchanged from v3; the CONTENT track label formalizes it.
+- **Track declaration for team_35 mandates:** When team_100 issues a mandate to team_35, the mandate MUST declare `track: CONTENT` in its YAML frontmatter. This enables Check 42 (sprint discipline enforcement) to apply correctly.
+
+Canonical reference: `governance/directives/ADR044_AOS_v4_0_0_CHARTER_AND_TRACK_MODEL_v1.0.0.md` §1 (Track 6 — CONTENT), §2 (decision tree)
+
+*log_entry | team_35 | GOVERNANCE_FILE_AMENDED | 2026-04-30 | CONTENT track cross-reference and PIPELINE_FEEDER linkage added — AOS-V4-WP-CHARTER (W1)*
+
 ## Role in one sentence
 
 Team 35 turns a Team 100 design brief into **visual, navigable, reviewable design artifacts** — wireframes, mockups, clickable prototypes, decks, and design canvases — so that interface decisions can be made and signed off *before* LOD400 (executable spec) is written.
@@ -211,7 +225,7 @@ Every markdown deliverable begins with:
 
 Canonical artifact types: `HANDOFF`, `CLARIFICATION_REQUEST`, `REVISION_RESPONSE`, `TRIAGE_NOTE`, `DESIGN_SYSTEM_EXTENSION_REQUEST`, `REVIEW_RESPONSE`.
 
-## Boundaries
+## Permissions
 
 ```yaml
 writes_to:

@@ -16,11 +16,11 @@
     },
     "from_team": {
       "type": "string",
-      "pattern": "^team_\\d{2}$"
+      "pattern": "^team_\\d{2,3}$"
     },
     "to_team": {
       "type": "string",
-      "pattern": "^team_\\d{2}$"
+      "pattern": "^team_\\d{2,3}$"
     },
     "type": {
       "type": "string",
@@ -65,7 +65,35 @@
     "mandate_ref": {
       "type": "string",
       "description": "Path to the formal mandate artifact this MSG delivers or references. Pattern: _COMMUNICATION/team_{ID}/MANDATE_*.md. Enables machine-readable MSG↔MANDATE linkage (G-6)."
+    },
+    "next_step": {
+      "type": "string",
+      "description": "REQUIRED in formal artifacts (type: task, task_response, routing, session_activation, gate_response) per ADR043 v1.3.0 §13. Imperative sentence telling the receiving agent what to do immediately. Example: 'Route to team_190 for L-GATE_BUILD cross-engine validation per IR#1.'"
+    },
+    "handoff_to": {
+      "type": "string",
+      "pattern": "^team_\\d{2,3}$",
+      "description": "REQUIRED in formal artifacts per ADR043 v1.3.0 §13. Canonical team_NN identifier of the receiving agent. Use 'team_00' to signal a human decision gate (Principal action required)."
+    },
+    "handoff_context_pointer": {
+      "description": "REQUIRED in formal artifacts per ADR043 v1.3.0 §13. Path (relative to repo root) of the single most important file the receiving agent must read after this artifact. Use a string for one file or an array of strings for up to 3 equally critical files.",
+      "oneOf": [
+        { "type": "string" },
+        { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 3 }
+      ]
     }
+  },
+  "if": {
+    "properties": {
+      "type": {
+        "enum": ["task", "task_response", "routing", "session_activation", "gate_response"]
+      }
+    },
+    "required": ["type"]
+  },
+  "then": {
+    "required": ["next_step", "handoff_to", "handoff_context_pointer"],
+    "description": "Continuation fields REQUIRED for formal MSG types per ADR043 v1.3.0 §13. Formal types: task, task_response, routing, session_activation, gate_response."
   },
   "additionalProperties": true
 }
