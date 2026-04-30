@@ -1,4 +1,20 @@
-"""Scraper for wgzimmer.ch — primary source for Basel WG listings."""
+"""DEPRECATED — wgzimmer.ch legacy HTTP scraper.
+
+This module is superseded by `wgzimmer_pw.WgzimmerPlaywrightScraper`.
+
+Reasons for deprecation:
+1. wgzimmer.ch now requires reCAPTCHA v3 for all search results. Plain HTTP GET/POST
+   requests without a valid browser-issued token are blocked.
+2. This class contains a runtime bug: `ScrapedListing(price_chf=...)` — the field is
+   named `price`, not `price_chf`. The class would raise TypeError on any parsed item.
+3. The DOM selectors (`li.search-result-entry`) do not match the current site HTML.
+   The correct selector is `li.search-mate-entry`.
+
+Do NOT invoke this class. Use `WgzimmerPlaywrightScraper` from `wgzimmer_pw` instead.
+If Playwright cannot obtain a valid reCAPTCHA token, consider: reducing scrape frequency,
+requesting API access from wgzimmer.ch, or switching to an alternative source
+(e.g. Homegate.ch).
+"""
 from __future__ import annotations
 
 import re

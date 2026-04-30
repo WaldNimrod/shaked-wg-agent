@@ -42,6 +42,7 @@ class ScrapedListing:
     roommate_signal: str = ""
     vegan_signal: str = ""
     summary: str = ""
+    full_description: str = ""
     direct_url: str = ""
     url_status: str = "direct"
     recovery_query: str = ""
@@ -68,6 +69,7 @@ class ScrapedListing:
             "roommate_signal": self.roommate_signal,
             "vegan_signal": self.vegan_signal,
             "summary": self.summary,
+            "full_description": self.full_description,
             "recovery_query": self.recovery_query,
             "posted_date": self.posted_date,
             "status": "neu",

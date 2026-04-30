@@ -192,6 +192,10 @@ class FlatfoxScraper(BaseScraper):
 
             url_status = "direct"
 
+            # full_description: use the raw API description field (untruncated).
+            # Falls back to summary when description is empty.
+            full_description = description if description else summary
+
             return ScrapedListing(
                 source=self.source_id,
                 source_listing_id=pk,
@@ -207,6 +211,7 @@ class FlatfoxScraper(BaseScraper):
                 roommate_signal=agency or "",
                 vegan_signal=vegan,
                 summary=summary[:300],
+                full_description=full_description,
                 direct_url=direct_url,
                 url_status=url_status,
                 recovery_query=f"site:flatfox.ch {title[:40]} {self.city.city_name}",

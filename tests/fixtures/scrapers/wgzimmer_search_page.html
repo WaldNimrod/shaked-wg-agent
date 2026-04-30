@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>wgzimmer.ch - Basel City</title>
+  <script src="https://www.google.com/recaptcha/api.js?render=FAKESITEKEY"></script>
+  <script>
+    const siteKey = "FAKESITEKEY";
+    function submitForm() {
+      grecaptcha.execute(siteKey, {action: 'submitForm'}).then(function(token) {
+        document.getElementById('g-recaptcha-response').value = token;
+        document.searchMateForm.submit();
+      });
+    }
+  </script>
+</head>
+<body class="wgzimmer babyblue">
+  <div id="main">
+    <div id="container">
+      <div id="content">
+        <div class="text">
+          <h1><span class="title small-block">Available rooms in Basel City</span></h1>
+        </div>
+        <div class="result-navigation">
+          <a class="back search" href="#">Back to search</a>
+          <span class="skip">
+            <span class="counter">1-20 of 42</span>
+            <a class="next" href="#">Next</a>
+          </span>
+        </div>
+        <ul class="list">
+          <li id="list-header" class="search-mate-list-header">
+            <a href="#">
+              <div class="state">State</div>
+              <div class="cost">Cost</div>
+              <div class="from-date">From</div>
+            </a>
+          </li>
+          <li class="search-mate-entry">
+            <a href="/en/wgzimmer/mate/ch/baselstadt/2026-04-01-123456.html">
+              <div class="thumb"><img src="/images/thumb1.jpg" alt=""></div>
+              <div class="state">
+                <h3>Helles Zimmer in Gundeli WG</h3>
+                <div class="wgCity">Basel 4052</div>
+              </div>
+              <div class="cost">800 CHF</div>
+              <div class="from-date">01.04.2026</div>
+            </a>
+          </li>
+          <li class="search-mate-entry">
+            <a href="/en/wgzimmer/mate/ch/baselstadt/2026-04-10-234567.html">
+              <div class="thumb"><img src="/images/thumb2.jpg" alt=""></div>
+              <div class="state">
+                <h3>Veganes WG-Zimmer Kleinbasel</h3>
+                <div class="wgCity">Basel 4057</div>
+              </div>
+              <div class="cost">750 CHF</div>
+              <div class="from-date">10.04.2026</div>
+            </a>
+          </li>
+          <li class="search-mate-entry search-mate-entry-promoted">
+            <a href="/en/wgzimmer/mate/ch/baselstadt/2026-03-15-345678.html">
+              <div class="thumb"><img src="/images/thumb3.jpg" alt=""></div>
+              <div class="state">
+                <h3>Zimmer nahe Tram 14 und 16 Iselin</h3>
+                <div class="wgCity">Basel 4054</div>
+              </div>
+              <div class="cost">900 CHF</div>
+              <div class="from-date">15.03.2026</div>
+            </a>
+          </li>
+          <li class="search-mate-entry">
+            <a href="/en/wgzimmer/mate/ch/baselstadt/2026-04-20-456789.html">
+              <div class="thumb"></div>
+              <div class="state">
+                <h3>Ruhiges Zimmer Innenstadt Basel</h3>
+                <div class="wgCity">Basel 4001</div>
+              </div>
+              <div class="cost">1200 CHF</div>
+              <div class="from-date">20.04.2026</div>
+            </a>
+          </li>
+        </ul>
+        <div class="result-navigation">
+          <a class="back search" href="#">Back to search</a>
+          <span class="skip">
+            <span class="counter">1-20 of 42</span>
+            <a class="next" href="#">Next</a>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
