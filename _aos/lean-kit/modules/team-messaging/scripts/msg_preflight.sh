@@ -142,35 +142,9 @@ msg_curl() {
   curl "${args[@]}" "${AOS_API_BASE}${api_path}"
 }
 
-# ── Bypass audit log helper (AOS-V4-WP-MSG-HARDENING §bypass) ─────────────
-# msg_log_bypass <bypassed_file> [branch]
-#   Appends a JSONL entry with op=hook_bypassed to messages.log.
-#   Called by the pre-commit hook bypass path (git commit --no-verify).
-#   Falls back to local file append if W4 MSG-LOG endpoint is not available.
-msg_log_bypass() {
-  local bypassed_file="${1:-unknown}"
-  local branch="${2:-$(git branch --show-current 2>/dev/null || echo 'unknown')}"
-  local ts
-  ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date '+%Y-%m-%dT%H:%M:%SZ')"
-  local repo_root
-  repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
-  local log_dir="${repo_root}/_COMMUNICATION/_log"
-  local log_file="${log_dir}/messages.log"
-  local entry
-  entry="{\"ts\":\"${ts}\",\"op\":\"hook_bypassed\",\"file\":\"${bypassed_file}\",\"branch\":\"${branch}\"}"
-
-  mkdir -p "$log_dir"
-  # Atomic POSIX append (single write, same safety as _append_log_entry in team_messaging.py)
-  printf '%s\n' "$entry" >> "$log_file" 2>/dev/null || true
-}
-
 # Export helpers so subshells can use them too (best-effort; bash-only).
 export -f msg_detect_project_id 2>/dev/null || true
 export -f msg_curl 2>/dev/null || true
-export -f msg_log_bypass 2>/dev/null || true
-
-# Branch state check (AOS-V4-WP-SPAWN-4-BRANCH-GUARD AC-10) — non-blocking warning
-bash scripts/check_branch_state.sh || true
 
 # Auto-probe when sourced (so callers just `source ... && echo $API_ONLINE`)
 _probe_api

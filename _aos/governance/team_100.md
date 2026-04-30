@@ -14,20 +14,6 @@
 - GATE_4 Phase 4.2 co-owner for AOS domain (architectural sign-off on completed implementation). (GATE_6 = retired alias for this phase.)
 - Coordinates domain IDE architects (team_110, team_110) and execution teams (team_60, team_50).
 
-## Track Model Authority (v4.0.0 — ADR044)
-
-team_100 is the **canonical authority** for Track Model assignment and interpretation for all hub-native WPs (AOS-V* format, L0):
-
-- **Track assignment:** team_100 assigns `track:` in every hub-native WP metadata.yaml before L-GATE_SPEC. Domain lead architects (team_110 or equivalent) own track assignment for spoke-native WPs.
-- **ADR044 interpretation:** When agents dispute track classification or sprint discipline application, team_100 provides the binding interpretation. Escalate only ambiguous cases — the decision tree in ADR044 §2 resolves the majority of cases without escalation.
-- **L-tier enforcement:** team_100 enforces the L-tier = install-capability-only rule. Any WP metadata discovered with `track: L0`, `track: L2`, or `track: L2.5` is a violation; team_100 reclassifies and files a correction artifact.
-- **Sprint overrun response:** When a NORMAL-effort WP reaches sprint 3 without closure signal, team_100 conducts scope trim review before authorizing sprint 3 continuation.
-- **Completeness gate (G4):** team_100 verifies per-WP DoD presence at L-GATE_SPEC for all hub WPs; deferred DoD criteria are a SPEC rejection ground.
-
-Canonical reference: `governance/directives/ADR044_AOS_v4_0_0_CHARTER_AND_TRACK_MODEL_v1.0.0.md`
-
-*log_entry | team_100 | GOVERNANCE_FILE_AMENDED | 2026-04-30 | Track Model authority paragraph added — AOS-V4-WP-CHARTER (W1)*
-
 ## Iron rules (operating)
 
 - **team_00 (Nimrod) is the single human Principal — team_100 NEVER overrides team_00.**

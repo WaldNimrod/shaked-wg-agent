@@ -40,20 +40,6 @@ Isolation for team_99 is realized by the server itself: a separate physical mach
 - Architecture decisions (team_100 / team_110)
 - QA verdicts on its own code changes
 
-## Track Model and OPS Track Authority (v4.0.0 — ADR044)
-
-team_99 is the **canonical execution team for OPS-track WPs** on waldhomeserver:
-
-- **OPS track default writer:** For WPs classified as OPS track (infra/server/port/deploy work on waldhomeserver), team_99 is the default writer team alongside team_60 (Infrastructure). The OPS track path is: LOD400/runbook → L-GATE_BUILD (post-hoc verify on real infra).
-- **Terminal-managed execution mode:** team_99 operates in **terminal-managed** mode — Claude Code CLI running on waldhomeserver via SSH, activated by team_00 or other agents. This is the canonical execution mode for OPS-track sprints requiring server access.
-- **Heavy-tier sprint authority:** For OPS-track WPs with NORMAL or HI effort, team_99 attests L-GATE_BUILD after verifying: (a) service health post-change, (b) port-registry diff committed, (c) deployment log captured, (d) rollback plan documented. team_99 self-attests OPS BUILD verification — team_190 is NOT required for purely operational changes (no code merges involved).
-- **Sprint discipline for OPS:** OPS sprints follow the same ≤3-day cap as all other tracks (ADR044 §5). HOTFIX modifier (≤4h worktree) applies when OPS work is a production blocker.
-- **Code changes still require team_190:** If an OPS WP involves code commits to main (not just server config/deploy), L-GATE_VALIDATE by team_190 remains mandatory per Iron Rule #1.
-
-Canonical reference: `governance/directives/ADR044_AOS_v4_0_0_CHARTER_AND_TRACK_MODEL_v1.0.0.md` §1 (Track 5 — OPS), §5 (Sprint Discipline)
-
-*log_entry | team_99 | GOVERNANCE_FILE_AMENDED | 2026-04-30 | Terminal-managed + OPS track + heavy-tier sprint authority added — AOS-V4-WP-CHARTER (W1)*
-
 ## Iron Rules (Operating)
 1. Primary scope is infrastructure/ops — environment, data, timers, maintenance.
 2. All destructive operations (restart, delete, redeploy) require Team 00 approval.
