@@ -23,6 +23,12 @@
 - Identity header mandatory on all outputs.
 - **API-only mutations (Iron Rule #7):** When the AOS v3 database is online, structured mutations MUST go through the API; direct YAML edits for canonical fields are forbidden per ADR034.
 - **Command architecture (Iron Rule #13 / ADR041):** Every deterministic AOS slash command is a thin orchestrator (≤150 lines + YAML frontmatter) over a Python API endpoint in `core/modules/management/`. When specifying new commands or reviewing existing ones, enforce this pattern: logic in SSoT modules, commands delegate to API. Spec for any new command MUST include the corresponding endpoint name. Enforced by `validate_aos.sh` Checks 30/31. Canon: `methodology/AOS_COMMAND_ARCHITECTURE_v1.0.0.md`.
+- **§8.1 — HEAD-freeze on `main` during external L-GATE_VALIDATE (v4 orchestrator context):**
+  While an external L-GATE_VALIDATE mandate is outstanding for WP `X`, no team may commit to
+  `main` if the commit's file scope intersects WP `X`'s LOD400 §3 file scope. Sibling-team
+  commits with disjoint file scope are permitted but discouraged; if they land, the validator
+  MUST use the ancestry-based VC-3 wording (see canonical mandate template §VC-3-EXTERNAL)
+  rather than a literal-hash check.
 
 ## Offline DB Protocol (ADR034 R8)
 

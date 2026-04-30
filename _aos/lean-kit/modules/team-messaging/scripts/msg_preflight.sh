@@ -146,6 +146,9 @@ msg_curl() {
 export -f msg_detect_project_id 2>/dev/null || true
 export -f msg_curl 2>/dev/null || true
 
+# Branch state check (AOS-V4-WP-SPAWN-4-BRANCH-GUARD AC-10) — non-blocking warning
+bash scripts/check_branch_state.sh || true
+
 # Auto-probe when sourced (so callers just `source ... && echo $API_ONLINE`)
 _probe_api
 

@@ -1,6 +1,6 @@
 ---
 description: "Unified mandate template — ONE format for all gate types and all teams. Replaces per-gate ad-hoc formats."
-version: "1.0.0"
+version: "1.1.0"
 wp: AOS-V314-WP-CANONICAL-GATES
 ---
 
@@ -83,6 +83,16 @@ supersedes: {prior mandate id}  # only for resubmissions
 
 Total: {N} criteria
 ```
+
+<!-- §VC-3-EXTERNAL: use the following 3-part VC-3 when issuing L-GATE_VALIDATE_EXTERNAL mandates
+     (supersedes literal-hash baseline check) -->
+
+**VC-3 (External): WP build code context preserved.**
+(a) **Ancestry preservation:** `git merge-base --is-ancestor <mandate_baseline> HEAD` returns true.
+(b) **Working-tree preservation:** `git status --short` shows the LOD400 §3 builder-introduced artifacts uncommitted.
+(c) **Build-code disjointness:** `git log --name-only <mandate_baseline>..HEAD -- <LOD400_§3_pathspecs>` returns empty output. Communication artifacts under `_COMMUNICATION/team_*/<WP>/` are EXCLUDED from this check.
+
+If (a) + (b) pass but (c) shows intervening non-WP commits: treat as PASS_WITH_FINDINGS (log the commits as LOW finding). Only FAIL if (a) is false or (b) shows the builder's own artifacts uncommitted.
 
 ### Section 5: Files to Review
 

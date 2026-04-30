@@ -42,7 +42,24 @@ hardware:
 os:
   name: "Ubuntu"
   version: "24.04.4 LTS"
-  kernel: "6.8.0"
+  kernel: "6.8.0-111-generic" # active after next reboot (installed 2026-04-30)
+  patch_management:
+    auto_updates: true
+    daemon: "unattended-upgrades"
+    allowed_origins:
+      - "${distro_id}:${distro_codename}"
+      - "${distro_id}:${distro_codename}-security"
+      - "${distro_id}:${distro_codename}-updates"
+      - "${distro_id}ESMApps:${distro_codename}-apps-security"
+      - "${distro_id}ESM:${distro_codename}-infra-security"
+    excluded_origins:
+      - "noble-proposed"
+      - "noble-backports"
+      - "docker.com" # Docker patched manually during planned windows
+    auto_reboot: true
+    auto_reboot_time: "04:00"
+    runbook: "lean-kit/modules/12-home-server-infrastructure/runbooks/OS_PATCH_MANAGEMENT_v1.0.0.md"
+    last_full_patch: "2026-04-30"
 
 software:
   python: "3.12"

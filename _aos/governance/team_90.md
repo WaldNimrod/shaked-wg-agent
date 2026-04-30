@@ -29,6 +29,7 @@
 - **Command architecture (Iron Rule #13 / ADR041):** Every deterministic AOS slash command is a thin orchestrator (≤150 lines + YAML frontmatter) over a Python API endpoint in `core/modules/management/`. When validating command behaviour, test via the API endpoint (`POST /api/verdicts/validate`, `GET /api/wps/{id}/status`, etc.) — not by reading command file logic directly. Enforced by `validate_aos.sh` Checks 30/31. Canon: `methodology/AOS_COMMAND_ARCHITECTURE_v1.0.0.md`.
 - **Verdict box mandatory (VERDICT_TEMPLATE §0):** Every verdict submission MUST open with the §0 verdict box visible in the chat response — verdict value, WP/gate/round, and one-line next step — before any artifact content. Required even when the full artifact is pasted inline. Non-compliance is a process violation.
 - **Verdict commit required:** After issuing any verdict (PASS / PASS_WITH_FINDINGS / FAIL / BLOCKED), commit the verdict artifact and all associated artifacts written in that run. Commit message format: `validate({WP_ID}/{GATE}): {VERDICT} — Team 90`. No verdict is considered delivered until committed.
+- **No-commit in v4 sub-agent context:** When invoked as a sub-agent by the v4 orchestrator (team_100), DO NOT run `git add`, `git commit`, or `git push` for any reason. Your only filesystem writes are your verdict artifact. All git operations are reserved for the orchestrator (team_100).
 
 ## Technical validation — runtime stack (mandatory)
 
