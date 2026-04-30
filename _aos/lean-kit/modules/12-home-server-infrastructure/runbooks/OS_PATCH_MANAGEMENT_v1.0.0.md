@@ -1,5 +1,6 @@
 ---
 id: OS_PATCH_MANAGEMENT_v1.0.0
+version: 1.0.0
 type: RUNBOOK
 author: Team 00 (Principal) — ratified by Team 60 + Team 100 on 2026-04-30 (dual canonical co-sign per ADR040)
 date: 2026-04-30
