@@ -819,10 +819,10 @@ work_packages:
   profile: L0
 - id: SWG-PLAT-M2
   label: Full-description extraction — flatfox + wgzimmer scrapers (UNBLOCKER)
-  status: IN_REVIEW
+  status: COMPLETE
   track: A
   priority: P1_URGENT
-  current_lean_gate: L-GATE_B
+  current_lean_gate: L-GATE_V
   lod_status: LOD400
   assigned_builder: sonnet_sub_agent
   assigned_validator: haiku_sub_agent
@@ -843,7 +843,7 @@ work_packages:
     date: '2026-04-30'
     validator: team_190
     validator_engine: GPT-5.2 (Cursor Agent)
-    engine_waiver: PENDING_TEAM_00
+    engine_waiver: GRANTED_TEAM_00_2026-04-30
     findings: M2-F01 MINOR (AC2 prose vs tests) — fixed in 7c47fee. No blocking findings.
   notes: >
     Add full_description: str (≥500 chars) to ScrapedListing dataclass.
@@ -858,10 +858,10 @@ work_packages:
   profile: L0
 - id: SWG-PLAT-M3
   label: wgzimmer scraper recovery — returns 0 listings (Hauptquelle dead)
-  status: IN_REVIEW
+  status: COMPLETE
   track: A
   priority: P1_URGENT
-  current_lean_gate: L-GATE_B
+  current_lean_gate: L-GATE_V
   lod_status: LOD400
   assigned_builder: sonnet_sub_agent
   assigned_validator: haiku_sub_agent
@@ -882,7 +882,7 @@ work_packages:
     date: '2026-04-30'
     validator: team_190
     validator_engine: GPT-5.2 (Cursor Agent)
-    engine_waiver: PENDING_TEAM_00
+    engine_waiver: GRANTED_TEAM_00_2026-04-30
     findings: M3-F01 MINOR (live reCAPTCHA not re-proven) — acknowledged operational risk, tracked S005-P005-WP001.
   notes: >
     wgzimmer_pw.py returned 0 listings on run-20260429-213722-f1bd and prior run.
@@ -895,10 +895,10 @@ work_packages:
   profile: L0
 - id: SWG-PLAT-M1
   label: Profile schema — age, occupation_status, studies_*, move_in_optimal
-  status: IN_REVIEW
+  status: COMPLETE
   track: A
   priority: P1_URGENT
-  current_lean_gate: L-GATE_B
+  current_lean_gate: L-GATE_V
   lod_status: LOD400
   assigned_builder: sonnet_sub_agent
   assigned_validator: haiku_sub_agent
@@ -921,7 +921,7 @@ work_packages:
     date: '2026-04-30'
     validator: team_190
     validator_engine: GPT-5.2 (Cursor Agent)
-    engine_waiver: PENDING_TEAM_00
+    engine_waiver: GRANTED_TEAM_00_2026-04-30
     findings: M1-F01 MINOR (stale TODO comment) — fixed in 7c47fee. No blocking findings.
   notes: >
     Add age, occupation_status, studies_field, studies_institution, studies_start,
@@ -936,10 +936,10 @@ work_packages:
   profile: L0
 - id: SWG-PLAT-M4
   label: Outreach lifecycle tracking — contacted/replied/viewed/rejected
-  status: IN_REVIEW
+  status: COMPLETE
   track: A
   priority: HIGH
-  current_lean_gate: L-GATE_B
+  current_lean_gate: L-GATE_V
   lod_status: LOD400
   assigned_builder: sonnet_sub_agent
   assigned_validator: haiku_sub_agent
@@ -962,7 +962,7 @@ work_packages:
     date: '2026-04-30'
     validator: team_190
     validator_engine: GPT-5.2 (Cursor Agent)
-    engine_waiver: PENDING_TEAM_00
+    engine_waiver: GRANTED_TEAM_00_2026-04-30
     findings: No findings.
   notes: >
     Extend status enum: contacted, replied, viewed, rejected, replied_negative.
@@ -976,10 +976,10 @@ work_packages:
   profile: L0
 - id: SWG-PLAT-M5
   label: Negative-signal autofilter — women_only, Wochenaufenthalter, Zwischenmiete
-  status: IN_REVIEW
+  status: COMPLETE
   track: A
   priority: HIGH
-  current_lean_gate: L-GATE_B
+  current_lean_gate: L-GATE_V
   lod_status: LOD400
   assigned_builder: sonnet_sub_agent
   assigned_validator: haiku_sub_agent
@@ -1003,7 +1003,7 @@ work_packages:
     date: '2026-04-30'
     validator: team_190
     validator_engine: GPT-5.2 (Cursor Agent)
-    engine_waiver: PENDING_TEAM_00
+    engine_waiver: GRANTED_TEAM_00_2026-04-30
     findings: No findings.
   notes: >
     New extractor: shaked_wg_agent/extractors/negative_signals.py.
