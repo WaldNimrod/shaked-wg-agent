@@ -1851,9 +1851,34 @@ print(d.get('server', 'unknown'))
     scenario=$(echo "$parse_out" | sed -n '3p')
     checked_at=$(echo "$parse_out" | sed -n '4p')
     server=$(echo "$parse_out" | sed -n '5p')
-    # Advisory condition: IPv4 outbound failing AND no permanent mitigation.
-    if [ "$ipv4_ok" = "False" ] && { [ "$scenario" = "none" ] || [ "$scenario" = "expired_temporary" ]; }; then
-        log_skip 45 "WARN: WAN dual-stack — IPv4 outbound failing on '$server' with no permanent mitigation (scenario='$scenario'); consult lean-kit/modules/12-home-server-infrastructure/WAN_DUAL_STACK_HARDENING_CANON_v1.0.0.md §7. Last checked: $checked_at"
+    # Staleness check (canon §2): status file older than 30 days defeats the
+    # "verify after deploy/network change" purpose of IR#15 and must surface
+    # as advisory regardless of the recorded scenario.
+    local stale_days
+    stale_days=$(python3 -c "
+import datetime, sys
+ts = sys.argv[1]
+try:
+    if ts.endswith('Z'):
+        ts = ts[:-1] + '+00:00'
+    dt = datetime.datetime.fromisoformat(ts)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=datetime.timezone.utc)
+    age = datetime.datetime.now(datetime.timezone.utc) - dt
+    print(int(age.total_seconds() // 86400))
+except Exception:
+    print(-1)
+" "$checked_at" 2>/dev/null)
+    if [ -n "$stale_days" ] && [ "$stale_days" -gt 30 ] 2>/dev/null; then
+        log_skip 45 "WARN: WAN dual-stack — status file on '$server' is stale ($stale_days days old, >30d threshold; canon §2). Re-run wan_dual_stack_probe.sh to refresh. Last checked: $checked_at"
+        return
+    fi
+    # Advisory: IPv4 outbound failing AND no permanent mitigation.
+    # Scenarios "none" + "expired_temporary" + "E" are all canon-defined advisory cases
+    # (E is emergency-only DNS64 patch per canon §5 / Appendix B — explicitly NON-CANON
+    # and must be replaced ASAP with a permanent matrix scenario B/C/D/F).
+    if [ "$ipv4_ok" = "False" ] && { [ "$scenario" = "none" ] || [ "$scenario" = "expired_temporary" ] || [ "$scenario" = "E" ]; }; then
+        log_skip 45 "WARN: WAN dual-stack — IPv4 outbound failing on '$server' with non-permanent mitigation (scenario='$scenario'); consult lean-kit/modules/12-home-server-infrastructure/WAN_DUAL_STACK_HARDENING_CANON_v1.0.0.md §7. Last checked: $checked_at"
         return
     fi
     log_pass 45 "WAN dual-stack — server='$server' ipv4=$ipv4_ok ipv6=$ipv6_ok scenario='$scenario' (checked $checked_at)"

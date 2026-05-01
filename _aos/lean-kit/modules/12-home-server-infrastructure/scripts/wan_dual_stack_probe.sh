@@ -51,16 +51,21 @@ log() { [ "$VERBOSE" -eq 1 ] && echo "  [probe] $*" >&2 || true; }
 
 probe_ipv4() {
     # Returns 0 if curl -4 to a known IPv4-reachable destination succeeds within 5s.
+    # Per canon §3 edge cases: any 2xx or 3xx HTTP response counts as reachable
+    # (e.g., 1.1.1.1 returns HTTP 301 redirecting to HTTPS — server is reachable,
+    # just redirecting). Only network-level failures (timeout, connection refused,
+    # DNS failure, etc., which produce code "000") indicate IPv4 outbound failure.
     local code
     code=$(curl -4 -sS --max-time 5 https://1.1.1.1 -o /dev/null -w "%{http_code}" 2>/dev/null || echo "000")
-    [ "$code" = "200" ] && return 0 || return 1
+    [[ "$code" =~ ^(2|3)[0-9][0-9]$ ]] && return 0 || return 1
 }
 
 probe_ipv6() {
     # Returns 0 if curl -6 to a known IPv6-reachable destination succeeds within 5s.
+    # Per canon §3 edge cases: 2xx and 3xx both count as reachable.
     local code
     code=$(curl -6 -sS --max-time 5 https://www.cloudflare.com -o /dev/null -w "%{http_code}" 2>/dev/null || echo "000")
-    [ "$code" = "200" ] && return 0 || return 1
+    [[ "$code" =~ ^(2|3)[0-9][0-9]$ ]] && return 0 || return 1
 }
 
 probe_nat64() {
