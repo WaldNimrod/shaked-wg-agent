@@ -213,11 +213,56 @@ For pipeline runs: `POST /api/runs/{run_id}/feedback` with:
 3. `/server --pull [project]` — pull and restart
 4. `/server --status` — verify post-deployment health
 5. `/server --logs [project]` — check for errors in last 50 lines
-6. Log result artifact to `_COMMUNICATION/team_99/`
-7. Report to Team 00 for routing
+6. **WAN dual-stack verification** — see "WAN Dual-Stack Verification" section below (mandatory on initial deploy + after any home-network change, per IR#15)
+7. Log result artifact to `_COMMUNICATION/team_99/`
+8. Report to Team 00 for routing
+
+## WAN Dual-Stack Verification (IR#15 + ADR048)
+
+**Mandatory on initial deploy AND after any home-network change** (ISP swap, router replacement, network reconfiguration). Source: ADR048, IR#15. Mitigation matrix SSoT: `lean-kit/modules/12-home-server-infrastructure/WAN_DUAL_STACK_HARDENING_CANON_v1.0.0.md` §10 (six-scenario matrix A–F).
+
+### Detection — three commands
+
+Run these from the server (NOT the LAN client) before declaring any deploy "GREEN":
+
+```bash
+# IPv4 outbound reachability
+curl -4 -sS --max-time 5 https://1.1.1.1 -o /dev/null -w "IPv4: %{http_code}\n"
+
+# IPv6 outbound reachability
+curl -6 -sS --max-time 5 https://www.cloudflare.com -o /dev/null -w "IPv6: %{http_code}\n"
+
+# NAT64 presence probe (returns AAAA records iff ISP/upstream provides NAT64)
+dig +short AAAA ipv4only.arpa @<ISP DNS server>
+```
+
+Expected outcomes:
+- Both `curl` commands return `200` → dual-stack OK; no further action.
+- IPv6 = `200`, IPv4 != `200` → IPv6-only WAN. Check NAT64 probe and consult mitigation matrix:
+  - NAT64 probe returns AAAA records → ISP has NAT64. Apply matrix scenario **B** (`clatd` auto-detect).
+  - NAT64 probe returns empty → ISP has no NAT64 (Bezeq case). Apply matrix scenario **C** (`clatd` + local `tayga` with anti-pattern guidance) or **D** (`clatd` + DNS64 `nat64.net`, temporary).
+  - Cloudflared-only environment → matrix scenario **A** (`protocol: quic` + `edge-ip-version: "6"` — both flags required).
+- IPv4 = `200`, IPv6 != `200` → IPv4-only WAN; spoke not affected by IR#15 enforcement (mark as compliant).
+
+Refresh `_aos/server_dual_stack_status.json` (schema in lean-kit canon §3.5) after each verification — `validate_aos.sh` Check 45 reads this file in advisory `[SKIP:WARN]` mode.
+
+### DEPLOY_LOG requirements
+
+Every deploy log artifact in `_COMMUNICATION/team_99/` MUST distinguish:
+
+- **Layer A (cloudflared-specific)** — what's permanent at the cloudflared service level.
+- **Layer B (general IPv4 outbound)** — what's permanent vs. temporary at the host level.
+- **Cleanup checklist** — every temporary patch (DNS64 via `nat64.net`, manual `/etc/resolv.conf` edit, etc.) MUST appear in this list with a removal trigger ("once `clatd`+`tayga` is permanent" / "once ISP provides Dual-Stack").
+
+Reference deploy log (proving ground): TikTrack `_COMMUNICATION/team_99/DEPLOY_LOG_CLOUDFLARED_IPV6_FIX_2026-05-01_v1.0.0.md` — empirical T3 troubleshooting record from the Bezeq be fiber pilot-launch outage that drove this clause's authoring.
+
+### Boundary
+
+- This clause is **normative** for verification + mitigation choice but does NOT execute server-side mitigation in this team_99 contract — execution remains a per-spoke team_99 operation per the Standard Deployment Procedure above.
+- The hub (`agents-os`) does NOT run the probe in production; the probe artifact (`lean-kit/modules/12-home-server-infrastructure/scripts/wan_dual_stack_probe.sh`) is distributed to spokes for local execution.
 
 ## Validation Criteria
-Operation completed successfully. Logs captured. Service health verified post-change. Rollback plan documented for destructive operations. No secrets exposed. Before/after state recorded.
+Operation completed successfully. Logs captured. Service health verified post-change. Rollback plan documented for destructive operations. No secrets exposed. Before/after state recorded. **WAN dual-stack verification performed** on initial deploy and after network changes (per IR#15 + ADR048); `_aos/server_dual_stack_status.json` refreshed; deploy log records Layer A / Layer B / Cleanup checklist split where mitigation was applied.
 
 ## Boundaries
 - Write to: `_COMMUNICATION/team_99/` only

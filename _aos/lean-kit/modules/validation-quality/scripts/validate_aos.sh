@@ -1,5 +1,5 @@
 #!/bin/bash
-# validate_aos.sh — Universal _aos/ Validation (33 Checks)
+# validate_aos.sh — Universal _aos/ Validation (45 Checks)
 # =========================================================
 # L-GATE_BUILD exit criterion: MUST return exit code 0 (no FAIL; SKIP is allowed).
 #
@@ -1567,10 +1567,302 @@ check_38() {
     fi
 }
 
+# Check 39: MSG-LOG operational (W4 dependency — AOS-V4-WP-MSG-LOG)
+# Verify _COMMUNICATION/_log/messages.log exists and was modified within 7 days.
+# SKIP when log absent (pre-W4 state is acceptable at hub).
+# Cross-platform mtime via python3 (avoids stat -f/-c divergence).
+check_39() {
+    local log_file="$PROJECT_ROOT/_COMMUNICATION/_log/messages.log"
+    if [ ! -f "$log_file" ]; then
+        log_skip 39 "MSG-LOG not yet created (_COMMUNICATION/_log/messages.log absent — acceptable pre-W4)"
+        return
+    fi
+    local days_old
+    days_old=$(python3 -c "
+import os, time
+mtime = os.path.getmtime('$log_file')
+age_days = (time.time() - mtime) / 86400
+print(int(age_days))
+")
+    if [ "$days_old" -gt 7 ]; then
+        log_fail 39 "MSG-LOG stale: last modified ${days_old} day(s) ago (>7 day threshold)"
+    else
+        log_pass 39 "MSG-LOG operational: exists + modified within ${days_old} day(s)"
+    fi
+}
+
+# Check 40: MSG-HARDENING hook active (W5 dependency — AOS-V4-WP-MSG-HARDENING)
+# W5 delivers a pre-commit hook (not commit-msg) that chains msg_precommit_hook.sh.
+# Verify: (a) git pre-commit hook is installed and executable; (b) msg_precommit_hook.sh
+# exists and is executable; (c) hook chains MSG hardening (references msg_precommit_hook.sh).
+# Uses git rev-parse --git-path for linked-worktree compatibility (W5 R1 lesson).
+# NOTE: LOD200 sketch assumed commit-msg; actual W5 deliverable uses pre-commit.
+#       Deviation documented in W7 completion report §6.
+check_40() {
+    # Resolve pre-commit hook path (worktree-safe via git rev-parse).
+    local hook_path
+    hook_path=$(git -C "$PROJECT_ROOT" rev-parse --git-path hooks/pre-commit 2>/dev/null || true)
+    if [ -n "$hook_path" ] && [[ "$hook_path" != /* ]]; then
+        hook_path="$PROJECT_ROOT/$hook_path"
+    fi
+    # Resolve msg_precommit_hook.sh location: hub canon at lean-kit/..., spoke snapshot at _aos/lean-kit/...
+    local msg_hook=""
+    if [ -f "$PROJECT_ROOT/lean-kit/modules/team-messaging/scripts/msg_precommit_hook.sh" ]; then
+        msg_hook="$PROJECT_ROOT/lean-kit/modules/team-messaging/scripts/msg_precommit_hook.sh"
+    elif [ -f "$PROJECT_ROOT/_aos/lean-kit/modules/team-messaging/scripts/msg_precommit_hook.sh" ]; then
+        msg_hook="$PROJECT_ROOT/_aos/lean-kit/modules/team-messaging/scripts/msg_precommit_hook.sh"
+    fi
+    # Spoke context: hook installation is operator choice. SKIP cleanly when no hook present
+    # (acceptable pre-W5-propagation or when spoke opts out of commit-time MSG validation).
+    if [ "$CONTEXT" != "hub" ]; then
+        if [ -z "$hook_path" ] || [ ! -f "$hook_path" ]; then
+            if [ -z "$msg_hook" ]; then
+                log_skip 40 "MSG-HARDENING: spoke without pre-commit hook + no msg_precommit_hook.sh snapshot — acceptable pre-W5-propagation"
+            else
+                log_skip 40 "MSG-HARDENING: spoke msg_precommit_hook.sh snapshot present but pre-commit hook not installed — acceptable (operator choice)"
+            fi
+            return
+        fi
+        # Spoke with hook installed → validate it the same way as hub.
+    fi
+    # Hub (or spoke with hook installed): full validation.
+    local missing=0
+    local details=""
+    if [ -z "$hook_path" ]; then
+        missing=$((missing+1))
+        details="${details}\n    [pre-commit] could not resolve hook path via git rev-parse --git-path"
+    elif [ ! -f "$hook_path" ]; then
+        missing=$((missing+1))
+        details="${details}\n    [pre-commit] hook absent at $hook_path"
+    elif [ ! -x "$hook_path" ]; then
+        missing=$((missing+1))
+        details="${details}\n    [pre-commit] hook not executable at $hook_path"
+    elif ! grep -q "msg_precommit_hook" "$hook_path" 2>/dev/null; then
+        missing=$((missing+1))
+        details="${details}\n    [pre-commit] hook does not chain msg_precommit_hook.sh"
+    fi
+    if [ -z "$msg_hook" ]; then
+        missing=$((missing+1))
+        details="${details}\n    [msg_hook] msg_precommit_hook.sh absent at lean-kit/ or _aos/lean-kit/ — W5 not delivered"
+    elif [ ! -x "$msg_hook" ]; then
+        missing=$((missing+1))
+        details="${details}\n    [msg_hook] msg_precommit_hook.sh not executable at $msg_hook"
+    fi
+    if [ "$missing" -gt 0 ]; then
+        log_fail 40 "MSG-HARDENING hook wiring incomplete — $missing gap(s):$details"
+    else
+        log_pass 40 "MSG-HARDENING active: pre-commit hook installed + chains msg_precommit_hook.sh (W5)"
+    fi
+}
+
+# Check 41: AUTO-ACTIVATION dryrun available (W6 dependency — AOS-V4-WP-AUTO-ACTIVATION-DRYRUN)
+# SKIP when auto-activation/ directory absent (pre-W6 state).
+# FAIL when dryrun.sh missing or not executable.
+# PASS when dryrun.sh runs and produces recognisable decision output (DECISION/ACTIVATE/SKIP/REJECT).
+check_41() {
+    local dryrun_dir="$PROJECT_ROOT/auto-activation"
+    local dryrun_sh="$dryrun_dir/dryrun.sh"
+    local fixture="$dryrun_dir/tests/fixtures/clean_activation.json"
+    if [ ! -d "$dryrun_dir" ]; then
+        log_skip 41 "auto-activation/ directory absent — acceptable pre-W6"
+        return
+    fi
+    if [ ! -f "$dryrun_sh" ]; then
+        log_fail 41 "dryrun.sh absent in auto-activation/ — W6 not yet delivered"
+        return
+    fi
+    if [ ! -x "$dryrun_sh" ]; then
+        log_fail 41 "dryrun.sh not executable"
+        return
+    fi
+    local output
+    if [ -f "$fixture" ]; then
+        output=$(bash "$dryrun_sh" --fixture "$fixture" 2>/dev/null || true)
+    else
+        output=$(bash "$dryrun_sh" 2>/dev/null || true)
+    fi
+    if echo "$output" | grep -qiE "DECISION|ACTIVATE|SKIP|REJECT"; then
+        log_pass 41 "AUTO-ACTIVATION dryrun available: executable + produces decision output"
+    else
+        log_fail 41 "dryrun.sh ran but produced no recognizable decision output (expected DECISION/ACTIVATE/SKIP/REJECT)"
+    fi
+}
+
+# Check 42: Sprint discipline — no active WP may exceed 3 sprints (ADR044 §Sprint Discipline)
+# Reads sprint_count from every _aos/work_packages/*/metadata.yaml.
+# Only WPs with status ACTIVE, IN_PROGRESS, or LOD*_DRAFT and explicit sprint_count > 3 fail.
+# Absent sprint_count = compliant (pre-v4 WPs without the field are not penalised).
+check_42() {
+    local violations=0
+    local details=""
+    while IFS= read -r meta; do
+        local wp_id sprint_count status
+        wp_id=$(basename "$(dirname "$meta")")
+        sprint_count=$(python3 -c "
+import yaml, sys
+with open(sys.argv[1]) as f: m = yaml.safe_load(f) or {}
+print(m.get('sprint_count', ''))
+" "$meta" 2>/dev/null)
+        status=$(python3 -c "
+import yaml, sys
+with open(sys.argv[1]) as f: m = yaml.safe_load(f) or {}
+print(m.get('status', ''))
+" "$meta" 2>/dev/null)
+        if [[ "$status" =~ ^(ACTIVE|IN_PROGRESS|LOD[0-9]+_DRAFT)$ ]] && \
+           [ -n "$sprint_count" ] && \
+           [ "$sprint_count" -gt 3 ] 2>/dev/null; then
+            violations=$((violations+1))
+            details="${details}\n    $wp_id: sprint_count=$sprint_count (max 3)"
+        fi
+    done < <(find "$AOS_DIR/work_packages" -name "metadata.yaml" 2>/dev/null)
+    if [ "$violations" -gt 0 ]; then
+        log_fail 42 "Sprint discipline violated — $violations WP(s) exceed 3-sprint cap:$details"
+    else
+        log_pass 42 "Sprint discipline: all active WPs within ≤3 sprint cap"
+    fi
+}
+
+# Check 43: Milestone completeness gate (v4.0.0 GA criterion — G4 / V4_GAP_MATRIX §5)
+# SKIP when _aos/milestones/ absent (pre-MS001 state — no milestone definitions to check against).
+# A MASTER_CLOSURE for a prior milestone does NOT activate this check; only the presence of
+# _aos/milestones/ (containing milestone WP listings) triggers full engagement.
+# When _aos/milestones/ exists, checks:
+#   (a) No forbidden markers ([T]BD / [F]IXME / to [b]e defined) in any WP spec under
+#       $AOS_DIR/work_packages/ — EXCLUDING the W7 spec dir to avoid self-referential failure
+#       (W7 R0 decision A: char-class exclusion of AOS-V4-WP-VALIDATE-CHECKS-39-43/).
+#   (b) All milestone WPs in LOD500 / LOD500_LOCKED, or listed in MASTER_CLOSURE deferred section.
+# NOTE: forbidden-marker literals obfuscated in scanner source per W5 R3 lesson.
+check_43() {
+    local milestone_dir="$AOS_DIR/milestones"
+    local closure_glob="$PROJECT_ROOT/_COMMUNICATION/team_00/MASTER_CLOSURE*.md"
+    if [ ! -d "$milestone_dir" ]; then
+        log_skip 43 "Milestone completeness gate: _aos/milestones/ absent — no milestone definitions to check against (acceptable pre-MS001)"
+        return
+    fi
+    local failures=0
+    local details=""
+    # (a) No [T]BD/[F]IXME/to [b]e defined in WP specs (W7 spec dir excluded — decision A)
+    local tbd_hits
+    tbd_hits=$(grep -ril --exclude-dir="AOS-V4-WP-VALIDATE-CHECKS-39-43" \
+        "[T]BD\|[F]IXME\|to [b]e defined" \
+        "$AOS_DIR/work_packages/" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$tbd_hits" -gt 0 ]; then
+        failures=$((failures+1))
+        details="${details}\n    [forbidden-markers] $tbd_hits WP spec file(s) contain forbidden incomplete-work markers"
+    fi
+    # (b) All milestone WPs in LOD500_LOCKED or deferred in MASTER_CLOSURE
+    local closure_file
+    closure_file=$(ls $closure_glob 2>/dev/null | sort | tail -1)
+    while IFS= read -r meta; do
+        local wp_id lod_status
+        wp_id=$(basename "$(dirname "$meta")")
+        lod_status=$(python3 -c "
+import yaml, sys
+with open(sys.argv[1]) as f: m = yaml.safe_load(f) or {}
+print(m.get('lod_status', ''))
+" "$meta" 2>/dev/null)
+        if [ "$lod_status" != "LOD500" ] && [ "$lod_status" != "LOD500_LOCKED" ]; then
+            if [ -n "$closure_file" ] && grep -q "$wp_id" "$closure_file" 2>/dev/null; then
+                : # Listed as deferred in MASTER_CLOSURE — acceptable
+            else
+                failures=$((failures+1))
+                details="${details}\n    [incomplete] $wp_id lod_status=$lod_status — not LOD500_LOCKED and not in MASTER_CLOSURE deferred section"
+            fi
+        fi
+    done < <(find "$milestone_dir" -name "*.yaml" -exec grep -l "wp_id" {} \; 2>/dev/null)
+    if [ "$failures" -gt 0 ]; then
+        log_fail 43 "Milestone completeness gate FAILED — $failures issue(s):$details"
+    else
+        log_pass 43 "Milestone completeness gate: all WPs LOD500_LOCKED or explicitly deferred; 0 forbidden-marker strings"
+    fi
+}
+
+# Check 44: Track+Effort metadata enforcement (C14 — ADR044 §Track Model)
+# Every _aos/work_packages/*/metadata.yaml must declare a valid track: and effort: field.
+# Valid tracks: EXPRESS STANDARD MANAGED RESEARCH OPS CONTENT
+# Valid efforts: LOW NORMAL HI
+check_44() {
+    local valid_tracks="EXPRESS STANDARD MANAGED RESEARCH OPS CONTENT"
+    local valid_efforts="LOW NORMAL HI"
+    local violations=0
+    local details=""
+    while IFS= read -r meta; do
+        local wp_id track effort
+        wp_id=$(basename "$(dirname "$meta")")
+        track=$(python3 -c "
+import yaml, sys
+with open(sys.argv[1]) as f: m = yaml.safe_load(f) or {}
+print(m.get('track', ''))
+" "$meta" 2>/dev/null)
+        effort=$(python3 -c "
+import yaml, sys
+with open(sys.argv[1]) as f: m = yaml.safe_load(f) or {}
+print(m.get('effort', ''))
+" "$meta" 2>/dev/null)
+        local ok=1
+        if [ -z "$track" ] || ! echo "$valid_tracks" | grep -qw "$track"; then
+            ok=0; details="${details}\n    $wp_id: track='$track' invalid or missing"
+        fi
+        if [ -z "$effort" ] || ! echo "$valid_efforts" | grep -qw "$effort"; then
+            ok=0; details="${details}\n    $wp_id: effort='$effort' invalid or missing"
+        fi
+        [ "$ok" -eq 0 ] && violations=$((violations+1))
+    done < <(find "$AOS_DIR/work_packages" -name "metadata.yaml" 2>/dev/null)
+    if [ "$violations" -gt 0 ]; then
+        log_fail 44 "Track+Effort metadata enforcement — $violations WP(s) missing/invalid fields:$details"
+    else
+        log_pass 44 "Track+Effort metadata: all WP metadata.yaml files have valid track: and effort: fields"
+    fi
+}
+
+# Check 45: WAN dual-stack health (W11 — IPv6-only WAN compatibility advisory).
+# Authority: ADR048 + IR#15 + lean-kit/.../WAN_DUAL_STACK_HARDENING_CANON_v1.0.0.md §8.
+# Reads $PROJECT_ROOT/_aos/server_dual_stack_status.json (refreshed by
+# wan_dual_stack_probe.sh on each spoke).
+# SKIP when status file absent (probe not yet run; acceptable pre-W11-propagation).
+# SKIP with "WARN:" prefix in message when ipv4_outbound=false AND
+# mitigation_scenario IN {none, expired_temporary} — preserves PASS/FAIL/SKIP exit
+# semantics on v4.0.0 release artifact (option b per RESPONSE corrections).
+# PASS when status indicates dual-stack OK or a permanent mitigation is in place.
+check_45() {
+    local status_file="$PROJECT_ROOT/_aos/server_dual_stack_status.json"
+    if [ ! -f "$status_file" ]; then
+        log_skip 45 "WAN dual-stack status file absent (acceptable pre-W11-propagation; run wan_dual_stack_probe.sh on spoke server to populate)"
+        return
+    fi
+    # Parse JSON via python3 (already required by validate_aos.sh).
+    local parse_out
+    parse_out=$(python3 -c "
+import json, sys
+with open(sys.argv[1]) as f: d = json.load(f)
+print(d.get('ipv4_outbound', None))
+print(d.get('ipv6_outbound', None))
+print(d.get('mitigation_scenario', ''))
+print(d.get('checked_at', ''))
+print(d.get('server', 'unknown'))
+" "$status_file" 2>/dev/null)
+    if [ -z "$parse_out" ]; then
+        log_skip 45 "WAN dual-stack status file present but unparseable JSON — refresh with wan_dual_stack_probe.sh"
+        return
+    fi
+    local ipv4_ok ipv6_ok scenario checked_at server
+    ipv4_ok=$(echo "$parse_out" | sed -n '1p')
+    ipv6_ok=$(echo "$parse_out" | sed -n '2p')
+    scenario=$(echo "$parse_out" | sed -n '3p')
+    checked_at=$(echo "$parse_out" | sed -n '4p')
+    server=$(echo "$parse_out" | sed -n '5p')
+    # Advisory condition: IPv4 outbound failing AND no permanent mitigation.
+    if [ "$ipv4_ok" = "False" ] && { [ "$scenario" = "none" ] || [ "$scenario" = "expired_temporary" ]; }; then
+        log_skip 45 "WARN: WAN dual-stack — IPv4 outbound failing on '$server' with no permanent mitigation (scenario='$scenario'); consult lean-kit/modules/12-home-server-infrastructure/WAN_DUAL_STACK_HARDENING_CANON_v1.0.0.md §7. Last checked: $checked_at"
+        return
+    fi
+    log_pass 45 "WAN dual-stack — server='$server' ipv4=$ipv4_ok ipv6=$ipv6_ok scenario='$scenario' (checked $checked_at)"
+}
+
 # ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 38 checks on $AOS_DIR (active_modules: $ACTIVE_MODULES_MODE, context: ${CONTEXT:-?})"
+echo "validate_aos.sh — running up to 45 checks on $AOS_DIR (active_modules: $ACTIVE_MODULES_MODE, context: ${CONTEXT:-?})"
 echo "================================================="
 
 check_1
@@ -1611,6 +1903,13 @@ check_35
 check_36
 check_37
 check_38
+check_39
+check_40
+check_41
+check_42
+check_43
+check_44
+check_45
 
 echo ""
 echo "================================================="
