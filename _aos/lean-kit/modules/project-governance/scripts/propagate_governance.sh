@@ -162,13 +162,6 @@ else
   DIRECTIVE_SOURCE="${AOS_ROOT}/governance/directives"
 fi
 
-# Methodology snapshot source (hub: methodology/*.md → _aos/methodology/ in spokes)
-if [ "$MODE" = "legacy" ]; then
-  METHODOLOGY_SOURCE="${LEGACY_AOS}/methodology"
-else
-  METHODOLOGY_SOURCE="${AOS_ROOT}/methodology"
-fi
-
 # ─── Helpers ─────────────────────────────────────────────────────────────────────
 
 log() { echo "$@"; }
@@ -247,36 +240,6 @@ detect_conflicts() {
     done
   fi
 
-  # Methodology snapshot conflict detection (methodology/*.md → _aos/methodology/)
-  if [ -d "$METHODOLOGY_SOURCE" ]; then
-    local meth_tgt
-    meth_tgt="$(dirname "$target")/methodology"
-    for src_file in "$METHODOLOGY_SOURCE"/*.md; do
-      [ -f "$src_file" ] || continue
-      local meth_base meth_tgt_file
-      meth_base=$(basename "$src_file")
-      meth_tgt_file="$meth_tgt/$meth_base"
-      if [ ! -f "$meth_tgt_file" ]; then
-        continue
-      fi
-      local src_hash_m tgt_hash_m
-      src_hash_m=$(md5_hash "$src_file")
-      tgt_hash_m=$(md5_hash "$meth_tgt_file")
-      if [ "$src_hash_m" != "$tgt_hash_m" ]; then
-        CONFLICTS_FOUND=$((CONFLICTS_FOUND + 1))
-        conflicts=$((conflicts + 1))
-        log "  CONFLICT: methodology/$meth_base in $name (source=$src_hash_m target=$tgt_hash_m)"
-        report "| $name | methodology/$meth_base | $src_hash_m | $tgt_hash_m | CONFLICT |"
-        if [ "$SHOW_DIFF" = true ]; then
-          echo "--- diff: $name/methodology/$meth_base ---"
-          diff -u "$meth_tgt_file" "$src_file" || true
-          echo "--- end diff ---"
-          echo ""
-        fi
-      fi
-    done
-  fi
-
   return $conflicts
 }
 
@@ -310,26 +273,10 @@ propagate_target() {
     count=$((count + adr_copied))
   fi
 
-  # Methodology snapshot propagation (methodology/*.md → _aos/methodology/)
-  local meth_copied=0
-  if [ -d "$METHODOLOGY_SOURCE" ]; then
-    local meth_tgt
-    meth_tgt="$(dirname "$target")/methodology"
-    mkdir -p "$meth_tgt"
-    for src_file in "$METHODOLOGY_SOURCE"/*.md; do
-      [ -f "$src_file" ] || continue
-      cp "$src_file" "$meth_tgt/"
-      meth_copied=$((meth_copied + 1))
-    done
-  fi
-  if [ "$meth_copied" -gt 0 ]; then
-    count=$((count + meth_copied))
-  fi
-
   FILES_PROPAGATED=$((FILES_PROPAGATED + count))
-  local team_n=$((count - adr_copied - meth_copied))
-  log "  Copied → $name: $team_n team_*.md + $adr_copied ADR + $meth_copied methodology (total $count)"
-  report "| $name | $count files (team + directives + methodology) | OK |"
+  local team_n=$((count - adr_copied))
+  log "  Copied → $name: $team_n team_*.md + $adr_copied ADR (total $count)"
+  report "| $name | $count files (team + directives) | OK |"
 }
 
 # ─── Phase 4: Verification ──────────────────────────────────────────────────────
@@ -386,35 +333,9 @@ verify_target() {
     done
   fi
 
-  # Methodology snapshot verification (methodology/*.md → _aos/methodology/)
-  if [ -d "$METHODOLOGY_SOURCE" ]; then
-    local meth_tgt
-    meth_tgt="$(dirname "$target")/methodology"
-    for src_file in "$METHODOLOGY_SOURCE"/*.md; do
-      [ -f "$src_file" ] || continue
-      local meth_base meth_tgt_file
-      meth_base=$(basename "$src_file")
-      meth_tgt_file="$meth_tgt/$meth_base"
-      if [ ! -f "$meth_tgt_file" ]; then
-        fail "  MISSING: $name/methodology/$meth_base"
-        errors=$((errors + 1))
-        report "| $name | methodology/$meth_base | MISSING |"
-        continue
-      fi
-      local s_hm t_hm
-      s_hm=$(md5_hash "$src_file")
-      t_hm=$(md5_hash "$meth_tgt_file")
-      if [ "$s_hm" != "$t_hm" ]; then
-        fail "  MISMATCH: $name/methodology/$meth_base"
-        errors=$((errors + 1))
-        report "| $name | methodology/$meth_base | MISMATCH |"
-      fi
-    done
-  fi
-
   VERIFICATION_ERRORS=$((VERIFICATION_ERRORS + errors))
   if [ $errors -eq 0 ]; then
-    local tc ac mc f
+    local tc ac f
     tc=$(ls "$SOURCE"/team_*.md 2>/dev/null | wc -l | tr -d ' ')
     ac=0
     if [ -d "$DIRECTIVE_SOURCE" ]; then
@@ -423,15 +344,8 @@ verify_target() {
         ac=$((ac + 1))
       done
     fi
-    mc=0
-    if [ -d "$METHODOLOGY_SOURCE" ]; then
-      for f in "$METHODOLOGY_SOURCE"/*.md; do
-        [ -f "$f" ] || continue
-        mc=$((mc + 1))
-      done
-    fi
-    log "  Verified: $name — all files MATCH (team: $tc, ADR: $ac, methodology: $mc)"
-    report "| $name | ALL MATCH | team $tc + ADR $ac + methodology $mc |"
+    log "  Verified: $name — all files MATCH (team: $tc, ADR: $ac)"
+    report "| $name | ALL MATCH | team $tc + ADR $ac |"
   fi
 
   return $errors
@@ -498,18 +412,8 @@ if [ -d "$DIRECTIVE_SOURCE" ]; then
 else
   warn "ADR directive source not found: $DIRECTIVE_SOURCE — ADR propagation will be skipped"
 fi
-METH_SRC_COUNT=0
-if [ -d "$METHODOLOGY_SOURCE" ]; then
-  for f in "$METHODOLOGY_SOURCE"/*.md; do
-    [ -f "$f" ] || continue
-    METH_SRC_COUNT=$((METH_SRC_COUNT + 1))
-  done
-else
-  warn "Methodology source not found: $METHODOLOGY_SOURCE — methodology propagation will be skipped"
-fi
 log "Source: $SRC_COUNT team_*.md from $SOURCE"
 log "ADR directives: $ADR_SRC_COUNT file(s) from $DIRECTIVE_SOURCE"
-log "Methodology docs: $METH_SRC_COUNT file(s) from $METHODOLOGY_SOURCE"
 log ""
 
 report "# Governance Propagation Report"
@@ -517,7 +421,6 @@ report ""
 report "**Date:** $(timestamp)"
 report "**Team contracts:** \`$SOURCE\` ($SRC_COUNT files)"
 report "**ADR directives:** \`$DIRECTIVE_SOURCE\` ($ADR_SRC_COUNT files)"
-report "**Methodology docs:** \`$METHODOLOGY_SOURCE\` ($METH_SRC_COUNT files)"
 report "**Mode:** $MODE | Dry-run: $DRY_RUN"
 report ""
 
@@ -544,60 +447,8 @@ log ""
 log "Conflicts found: $CONFLICTS_FOUND"
 log ""
 
-# ── Dry-run: always emit propagation manifest (regardless of conflicts) ──
-if [ "$DRY_RUN" = true ]; then
-  log "--- Dry-run propagation manifest ---"
-  log ""
-  log "  Team contracts ($SRC_COUNT):"
-  for f in "$SOURCE"/team_*.md; do
-    [ -f "$f" ] || continue
-    log "    → $(basename "$f")"
-  done
-  log ""
-  log "  ADR directives ($ADR_SRC_COUNT):"
-  if [ -d "$DIRECTIVE_SOURCE" ]; then
-    for f in "$DIRECTIVE_SOURCE"/ADR*.md; do
-      [ -f "$f" ] || continue
-      log "    → directives/$(basename "$f")"
-    done
-  fi
-  log ""
-  log "  Methodology docs ($METH_SRC_COUNT):"
-  if [ -d "$METHODOLOGY_SOURCE" ]; then
-    for f in "$METHODOLOGY_SOURCE"/*.md; do
-      [ -f "$f" ] || continue
-      log "    → methodology/$(basename "$f")"
-    done
-  fi
-  log ""
-  report "### Propagation manifest"
-  report ""
-  report "**Team contracts ($SRC_COUNT):**"
-  for f in "$SOURCE"/team_*.md; do
-    [ -f "$f" ] || continue
-    report "- \`$(basename "$f")\`"
-  done
-  report ""
-  report "**ADR directives ($ADR_SRC_COUNT):**"
-  if [ -d "$DIRECTIVE_SOURCE" ]; then
-    for f in "$DIRECTIVE_SOURCE"/ADR*.md; do
-      [ -f "$f" ] || continue
-      report "- \`directives/$(basename "$f")\`"
-    done
-  fi
-  report ""
-  report "**Methodology docs ($METH_SRC_COUNT):**"
-  if [ -d "$METHODOLOGY_SOURCE" ]; then
-    for f in "$METHODOLOGY_SOURCE"/*.md; do
-      [ -f "$f" ] || continue
-      report "- \`methodology/$(basename "$f")\`"
-    done
-  fi
-fi
-
 if [ $CONFLICTS_FOUND -gt 0 ] && [ "$DRY_RUN" = true ]; then
   log "Dry-run mode — stopping. Resolve conflicts before propagating."
-  report ""
   report "## Result: CONFLICTS DETECTED ($CONFLICTS_FOUND)"
   report ""
   report "Resolve conflicts before propagating. Use \`--diff\` to see details."
@@ -613,8 +464,7 @@ fi
 
 # ── Phase 2+3: Propagation ──
 if [ "$DRY_RUN" = true ]; then
-  log "Dry-run mode — no conflicts detected."
-  report ""
+  log "Dry-run mode — no conflicts, nothing to propagate."
   report "## Result: DRY-RUN CLEAN (0 conflicts)"
 else
   log "--- Phase 3: Propagation ---"
