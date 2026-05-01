@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agents-os.local/schemas/msg_log_entry_v1.json",
+  "title": "AOS MSG-LOG JSONL Entry",
+  "description": "Schema for one JSONL line in _COMMUNICATION/_log/messages.log. Each entry records metadata-only for a single messaging operation (send, archive, read). Body content is never logged (privacy policy). Implements C11 from V4_GAP_MATRIX_v1.1.0_AMENDMENT.md W4. Referenced by scripts/validate_msg_log_schema.py and W5 MSG-HARDENING pre-commit hook.",
+  "type": "object",
+  "required": ["ts", "op", "msg_id", "from_team", "to_team", "type", "project_id", "sender_engine", "success", "error_code", "bytes", "channel"],
+  "properties": {
+    "ts": {
+      "type": "string",
+      "description": "ISO-8601 UTC timestamp of the operation (e.g. 2026-04-30T12:00:00.123456Z)",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["send", "archive", "read"],
+      "description": "Operation type: send=message created, archive=message moved to archive/, read=inbox list"
+    },
+    "msg_id": {
+      "type": "string",
+      "description": "Message identifier. For send/archive: MSG-HUB-YYYYMMDD-NNN. For read (inbox list): 'inbox:{to_team}' or empty string if no specific msg.",
+      "minLength": 1
+    },
+    "from_team": {
+      "type": "string",
+      "pattern": "^team_\\d{2,3}$",
+      "description": "Sending team identifier (team_NN, 2-3 digits)"
+    },
+    "to_team": {
+      "type": "string",
+      "pattern": "^team_\\d{2,3}$",
+      "description": "Receiving team identifier (team_NN, 2-3 digits)"
+    },
+    "type": {
+      "type": "string",
+      "description": "MSG type per ADR043 HUB_MSG_SCHEMA.json. One of the canonical types or 'unknown' if unavailable at log time.",
+      "enum": [
+        "informal",
+        "task",
+        "task_response",
+        "routing",
+        "status",
+        "question",
+        "session_activation",
+        "gate_response",
+        "notification",
+        "unknown"
+      ]
+    },
+    "project_id": {
+      "type": "string",
+      "description": "Project/domain scope of the operation. 'agents-os' for hub operations; spoke project id for multi-domain (ADR043 §6).",
+      "minLength": 1
+    },
+    "sender_engine": {
+      "type": "string",
+      "description": "Engine that invoked the operation (e.g. 'claude-code', 'codex', 'cursor', 'unknown'). 'unknown' when caller does not supply X-Actor-Engine header.",
+      "minLength": 1
+    },
+    "success": {
+      "type": "boolean",
+      "description": "True if the operation completed without error; false if it raised an exception or returned an error code."
+    },
+    "error_code": {
+      "description": "Error code string on failure (e.g. 'MSG_NOT_FOUND', 'ALREADY_ARCHIVED', 'UNKNOWN_PROJECT'); null on success.",
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ]
+    },
+    "bytes": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "File size in bytes from filesystem stat() — never content. 0 for read operations (no file write). 0 on failure before write."
+    },
+    "channel": {
+      "type": "string",
+      "enum": ["api", "file_fallback"],
+      "description": "Delivery channel: 'api'=API endpoint handled this op; 'file_fallback'=direct filesystem write used (F9 detection field per ADR043 §5)."
+    }
+  },
+  "additionalProperties": false
+}
