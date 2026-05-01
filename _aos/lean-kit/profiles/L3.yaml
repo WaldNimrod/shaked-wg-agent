@@ -23,23 +23,11 @@ modules:
     - id: gate-workflow
       module: 2
       required: true
-    - id: version-identity
-      module: 5
-      required: true
     - id: agent-activation
       module: 6
       required: true
-    - id: dashboard-observability
-      module: 7
-      required: true
     - id: validation-quality
       module: 8
-      required: true
-    - id: migration-lifecycle
-      module: 9
-      required: true
-    - id: automation-cli
-      module: 10
       required: true
 
   optional:
@@ -49,4 +37,6 @@ modules:
       notes: "Per-standard activation"
 
 # L3 is not yet active. No projects use L3.
-# Module 10 contents are stubs.
+# 4 modules previously listed here were deprecated by W9
+# (AOS-V4-WP-INTERFACE-AUDIT, 2026-05-01); see closure for the list +
+# rationale per item: _COMMUNICATION/team_00/CLOSURE_AOS-V4-WP-INTERFACE-AUDIT_v1.0.0.md

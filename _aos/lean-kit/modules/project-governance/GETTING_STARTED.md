@@ -127,14 +127,11 @@ active_modules:
   - '02'  # gate-workflow
   - '03'  # team-model
   - '04'  # document-lifecycle
-  - '05'  # dashboard-observability
   - '06'  # agent-activation
-  - '07'  # migration-lifecycle
   - '08'  # validation-quality
-  - '09'  # version-identity
-  - '10'  # automation-cli
   - '11'  # standards-conventions
   - '12'  # managed-pipeline (L2.5)
+# Modules 05/07/09/10 deprecated by W9 (see CLOSURE_AOS-V4-WP-INTERFACE-AUDIT_v1.0.0.md)
 ```
 
 Remove modules not applicable to your profile.

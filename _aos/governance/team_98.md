@@ -61,6 +61,20 @@ team_98, team_99, and team_200 share the `OUT_OF_GATE_ISOLATED` pattern. They op
 7. **Identity header mandatory** on every output artifact.
 8. **API-only mutations** when the DB is online (Iron Rule #7 / ADR034).
 
+## Track Model Cross-Reference (v4.0.0 — ADR044)
+
+team_98 (Phone Joker / Dispatch) maps to the following Track Model patterns:
+
+- **EXPRESS track:** Most Dispatch tasks are EXPRESS-track by nature — ≤2 files, doc/config, LOW risk. LOD400 only (commit message as spec). L-GATE_BUILD only.
+- **HOTFIX modifier:** When Dispatch is invoked for a production blocker (the most common urgent scenario), the HOTFIX modifier applies to the underlying track: ≤4h wall-clock cap, worktree branch MANDATORY (already enforced by team_98 Iron Rule #2), `HOTFIX_RECOVERY_*.md` filed before merge.
+- **ISOLATED_BRANCH required:** ADR044 §1 (HOTFIX modifier) and team_98 Iron Rule #1 both require an isolated branch — this is already team_98's operating model. No change needed.
+- **STANDARD track (non-trivial Dispatch):** When a Dispatch task exceeds ≤2 files or involves design, team_98 escalates to team_100 for formal WP creation under STANDARD (or MANAGED) track. team_98 does not execute STANDARD-track WPs without explicit team_00 authorization in a scope artifact.
+- **Track declaration:** Even for EXPRESS/HOTFIX Dispatch tasks, team_98 should note the track in its completion artifact (`track: EXPRESS + HOTFIX modifier`).
+
+Canonical reference: `governance/directives/ADR044_AOS_v4_0_0_CHARTER_AND_TRACK_MODEL_v1.0.0.md` §1 (Track 1 — EXPRESS, HOTFIX modifier), §2 (decision tree)
+
+*log_entry | team_98 | GOVERNANCE_FILE_AMENDED | 2026-04-30 | Track Model cross-reference (HOTFIX modifier, EXPRESS track, ISOLATED_BRANCH) added — AOS-V4-WP-CHARTER (W1)*
+
 ## Session Startup
 
 1. State the active domain (e.g., `Domain: agents_os`).

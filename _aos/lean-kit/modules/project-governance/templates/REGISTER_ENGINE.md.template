@@ -1,0 +1,319 @@
+---
+template_id: REGISTER_ENGINE
+template_version: 1.0.0
+template_status: ACTIVE
+authority: team_100 (author) + team_00 (final approval)
+implements: C8 (AOS-V4-WP-ENGINE-MATRIX — W2)
+schema_ref: governance/directives/ADR046_ENGINE_AND_EXECUTION_TIERING_v1.0.0.md §2.4
+amendment_ref: governance/directives/ADR046_ENGINE_AND_EXECUTION_TIERING_v1.1.0_AMENDMENT.md
+routing_ref: governance/directives/ADR047_TASK_ROUTING_AND_FALLBACK_CHAINS_v1.0.0.md
+engines_yaml: core/config/engines.yaml
+cost_caps_yaml: core/config/cost_caps.yaml
+instructions: |
+  Fill every field. Leave no blanks — write N/A only where the field is genuinely not applicable.
+  Submit to _COMMUNICATION/team_100/ as REGISTER_ENGINE_<engine_id>_v1.0.0.md
+  Process: team_100 reviews → team_00 approves → engines.yaml + cost_caps.yaml updated
+---
+
+# Engine Registration Form — REGISTER_ENGINE
+
+> **Filing instructions:** Copy this template to `_COMMUNICATION/team_100/REGISTER_ENGINE_<engine_id>_v1.0.0.md`.
+> Complete every section. team_100 reviews for schema compliance and routing consistency.
+> team_00 approves before the entry is merged into `core/config/engines.yaml`.
+
+---
+
+## § 1 — Engine Identity
+
+### engine_id
+
+```
+<unique snake_case identifier — e.g., my-engine-name>
+```
+
+### name (display)
+
+```
+<Human-readable product name — e.g., "My Engine Pro">
+```
+
+### vendor
+
+```
+<Vendor/provider name — e.g., anthropic | openai | google | cursor | perplexity | other>
+```
+
+### surface
+
+Tick the primary surface:
+
+- [ ] `api` — Direct API invocation (REST/SDK)
+- [ ] `cli` — Command-line interface
+- [ ] `desktop` — Desktop application
+- [ ] `mobile` — Mobile application
+- [ ] `mcp_server` — Official MCP server
+- [ ] `manual_web` — Browser-based, manual operation only
+- [ ] `cloud` — Cloud-hosted async execution environment
+- [ ] `ide` — IDE-integrated (non-interactive background)
+- [ ] Other (describe): ___
+
+### tier
+
+Select the appropriate tier from `ADR046 §2.2`:
+
+- [ ] `cheap` — Low cost per output unit; batch/triage/cheap-fallback
+- [ ] `cheap-grunt+automation` — Cheap + automation surface; IDE-bound work
+- [ ] `premium` — High-quality reasoning; subscription or pay-per-token
+- [ ] `premium-chat` — Premium quality + chat-native UX
+- [ ] `premium-mobile` — Premium quality + mobile dispatch surface
+- [ ] `research-live` — Web-grounded current-state research; MCP-native
+- [ ] `research-synth` — Source-grounded long-context synthesis; manual
+- [ ] `sandbox-only` — Isolated sandbox; not for production
+- [ ] New tier proposed (requires team_100 review + team_00 approval): ___
+
+---
+
+## § 2 — Quality / Cost / Speed Axis Profile
+
+Rate each axis: `LOW` | `MED` | `HIGH`
+
+```yaml
+axis_profile:
+  quality: <LOW|MED|HIGH>     # output quality; reasoning depth
+  cost: <LOW|MED|HIGH>        # HIGH = cheap/flat-rate; LOW = expensive/pay-per-token
+  speed: <LOW|MED|HIGH>       # response latency; throughput
+```
+
+**Axis notes** (explain any non-obvious ratings):
+
+```
+<Free text — e.g., "cost=HIGH because flat-rate subscription; speed=LOW because async execution">
+```
+
+---
+
+## § 3 — Access Methods
+
+List all supported access methods. Mark the primary/default method first.
+Use only values from the `access_method` enum (ADR046 §2.4 + v1.1.0 Amendment):
+
+| Method value | Definition |
+|---|---|
+| `mcp` | Direct MCP server invocation |
+| `mcp_wrapper_around_api` | MCP server wrapping an underlying API |
+| `manual_hybrid` | User-operated browser + paste-back |
+| `api` | Direct API SDK invocation |
+| `cli_via_bash` | Shell invocation via Bash tool |
+| `subscription_chat` | Browser/desktop subscription session |
+| `mobile_dispatch` | Mobile app via team_98 dispatch |
+| `sdk` | Cursor SDK direct API call (v1.1.0) |
+| `cursor_ide_routed` | Cursor IDE manual hybrid, subscription pool (v1.1.0) |
+| `cursor_ide_cloud` | Cursor Cloud Agents, async sandboxed, within Max plan (v1.1.0) |
+| `cursor_ide_bg` | Cursor Background Agents, IDE background, within Max plan (v1.1.0) |
+
+```yaml
+access_methods:
+  - <primary_method>
+  - <secondary_method_if_any>
+default_method: <primary_method>
+```
+
+**If a NEW access_method value is needed** (not in the table above):
+Describe the new method and file an ADR046 amendment request via team_100.
+
+---
+
+## § 4 — Per-Team Access (`accessible_to_teams`)
+
+Complete the full table. Reference ADR046 §2.3 for current rules.
+
+```yaml
+accessible_to_teams:
+  team_80:  <true|false|conditional_with_method>   # Research
+  team_50:  <true|false>                           # QA
+  team_90:  <true|false>                           # Validate
+  team_190: <true|false>                           # Constitutional Validator
+  team_200: <true|false>                           # Cowork (claude-desktop EXCLUSIVE)
+  team_35:  <true|false>                           # Design Studio
+  team_98:  <true|false>                           # Mobile Dispatch
+  team_10:  <true|false>                           # Cursor-native
+  team_100: <true|false|conditional_with_method>   # Chief Architect
+```
+
+**Rationale for any non-obvious access grants/denials:**
+
+```
+<Free text>
+```
+
+---
+
+## § 5 — Task Class Assignments
+
+Reference `ADR047 §2.1` for the task class catalog (TC-1 through TC-12.4).
+Only assign task classes from the existing catalog. Do NOT create new TCs here.
+
+```yaml
+default_for_task_classes:
+  - TC-<N>    # list each TC where this engine is the default choice
+  # or: [] if this engine has no default task class
+
+fallback_chain_membership:
+  - "TC-<N> (<position>)"   # e.g., "TC-8 (F2; vendor-distinct from anthropic-builder)"
+  # list all fallback chain positions
+```
+
+**Routing rationale** (explain why this engine is appropriate for its default TCs):
+
+```
+<Free text>
+```
+
+---
+
+## § 6 — Exhausted Signals
+
+List all observable signals that indicate this engine is exhausted or unavailable.
+Use values from the existing enum; add new values only if genuinely novel:
+
+```yaml
+exhausted_signals_observable:
+  - out_of_credits           # quota exhausted
+  - rate_limited             # rate-limit hit
+  - timeout                  # response timeout
+  - quality_floor_failure    # output below minimum quality bar
+  - anthropic_budget_depleted  # Anthropic-specific hard block
+  - peak_hour_scarcity       # availability advisory (time-based)
+  - memory_pollution_risk    # governance signal (claude-desktop only)
+  - cursor_sdk_overflow_cap_hit  # cursor-sdk monthly cap
+  # add new values with description if needed
+```
+
+---
+
+## § 7 — Underlying Models (IR#1 Enforcement)
+
+**Required for IR#1 vendor-distinctness check.** List all underlying models.
+The EngineAdapter will compare `vendor` + `model_family` to enforce builder ≠ validator.
+
+```yaml
+underlying_models:
+  - name: <model_name>          # e.g., gpt-4o, claude-sonnet-4-6, gemini-2.5-pro
+    vendor: <vendor>             # anthropic | openai | google | cursor | perplexity | other
+    model_family: <family>       # e.g., claude-sonnet, gpt, gemini, cursor-composer
+  # add additional models if this engine can use multiple
+```
+
+**IR#1 implication note** (can this engine serve as IR#1 validator for anthropic-built artifacts?):
+
+```
+<Free text — e.g., "vendor=openai; valid IR#1 validator for anthropic-builder artifacts">
+```
+
+---
+
+## § 8 — Cost & Budget Pool
+
+```yaml
+cost_pool: <provider>               # anthropic | openai | google | cursor_max_400 | cursor_sdk_overflow | perplexity
+
+budget_pool: <pool_name>            # must match a budget_pool entry in cost_caps.yaml
+
+billing_model: <model>              # subscription_flat_rate | subscription_pool | pay_per_token | token_consumption | free_tier | mixed
+```
+
+**Empirical burn anchor** (URL or reference documenting pricing evidence):
+
+```yaml
+empirical_burn_anchor: "<URL — e.g., https://vendor.com/pricing quoted text>"
+```
+
+**Is this a conditional / opt-in engine?**
+
+- [ ] No — always available when team has access
+- [ ] Yes — `enabled: false` by default; opt-in per WP
+
+If opt-in, describe the enablement requirement:
+
+```
+<Free text — e.g., "team_100 mandate required per WP; justification must be filed">
+```
+
+---
+
+## § 9 — Per-Engine Cost Cap (for cost_caps.yaml entry)
+
+Provide the data to add to `core/config/cost_caps.yaml`:
+
+```yaml
+- engine_id: <engine_id>
+  budget_pool: <pool_name>
+  billing_model: <model>
+  daily_usd_cap: <number|null>        # null = governed by effort_defaults
+  total_usd_cap: <number|null>
+  monthly_usd_cap: <number|null>      # for SDK/overflow pools
+  alert_at_pct: 80
+  hard_stop_policy: halt_and_escalate
+  fallback_on_exhaustion: <engine_id|null>
+  notes: "<free text>"
+```
+
+---
+
+## § 10 — Justification Narrative
+
+Explain why this engine is being registered. Address:
+1. What capability gap does it fill that existing engines do not cover?
+2. Why now (not deferred to a future version)?
+3. What is the evidence of quality/reliability for the intended task classes?
+4. What are the cost implications and how are they bounded?
+
+```
+<Free text — 1-4 paragraphs>
+```
+
+---
+
+## § 11 — Fallback Chain Impact Assessment
+
+Does adding this engine require changes to existing fallback chains in `ADR047 §2.4-§2.5`?
+
+- [ ] No — this engine is inserted at the end of existing chains or adds new chains only
+- [ ] Yes — describe changes needed: ___
+
+If yes, file a companion ADR047 amendment request with your registration form.
+
+---
+
+## § 12 — Review and Approval
+
+```
+team_100 review date:     YYYY-MM-DD
+team_100 reviewer:        team_100 (Chief Architect)
+team_100 verdict:         APPROVED | REJECTED | REVISE_AND_RESUBMIT
+team_100 notes:           <free text>
+
+team_00 approval date:    YYYY-MM-DD
+team_00 approver:         team_00 (Principal)
+team_00 approval:         APPROVED | REJECTED
+team_00 notes:            <free text>
+```
+
+---
+
+## § 13 — Propagation Checklist
+
+After approval and before closing this registration:
+
+- [ ] Entry added to `core/config/engines.yaml` (version bumped if minor changes; amendment if schema changes)
+- [ ] Entry added to `core/config/cost_caps.yaml` (§3 cost_caps list)
+- [ ] ADR047 fallback chain updated if needed (§11 check)
+- [ ] ADR046 access_method enum updated if new method introduced (amendment filed)
+- [ ] `propagate_governance.sh` run to distribute updated files to all 9 registered spokes
+- [ ] `validate_aos.sh` run; 0 FAIL confirmed
+- [ ] Registration form archived to `_archive/engine_registrations/REGISTER_ENGINE_<engine_id>_<date>_APPROVED.md`
+
+---
+
+*Template version: v1.0.0 (2026-04-30) — AOS-V4-WP-ENGINE-MATRIX (W2)*
+*schema_ref: ADR046 §2.4 + ADR046_v1.1.0_AMENDMENT*

@@ -194,7 +194,7 @@ for b in builders:
 }
 
 # ================================================================
-# Check 3: Version Consistency (module 09 — version-identity)
+# Check 3: Version Consistency (module 09 — deprecated by W9)
 # ================================================================
 check_3() {
     _require_active_modules 3 09 || return 0
@@ -395,16 +395,13 @@ if rp != mp:
 }
 
 # ================================================================
-# Check 10: Dashboard observability snapshot (module 05)
+# Check 10: module 05 snapshot (deprecated by W9)
 # ================================================================
 check_10() {
     _require_active_modules 10 05 || return 0
-    local p="$AOS_DIR/lean-kit/modules/dashboard-observability/MODULE.md"
-    if [ ! -f "$p" ]; then
-        log_fail 10 "dashboard-observability module missing from _aos/lean-kit snapshot"
-        return
-    fi
-    log_pass 10 "dashboard-observability present in lean-kit snapshot"
+    # Module 05 was deprecated by W9; legacy check kept for backward compat
+    # and short-circuits via _require_active_modules above when 05 not active.
+    log_pass 10 "module 05 snapshot check (legacy stub; module deprecated by W9)"
 }
 
 # ================================================================

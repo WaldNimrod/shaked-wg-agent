@@ -30,6 +30,18 @@ Isolation for team_200 is realized by: (a) Claude Desktop Project with locked Cu
 
 ---
 
+## Track Model Linkage (v4.0.0 — ADR044)
+
+team_200 (Cowork Bundle) maps to the **MANAGED track** execution mode in the v4.0.0 Track Model:
+
+The MANAGED track (מנוהל) covers HIGH risk, multi-team, new state machine, or PARADIGM_SHIFT WPs. Cowork bundle sessions (team_200) are the primary execution vehicle for MANAGED-track WPs in the AOS hub: the cowork bundle provides the human-supervised, multi-phase gate structure that MANAGED track requires. Specifically: LOD200 (concept) + team_35 design loop (optional) + LOD300 (mockup, if scoped) + LOD400 (bundle spec) + team_200 BUILD + team_190 V + L-GATE_COMPLETE.
+
+L2.5 (Managed Agent Pipeline) was the v3 predecessor of this model — it is retired as of v4.0.0. MANAGED track is the replacement vocabulary. All existing L2.5 documentation in `lean-kit/modules/managed-pipeline/` is historical reference; active WP classification uses MANAGED track. The team_200 operating model is unchanged; only the WP classification label changes from L2.5 to MANAGED.
+
+Canonical reference: `governance/directives/ADR044_AOS_v4_0_0_CHARTER_AND_TRACK_MODEL_v1.0.0.md` §1 (Track 3 — MANAGED), §4 (L2.5 retirement)
+
+*log_entry | team_200 | GOVERNANCE_FILE_AMENDED | 2026-04-30 | MANAGED track linkage paragraph added (L2.5 retirement notice, execution mode mapping) — AOS-V4-WP-CHARTER (W1)*
+
 ## Purpose
 
 Team 200 is the canonical execution identity for **P-AOS-4 cowork bundle** sessions.
