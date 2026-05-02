@@ -1,12 +1,21 @@
 ---
 type: COWORK_CONTEXT
 title: "AOS — Cowork Session Context"
-version: "1.1.0"
+version: "1.2.0"
 authored_by: team_200
-date: "2026-04-23"
+date: "2026-05-02"
 status: ACTIVE
-usage: "Read at the start of every Cowork session — hub or spoke. Propagated to all spoke _COMMUNICATION/team_200/ via aos_sync_all.sh (pending GCR approval)."
+usage: "Read at the start of every Cowork session — hub or spoke. Propagated to all spoke _COMMUNICATION/team_200/ via aos_sync_all.sh."
+current_release: "v4.0.0 'Autonomous' — tagged 2026-05-02"
 ---
+
+> **🚀 CURRENT RELEASE: AOS v4.0.0 'Autonomous' (tagged 2026-05-02)**
+>
+> Milestone AOS-V4-MS001 complete. 11/11 WPs LOD500_LOCKED. 159/159 ACs verified. Hub `validate_aos.sh` extended to **45 checks** (W7 added 39–44; W11 added Check 45 WAN dual-stack `[SKIP:WARN]`). New: **Iron Rule #15** (IPv6-only WAN compatibility), **ADR048**, lean-kit WAN canon + probe.
+>
+> 9 spokes received the propagation; spoke team_99 sessions have 14 days from pull (deadline 2026-05-16) to run `wan_dual_stack_probe.sh` and reply with status per `MSG-HUB-20260502-005`.
+>
+> Master closure: `_COMMUNICATION/team_00/MASTER_CLOSURE_V4_0_0_v1.0.0.md`.
 
 # AOS — Cowork Session Context
 
@@ -66,7 +75,7 @@ agents-os (Hub)
 | **L0** | Lean/Manual | lean-kit בלבד, אין DB, ניהול קבצים ידני |
 | **L2** | AOS v3 / Dashboard | מנוע FastAPI + PostgreSQL, API mutations חובה |
 | **L2.5** | Managed Agent Pipeline | ל-WPs מורכבים (≥2 צוותים, MEDIUM/HIGH risk) |
-| **L3** | AOS v4 / CLI | עתידי — לא בנוי עדיין |
+| **L3** | AOS v4 "Autonomous" | ✅ **שוחרר 2026-05-02** (tag `v4.0.0`). Track Model + Engine Matrix + MSG infrastructure + AUTO-ACTIVATION dryrun + validate_aos.sh 45 checks + IR#15 IPv6-only WAN compatibility |
 
 בחירת פרופיל: `lean-kit/PROFILE_SELECTION_GUIDE.md`
 
