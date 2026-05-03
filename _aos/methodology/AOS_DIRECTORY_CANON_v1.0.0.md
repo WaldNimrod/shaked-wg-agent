@@ -311,7 +311,7 @@ These paths are **binding** — the system (code, agents, dashboard) must use ex
 
 | Path | Purpose |
 |------|---------|
-| `_COMMUNICATION/team_[ID]/` | Team-specific artifacts. Own team: full write. Any team: may deliver inter-team MSG/RESPONSE/mandate/verdict artifacts here (inbox delivery — see Part 5). |
+| `_COMMUNICATION/team_[ID]/` | **Logical inbox + artifact root (flat layout — intentional).** Own team: full write. Any team: may deliver inter-team `MSG-HUB-*.md`, RESPONSE, mandate, verdict artifacts here (inbox delivery — see Part 5). **No `inbox/` subdirectory exists** — the team root IS the inbox. MSG files are identified by `MSG-HUB-*` prefix (ADR043 §3.2). Processed MSGs archived to `team_[ID]/archive/` via `POST /api/messaging/archive` (ADR043 §7). |
 | `_COMMUNICATION/team_[ID]/__ONBOARDING_TEAM_[ID].md` | **Required.** Team onboarding file — identity, iron rules, project context, mandatory reads. Prefix `__` ensures it sorts first in directory listings. Every team directory MUST have this file. |
 | `_COMMUNICATION/team_[ID]/[WP-ID]/` | WP-scoped artifacts. Files produced in the context of a specific WP MUST be placed here. WP-ID must match an `id:` entry in `_aos/roadmap.yaml`. |
 | `_COMMUNICATION/_ARCHITECT_INBOX/` | Agent submission queue (hub only) |

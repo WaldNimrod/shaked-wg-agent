@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # msg_preflight.sh — API-first preflight + branch-safe MSG delivery helper
-# ADR043 v1.1.0 §4 (Branch Independence) + §5 (API-First Pre-flight) + §6 (Multi-Domain Routing)
+# ADR043 v1.4.0 §3 (Inbox design) + §4 (Branch Independence) + §5 (API-First Pre-flight) + §6 (Multi-Domain Routing) + §11 (Env Reference)
 #
 # Canonical SSoT: lean-kit/modules/team-messaging/scripts/msg_preflight.sh
 # Snapshot:       _aos/lean-kit/modules/team-messaging/scripts/msg_preflight.sh
@@ -29,7 +29,11 @@
 
 set -u
 
-AOS_API_BASE="${AOS_API_BASE:-http://127.0.0.1:8090}"
+# AOS_API_BASE resolution — three tiers (ADR043 §11):
+#   Tier 1: explicit AOS_API_BASE (caller or shell profile — highest priority)
+#   Tier 2: AOS_V3_PUBLIC_API_BASE (from core/.env — canonical server URL for Python + shell)
+#   Tier 3: localhost fallback (correct on waldhomeserver; hits stub on Mac → HTTP 410)
+AOS_API_BASE="${AOS_API_BASE:-${AOS_V3_PUBLIC_API_BASE:-http://127.0.0.1:8090}}"
 API_BASE="$AOS_API_BASE"
 _MSG_PREFLIGHT_VERBOSE=0
 for arg in "$@"; do
@@ -48,11 +52,27 @@ _probe_api() {
     [ "$_MSG_PREFLIGHT_VERBOSE" -eq 1 ] && echo "✓ API online: $AOS_API_BASE"
     return 0
   fi
+  if [ "$http_code" = "410" ]; then
+    # Mac legacy stub (aos_legacy_stub.py, v4.0.0 GA) is running.
+    # HTTP 410 is a redirect signal — NOT a connection failure. ADR043 §5 Rule 4.
+    export API_ONLINE=0
+    export API_ERROR="Mac legacy stub active (HTTP 410) at ${AOS_API_BASE} — canonical API: http://100.125.98.56:8090"
+    if [ "$_MSG_PREFLIGHT_VERBOSE" -eq 1 ]; then
+      echo "⚠ Legacy stub detected at ${AOS_API_BASE} (HTTP 410)"
+      echo "  Canonical API → http://100.125.98.56:8090 (waldhomeserver, Tailscale)"
+      echo "  Fix: export AOS_API_BASE=http://100.125.98.56:8090"
+      echo "       or set AOS_V3_PUBLIC_API_BASE=http://100.125.98.56:8090 in core/.env"
+      echo "  Fallback: file-based MSG + branch-safe push to origin/main (ADR043 §4)"
+    fi
+    return 0
+  fi
   export API_ONLINE=0
   export API_ERROR="probe failed (HTTP $http_code) at ${AOS_API_BASE}/api/system/health"
   if [ "$_MSG_PREFLIGHT_VERBOSE" -eq 1 ]; then
     echo "⚠ API offline — $API_ERROR"
-    echo "  Hint: start hub API with: bash scripts/start_aos_api_local.sh"
+    echo "  Hint: canonical API at http://100.125.98.56:8090 (waldhomeserver, Tailscale)"
+    echo "        export AOS_API_BASE=http://100.125.98.56:8090"
+    echo "        or set AOS_V3_PUBLIC_API_BASE=http://100.125.98.56:8090 in core/.env"
     echo "  Fallback: file-based MSG + branch-safe push to origin/main (ADR043 §4)"
   fi
   return 0
@@ -124,6 +144,9 @@ msg_detect_project_id() {
 # Usage:  msg_curl <method> <api_path> [json_body]
 # Example: msg_curl GET "/api/messaging/inbox?to_team=team_99"
 #          msg_curl POST "/api/messaging/send" "$payload"
+# Auth:    Set AOS_ACTOR_API_KEY env var (shared secret configured in AOS_V3_ACTOR_KEYS
+#          on the server) to authenticate. Required when server has AOS_V3_ACTOR_KEYS
+#          set (production). Not required in local dev (AOS_V3_TRUST_CLIENT_ACTOR=1).
 msg_curl() {
   local method="${1:?usage: msg_curl <method> <api_path> [json_body]}"
   local api_path="${2:?usage: msg_curl <method> <api_path> [json_body]}"
@@ -136,6 +159,11 @@ msg_curl() {
   local proj
   proj=$(msg_detect_project_id)
   local args=(-s -X "$method" -H "X-Actor-Team-Id: $team" -H "X-Project-Id: $proj")
+  # Inject API key when configured (AOS_V3_ACTOR_KEYS production auth model — SEC-001)
+  local api_key="${AOS_ACTOR_API_KEY:-}"
+  if [ -n "$api_key" ]; then
+    args+=(-H "X-Actor-Api-Key: $api_key")
+  fi
   if [ -n "$data" ]; then
     args+=(-H "Content-Type: application/json" -d "$data")
   fi

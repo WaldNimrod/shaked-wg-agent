@@ -69,7 +69,6 @@ Canonical reference: `governance/directives/ADR044_AOS_v4_0_0_CHARTER_AND_TRACK_
 12. Never expose internal IPs, ports, or paths in public-facing artifacts.
 13. NEVER write to `_aos/` — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Route required roadmap/gate updates via report artifact to Team 100.
 14. **API-only mutations (Iron Rule #7):** When the AOS v3 database is online, structured mutations MUST go through the API; direct YAML edits for canonical fields are forbidden per ADR034.
-15. **Rule-citation discipline.** When citing a rule to justify action or refusal, quote the exact source (file path + line number, or ADR ID + section). If you cannot locate the source after a `grep` of `CLAUDE.md`, your governance contract, and `_aos/governance/`, the rule does not exist in canon — do NOT invent, paraphrase, or act on it. File a clarification request to team_100 first. Violation is a P1 process incident.
 
 ## Offline DB Protocol (ADR034 R8)
 
@@ -272,45 +271,6 @@ Operation completed successfully. Logs captured. Service health verified post-ch
 - Questions/escalations: artifact in `_COMMUNICATION/team_99/` → Team 00 routes
 - Never modify application source code on the server — only pull, restart, configure
 
-## Push Authority (origin/main)
-
-team_99 MAY push directly to `origin/main` for the following paths:
-- `_COMMUNICATION/team_99/**` (own inbox/outbox/archive)
-- `_COMMUNICATION/*/REPORT_team_99_*.md` (post-execution reports to other teams)
-- `_COMMUNICATION/*/MSG_team_99_*.md` (canonical responses)
-- `_COMMUNICATION/*/archive/MSG-*.md` (archive moves of own messages)
-- `_archive/**` (deploy logs and operational artifacts only; no application code or governance files)
-
-team_99 MUST NOT push to:
-- `api/`, `ui/`, `scripts/`, `lean-kit/`, `_aos/`, `core/`, `methodology/`
-- `CLAUDE.md` and any `*.md` outside `_COMMUNICATION/` and `_archive/`
-- `_aos/governance/**` (Iron Rule #11 — read-only snapshot)
-
-Rationale: Iron Rule #6 (canonical communication via artifact) is unenforceable without
-server-side teams being able to deliver their canonical artifacts. The forbidden list is
-about source code and governance — not post-execution canonical reports.
-
-## Operational Discipline
-
-### Rule-citation discipline
-
-When citing a rule to justify action or refusal, you MUST:
-
-1. Quote the exact source — file path + line number, OR ADR ID + section.
-2. If you cannot locate the source after `grep` of `CLAUDE.md`, your governance contract,
-   and `_aos/governance/`, the rule does not exist in canon — do NOT invent, paraphrase,
-   or "remember" it.
-3. If you suspect a rule but cannot verify it, file a clarification request to team_100
-   BEFORE acting on the suspicion. Do NOT use unverifiable rules to justify refusing or
-   deferring canonical work.
-
-Violation is a P1 process incident. *(Also Iron Rule #15 above.)*
-
-**Note — Iron Rule #7 / ADR034 does NOT restrict git push.** IR#7 restricts direct YAML
-edits to canonical DB fields (roadmap, work_packages) when the AOS v3 database is online —
-it governs structured data mutations, not git operations. Team_99's git push authority is
-governed exclusively by the Push Authority section above.
-
 ## Canonical Header Format
 ```yaml
 from: Team 99 (Home Server DevOps & IT)
@@ -327,10 +287,6 @@ date: [ISO date]
 writes_to:
 - _COMMUNICATION/team_99/
 - _COMMUNICATION/team_99/*/
-- _COMMUNICATION/*/REPORT_team_99_*.md      # cross-team delivery — post-execution reports
-- _COMMUNICATION/*/MSG_team_99_*.md         # cross-team delivery — canonical responses
-- _COMMUNICATION/*/archive/MSG-*.md         # archive moves of own messages
-- _archive/**                               # deploy/operational archive
 gate_authority:
   L-GATE_SPEC: awareness_only
   L-GATE_BUILD: delegated
@@ -360,5 +316,3 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 - See: `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 
 *Governance contract — Team 99 | AOS system*
-
-*log_entry | team_99 | GOVERNANCE_FILE_AMENDED | 2026-05-02 | Push Authority section + Operational Discipline (rule-citation) + IR#15 + Permissions.writes_to cross-team delivery paths added — GCR team_100→team_110, ratified team_00 2026-05-02; assessed team_110 CONCUR_WITH_AMENDMENTS*
