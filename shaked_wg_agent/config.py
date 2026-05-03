@@ -19,6 +19,15 @@ AGE_MATCH_BONUS: int = 30
 STUDENT_BONUS: int = 20
 MOVE_IN_OPTIMAL_BONUS: int = 30
 
+# M6 — vegan-kitchen preference (per Shaked focus update 2026-05).
+# Listings advertising a vegan or vegetarian kitchen are treated as preferred:
+# they earn an additive bonus on top of the baseline vegan score and may exceed
+# the budget ceiling by VEGAN_BUDGET_TOLERANCE before the hard gate trips.
+VEGAN_STRONG_BONUS: int = 30          # vegan/vegane/tierfreie kitchen
+VEGAN_PARTIAL_BONUS: int = 18         # vegetarisch / pflanzlich / plant-based
+VEGAN_BUDGET_TOLERANCE: float = 0.30  # +30% over budget_max for vegan listings
+VEGAN_OVERBUDGET_PENALTY: int = 10    # subtract when listing is over budget but kept
+
 _VALID_RENTAL = frozenset({"temporary", "short", "permanent"})
 _VALID_SMOKING = frozenset({"non_smoking", "smoking_ok", ""})
 _VALID_DIET = frozenset({"vegan", "vegetarian", ""})

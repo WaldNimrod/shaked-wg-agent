@@ -187,12 +187,21 @@ def _price_badge_modal(price: Any, currency: str, il: bool) -> str:
     return f"<span dir=\"ltr\">💰 {_html.escape(str(currency))} {p}/Mt.</span>"
 
 
-def _vegan_cell(signal: str, il: bool) -> str:
+def _vegan_cell(lst: dict, il: bool) -> str:
+    """Render the vegan column. Highlights priority listings with a 🌱 badge."""
+    signal = lst.get("vegan_signal", "")
+    priority = bool(lst.get("vegan_priority"))
     if not signal or signal in ("kein Signal", "unbekannt", "אין אות", "לא ידוע"):
+        if priority:
+            label = "🌱 מטבח טבעוני" if il else "🌱 vegan"
+            return f'<span class="badge bg-success text-white">{label}</span>'
         if signal in ("kein Signal", "אין אות"):
             return "—"
         return "לא ידוע" if il else "?"
-    return f'<span class="text-success fw-semibold">{_html.escape(signal[:24])}</span>'
+    badge = "🌱 " if priority else ""
+    return (
+        f'<span class="text-success fw-semibold">{badge}{_html.escape(signal[:24])}</span>'
+    )
 
 
 def _safe(val: Any, default: str = "—") -> str:
@@ -529,13 +538,21 @@ def _table_row(lst: dict, il: bool) -> str:
     district = lst.get("district", "")
 
     price_cell = _price_html(price, currency, il)
+    if lst.get("over_budget_vegan_exception"):
+        tip = "מעל התקציב — נשמרה כי המטבח טבעוני/צמחוני" if il else "Über Budget — Vegan-Ausnahme"
+        price_cell = (
+            f'<span class="text-warning" title="{_html.escape(tip)}">'
+            f'⚠️ {price_cell}</span>'
+        )
     title_snippet = _bdi(_safe(lst.get("title", ""))[:65]) if il else _safe(lst.get("title", ""))[:65]
+    vegan_priority_attr = "1" if lst.get("vegan_priority") else "0"
 
     return (
         f'<tr data-bs-toggle="modal" data-bs-target="#modal-{lid}" style="cursor:pointer"'
         f' data-status="{_html.escape(status)}"'
         f' data-price="{price or 0}"'
         f' data-tier="{tier_icon}"'
+        f' data-vegan="{vegan_priority_attr}"'
         f' data-score="{score}"'
         f' data-district="{_html.escape(district)}">'
         f'<td onclick="event.stopPropagation()">'
@@ -547,7 +564,7 @@ def _table_row(lst: dict, il: bool) -> str:
         f'<td class="text-nowrap">{price_cell}</td>'
         f'<td>{_bdi(_safe(district)) if il else _safe(district)}</td>'
         f'<td class="text-nowrap">{tram}</td>'
-        f'<td>{_vegan_cell(lst.get("vegan_signal", ""), il)}</td>'
+        f'<td>{_vegan_cell(lst, il)}</td>'
         f'<td>'
         f'<span class="badge bg-{tier_cls} text-white me-1" title="{tier_tip_esc}" style="font-size:.7rem">{tier_icon}</span>'
         f'{title_snippet}'
@@ -678,7 +695,7 @@ function applyStoredStatuses(){
 }
 
 // ── Filtering ───────────────────────────────────────────────
-const FILTERS={status:'alle',price:'alle',tier:'alle'};
+const FILTERS={status:'alle',price:'alle',tier:'alle',vegan:'alle'};
 
 function filterTable(){
   const rows=document.querySelectorAll('#listings-tbody tr');
@@ -687,6 +704,7 @@ function filterTable(){
     const st=row.dataset.status||'neu';
     const pr=parseInt(row.dataset.price||'0');
     const ti=row.dataset.tier||'';
+    const vg=row.dataset.vegan||'0';
     let show=true;
     if(FILTERS.status!=='alle'&&st!==FILTERS.status)show=false;
     if(FILTERS.price!=='alle'){
@@ -694,6 +712,7 @@ function filterTable(){
       if(pr<=0||pr>maxP)show=false;
     }
     if(FILTERS.tier!=='alle'&&ti!==FILTERS.tier)show=false;
+    if(FILTERS.vegan==='only'&&vg!=='1')show=false;
     row.style.display=show?'':'none';
     if(show)visible++;
   });
@@ -703,7 +722,7 @@ function filterTable(){
 
 function setFilter(key,val){FILTERS[key]=val;filterTable();}
 function clearFilters(){
-  FILTERS.status='alle';FILTERS.price='alle';FILTERS.tier='alle';
+  FILTERS.status='alle';FILTERS.price='alle';FILTERS.tier='alle';FILTERS.vegan='alle';
   document.querySelectorAll('.filter-sel').forEach(function(s){s.value='alle';});
   filterTable();
 }
@@ -859,7 +878,7 @@ function applyStoredStatuses(){
   Object.entries(statuses).forEach(function([lid,st]){_applyStatus(lid,st);});
 }
 
-const FILTERS={status:'alle',price:'alle',tier:'alle'};
+const FILTERS={status:'alle',price:'alle',tier:'alle',vegan:'alle'};
 
 function filterTable(){
   const rows=document.querySelectorAll('#listings-tbody tr');
@@ -868,6 +887,7 @@ function filterTable(){
     const st=row.dataset.status||'neu';
     const pr=parseInt(row.dataset.price||'0');
     const ti=row.dataset.tier||'';
+    const vg=row.dataset.vegan||'0';
     let show=true;
     if(FILTERS.status!=='alle'&&st!==FILTERS.status)show=false;
     if(FILTERS.price!=='alle'){
@@ -875,6 +895,7 @@ function filterTable(){
       if(pr<=0||pr>maxP)show=false;
     }
     if(FILTERS.tier!=='alle'&&ti!==FILTERS.tier)show=false;
+    if(FILTERS.vegan==='only'&&vg!=='1')show=false;
     row.style.display=show?'':'none';
     if(show)visible++;
   });
@@ -884,7 +905,7 @@ function filterTable(){
 
 function setFilter(key,val){FILTERS[key]=val;filterTable();}
 function clearFilters(){
-  FILTERS.status='alle';FILTERS.price='alle';FILTERS.tier='alle';
+  FILTERS.status='alle';FILTERS.price='alle';FILTERS.tier='alle';FILTERS.vegan='alle';
   document.querySelectorAll('.filter-sel').forEach(function(s){s.value='alle';});
   filterTable();
 }
@@ -1002,6 +1023,10 @@ def generate_report(
     n_broken = sum(1 for lst in visible_listings if _tier_tuple(lst, he)[0] == "⚠️")
     n_verified = sum(1 for lst in listings if lst.get("verified_active") is True)
     n_total_real = len(listings)
+    n_vegan_priority = sum(1 for lst in visible_listings if lst.get("vegan_priority"))
+    n_overbudget_exception = sum(
+        1 for lst in visible_listings if lst.get("over_budget_vegan_exception")
+    )
 
     rows_verified = "".join(_table_row(lst, he) for lst in verified_listings)
     rows_unverified = "".join(_table_row(lst, he) for lst in unverified_listings)
@@ -1039,7 +1064,6 @@ def generate_report(
         stat_lbl_budget = "מודעות בטווח (אזור + תקציב)"
         stat_lbl_high = "ציון מקסימלי"
         stat_lbl_days = "ימים ליעד הפרויקט"
-        stat_lbl_vegan = "עם אות טבעוני"
         tier_intro = "נגישות:"
         tier_d = "קישור ישיר"
         tier_l = "התחברות (חינם)"
@@ -1083,6 +1107,9 @@ def generate_report(
       <option value="🔐">🔐 {tier_l}</option>
       <option value="🔍">🔍 {tier_s}</option>
       <option value="⚠️">⚠️ {tier_b}</option>"""
+        vegan_opts = """      <option value="alle">מטבח: הכל</option>
+      <option value="only">🌱 רק טבעוני/צמחוני</option>"""
+        vegan_stat_label = "מטבח טבעוני/צמחוני"
     else:
         html_lang, html_dir = "de", "ltr"
         doc_title = esc_display
@@ -1102,7 +1129,6 @@ def generate_report(
         stat_lbl_budget = "Inserate im Budget"
         stat_lbl_high = "Höchster Score"
         stat_lbl_days = "Tage verbleibend"
-        stat_lbl_vegan = "Vegan-freundlich"
         tier_intro = "Erreichbarkeit:"
         tier_d, tier_l, tier_s, tier_b = "Direktlink", "Login (kostenlos)", "Suche nötig", "Offline?"
         tier_hint = "Klick auf Zeile → Details &nbsp;|&nbsp; ☆ = Favorit"
@@ -1148,6 +1174,9 @@ def generate_report(
       <option value="🔐">🔐 {tier_l}</option>
       <option value="🔍">🔍 {tier_s}</option>
       <option value="⚠️">⚠️ {tier_b}</option>"""
+        vegan_opts = """      <option value="alle">Küche: alle</option>
+      <option value="only">🌱 nur vegan/vegetarisch</option>"""
+        vegan_stat_label = "Vegan/vegetarische Küche"
 
     # Custom CSS: logical properties for RTL-friendly layout (AOS §2)
     extra_body = ""
@@ -1224,9 +1253,10 @@ def generate_report(
     <div class="col-6 col-md-3">
       <div class="card stat-card text-center p-3">
         <div class="fs-2 fw-bold text-success" dir="ltr">
-          {sum(1 for lst in visible_listings if 'vegan' in lst.get('vegan_signal','').lower())}
+          {n_vegan_priority}
         </div>
-        <div class="text-muted small">{stat_lbl_vegan}</div>
+        <div class="text-muted small">🌱 {vegan_stat_label}</div>
+        {f'<div class="text-warning" style="font-size:.7rem">+{n_overbudget_exception} מעל תקציב — חריגה טבעונית</div>' if he and n_overbudget_exception else (f'<div class="text-warning" style="font-size:.7rem">+{n_overbudget_exception} über Budget (Vegan-Ausnahme)</div>' if n_overbudget_exception else '')}
       </div>
     </div>
   </div>
@@ -1254,6 +1284,10 @@ def generate_report(
     <select class="form-select form-select-sm filter-sel" style="width:auto"
             onchange="setFilter('tier', this.value)">
 {tier_opts}
+    </select>
+    <select class="form-select form-select-sm filter-sel" style="width:auto"
+            onchange="setFilter('vegan', this.value)">
+{vegan_opts}
     </select>
     <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">{btn_clear}</button>
   </div>

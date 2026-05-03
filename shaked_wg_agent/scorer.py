@@ -19,11 +19,15 @@ from shaked_wg_agent.config import (
     AGE_MATCH_BONUS,
     MOVE_IN_OPTIMAL_BONUS,
     STUDENT_BONUS,
+    VEGAN_BUDGET_TOLERANCE,
+    VEGAN_OVERBUDGET_PENALTY,
+    VEGAN_PARTIAL_BONUS,
+    VEGAN_STRONG_BONUS,
     CityDefinition,
     SearchProfile,
 )
 from shaked_wg_agent.extractors.negative_signals import detect_negative_signals
-from shaked_wg_agent.locale import get_locale
+from shaked_wg_agent.locale import Locale, get_locale
 
 
 def _settlement_haystack(listing: dict[str, Any]) -> str:
@@ -64,6 +68,50 @@ def _vegan_score(signal: str, country: str = "CH") -> int:
     if any(kw in lower for kw in locale.vegan_weak):
         return 12
     return 5  # signal exists but unrecognised — small positive
+
+
+def _vegan_tier(listing: dict[str, Any], country: str) -> str:
+    """Classify the listing's vegan signal as 'strong' | 'partial' | 'weak' | 'none'.
+
+    Reads the persisted ``vegan_signal`` first, then falls back to the listing
+    body text (full_description / summary / title) so a fresh keyword scan
+    catches mentions that the scraper missed (e.g. localised phrases or
+    longer descriptions stored later).
+    """
+    locale: Locale = get_locale(country)
+    signal = (listing.get("vegan_signal") or "").lower()
+    haystack = " ".join(
+        str(listing.get(field) or "")
+        for field in ("full_description", "summary", "title", "vegan_signal")
+    ).lower()
+
+    def _has(kws: frozenset[str]) -> bool:
+        return any(kw in haystack for kw in kws) or any(kw in signal for kw in kws)
+
+    if signal and signal not in locale.vegan_no_signal:
+        if any(kw in signal for kw in locale.vegan_strong):
+            return "strong"
+        if any(kw in signal for kw in locale.vegan_partial):
+            return "partial"
+        if any(kw in signal for kw in locale.vegan_weak):
+            return "weak"
+
+    if _has(locale.vegan_strong):
+        return "strong"
+    if _has(locale.vegan_partial):
+        return "partial"
+    if _has(locale.vegan_weak):
+        return "weak"
+    return "none"
+
+
+def _vegan_preference_bonus(tier: str) -> int:
+    """Extra weight when a listing matches Shaked's vegan/vegetarian kitchen focus."""
+    if tier == "strong":
+        return VEGAN_STRONG_BONUS
+    if tier == "partial":
+        return VEGAN_PARTIAL_BONUS
+    return 0
 
 
 def _transit_score(match_lines: list[str], preferred_lines: list[str]) -> int:
@@ -199,6 +247,27 @@ def _budget_ok(price: int | None, profile: SearchProfile) -> bool:
     return profile.budget_min <= price <= profile.budget_max
 
 
+def _budget_ok_with_vegan_exception(
+    price: int | None, profile: SearchProfile, vegan_tier: str
+) -> tuple[bool, bool]:
+    """Budget gate that relaxes the upper bound for vegan-friendly listings.
+
+    Returns (passes, was_overbudget). When the listing carries a strong or
+    partial vegan signal, the upper bound is widened by VEGAN_BUDGET_TOLERANCE
+    so a vegan kitchen can outweigh other parameters per Shaked's preference.
+    The lower bound and "no price" handling stay identical to ``_budget_ok``.
+    """
+    if price is None:
+        return True, False
+    if profile.budget_min <= price <= profile.budget_max:
+        return True, False
+    if vegan_tier in ("strong", "partial") and price > profile.budget_max:
+        ceiling = int(profile.budget_max * (1 + VEGAN_BUDGET_TOLERANCE))
+        if profile.budget_min <= price <= ceiling:
+            return True, True
+    return False, False
+
+
 def score_listing(
     listing: dict[str, Any],
     profile: SearchProfile,
@@ -211,7 +280,14 @@ def score_listing(
     price = listing.get("price")
     if price is None:
         price = listing.get("price_chf")
-    if not _budget_ok(price, profile):
+
+    country = listing.get("country", "CH")
+    vegan_tier = _vegan_tier(listing, country)
+    listing["vegan_priority"] = vegan_tier in ("strong", "partial")
+
+    budget_ok, over_budget = _budget_ok_with_vegan_exception(price, profile, vegan_tier)
+    listing["over_budget_vegan_exception"] = over_budget
+    if not budget_ok:
         return 0
 
     if (
@@ -243,7 +319,8 @@ def score_listing(
 
     lines = _listing_transit_lines(listing)
     total = (
-        _vegan_score(listing.get("vegan_signal", ""), listing.get("country", "CH"))
+        _vegan_score(listing.get("vegan_signal", ""), country)
+        + _vegan_preference_bonus(vegan_tier)
         + _transit_score(lines, profile.transit_lines)
         + _roommate_score(listing.get("roommate_signal", ""), profile.preferred_roommate_age)
         + _freshness_score(listing.get("posted_date"), listing.get("first_seen_at"))
@@ -255,6 +332,11 @@ def score_listing(
     # Advisory penalty (not a hard exclude).
     if signals["religion_preference"]:
         total -= 10
+
+    # Soft penalty for the vegan-budget exception so the over-budget listing
+    # only ranks ahead when its vegan signal genuinely outweighs the overrun.
+    if over_budget:
+        total -= VEGAN_OVERBUDGET_PENALTY
 
     return min(100, total)
 

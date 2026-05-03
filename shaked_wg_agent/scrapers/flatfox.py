@@ -33,7 +33,18 @@ _MAX_ROOMS_APARTMENT = 2.0
 _BATCH_SIZE = 50
 
 _TRAM_PATTERN = re.compile(r"\bTram\s*(\d+)\b", re.IGNORECASE)
-_VEGAN_KEYWORDS = ["vegan", "pflanzlich", "vegetarisch", "tierfreie"]
+# Order matters: stronger signals first so the persisted token reflects intent.
+_VEGAN_KEYWORDS = [
+    "vegane küche",
+    "vegan",
+    "pflanzlich",
+    "plant-based",
+    "vegetarische küche",
+    "vegetarisch",
+    "tierfreie",
+    "kein fleisch",
+    "fleischfrei",
+]
 
 _ZIP_DISTRICT: dict[str, str] = {
     "4001": "Innenstadt", "4002": "Innenstadt",

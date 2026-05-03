@@ -416,6 +416,69 @@ def test_hard_exclude_age_below_min(student_profile: SearchProfile) -> None:
     assert score == -1
 
 
+# ---------------------------------------------------------------------------
+# M6: vegan-kitchen preference — Shaked focus update 2026-05
+# ---------------------------------------------------------------------------
+
+
+def test_vegan_priority_strong_boosts_score(
+    perfect_listing: dict, base_profile: SearchProfile
+) -> None:
+    """A vegan listing must outrank an otherwise-identical non-vegan one."""
+    vegan = dict(perfect_listing)
+    vegan["vegan_signal"] = "vegan"
+    plain = dict(perfect_listing)
+    plain["vegan_signal"] = "kein Signal"
+    assert score_listing(vegan, base_profile) > score_listing(plain, base_profile)
+
+
+def test_vegan_priority_marks_listing_dict(
+    perfect_listing: dict, base_profile: SearchProfile
+) -> None:
+    """Scoring tags the listing with vegan_priority for the HTML layer."""
+    perfect_listing["vegan_signal"] = "vegane Küche"
+    score_listing(perfect_listing, base_profile)
+    assert perfect_listing["vegan_priority"] is True
+
+
+def test_vegan_priority_falls_back_to_description(base_profile: SearchProfile) -> None:
+    """Description-only mention of 'vegane WG' triggers the preference."""
+    listing = {
+        "price": 700,
+        "vegan_signal": "kein Signal",
+        "full_description": "Suchen Mitbewohner für vegane WG, kleine Küche.",
+        "transit_match_lines": ["2"],
+        "url_status": "direct",
+    }
+    score = score_listing(listing, base_profile)
+    assert listing["vegan_priority"] is True
+    assert score > 0
+
+
+def test_vegan_budget_exception_keeps_listing(base_profile: SearchProfile) -> None:
+    """A vegan listing 25% over budget passes the gate (with a soft penalty)."""
+    over = {
+        "price": 1250,  # +25% over budget_max=1000
+        "vegan_signal": "vegan",
+        "url_status": "direct",
+    }
+    score = score_listing(over, base_profile)
+    assert score > 0
+    assert over["over_budget_vegan_exception"] is True
+
+
+def test_non_vegan_overbudget_still_gated(base_profile: SearchProfile) -> None:
+    """Without a vegan signal, the budget gate stays hard."""
+    listing = {"price": 1250, "vegan_signal": "kein Signal", "url_status": "direct"}
+    assert score_listing(listing, base_profile) == 0
+
+
+def test_vegan_budget_exception_capped(base_profile: SearchProfile) -> None:
+    """Exception widens the ceiling by ~30%; beyond that the gate still trips."""
+    far_over = {"price": 1500, "vegan_signal": "vegan", "url_status": "direct"}
+    assert score_listing(far_over, base_profile) == 0
+
+
 def test_hard_exclude_age_above_max() -> None:
     """Profile age 30 > roommate_age_max 25 → score -1."""
     profile = SearchProfile(
