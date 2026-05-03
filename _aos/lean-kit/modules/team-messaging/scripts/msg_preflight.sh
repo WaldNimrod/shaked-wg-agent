@@ -124,9 +124,6 @@ msg_detect_project_id() {
 # Usage:  msg_curl <method> <api_path> [json_body]
 # Example: msg_curl GET "/api/messaging/inbox?to_team=team_99"
 #          msg_curl POST "/api/messaging/send" "$payload"
-# Auth:    Set AOS_ACTOR_API_KEY env var (shared secret configured in AOS_V3_ACTOR_KEYS
-#          on the server) to authenticate. Required when server has AOS_V3_ACTOR_KEYS
-#          set (production). Not required in local dev (AOS_V3_TRUST_CLIENT_ACTOR=1).
 msg_curl() {
   local method="${1:?usage: msg_curl <method> <api_path> [json_body]}"
   local api_path="${2:?usage: msg_curl <method> <api_path> [json_body]}"
@@ -139,11 +136,6 @@ msg_curl() {
   local proj
   proj=$(msg_detect_project_id)
   local args=(-s -X "$method" -H "X-Actor-Team-Id: $team" -H "X-Project-Id: $proj")
-  # Inject API key when configured (AOS_V3_ACTOR_KEYS production auth model — SEC-001)
-  local api_key="${AOS_ACTOR_API_KEY:-}"
-  if [ -n "$api_key" ]; then
-    args+=(-H "X-Actor-Api-Key: $api_key")
-  fi
   if [ -n "$data" ]; then
     args+=(-H "Content-Type: application/json" -d "$data")
   fi
