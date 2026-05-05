@@ -22,7 +22,9 @@ from shaked_wg_agent.config import (
     CityDefinition,
     SearchProfile,
 )
+from shaked_wg_agent.extractors.diet_signals import classify as _diet_classify
 from shaked_wg_agent.extractors.negative_signals import detect_negative_signals
+from shaked_wg_agent.extractors.quiet_signals import classify as _quiet_classify
 from shaked_wg_agent.locale import get_locale
 
 
@@ -228,6 +230,16 @@ def score_listing(
     _neg_text = listing.get("full_description") or listing.get("summary") or ""
     signals = detect_negative_signals(_neg_text)
 
+    # W1.3: Run diet and quiet signal extractors when full_description is available.
+    _full_desc = listing.get("full_description") or ""
+    if _full_desc:
+        _diet_result = _diet_classify(_full_desc)
+        listing["is_vegetarian_friendly"] = _diet_result["is_vegetarian_friendly"]
+        listing["diet_matched_keywords"] = _diet_result["matched_keywords"]
+
+        _quiet_result = _quiet_classify(_full_desc)
+        listing["is_quiet_friendly"] = _quiet_result["is_quiet_friendly"]
+
     # Gender: exclude only when restriction conflicts with profile (Shaked is female).
     # men_only → hard exclude. women_only → keep (Shaked is female).
     if signals["men_only"]:
@@ -242,10 +254,28 @@ def score_listing(
         return -1
 
     lines = _listing_transit_lines(listing)
-    total = (
+
+    # W1.3 extractor bonuses (applied to subscore, not score total cap)
+    _diet_bonus = 2 if listing.get("is_vegetarian_friendly") else 0
+    _quiet_bonus = 1 if listing.get("is_quiet_friendly") else 0
+
+    # Subscore cap: vegan subscore max is 35, add diet_bonus capped at 35
+    _vegan_subscore = min(
+        35,
         _vegan_score(listing.get("vegan_signal", ""), listing.get("country", "CH"))
+        + _diet_bonus,
+    )
+    # Roommate subscore max is 15, add quiet_bonus capped at 15
+    _roommate_subscore = min(
+        15,
+        _roommate_score(listing.get("roommate_signal", ""), profile.preferred_roommate_age)
+        + _quiet_bonus,
+    )
+
+    total = (
+        _vegan_subscore
         + _transit_score(lines, profile.transit_lines)
-        + _roommate_score(listing.get("roommate_signal", ""), profile.preferred_roommate_age)
+        + _roommate_subscore
         + _freshness_score(listing.get("posted_date"), listing.get("first_seen_at"))
         + _available_score(listing.get("available_from"), profile.move_in_from)
         + _url_score(listing.get("url_status", ""))

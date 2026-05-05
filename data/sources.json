@@ -90,6 +90,21 @@
     }
   },
   {
+    "source_id": "ronorp",
+    "label": "ronorp.net",
+    "base_url": "https://ronorp.net",
+    "scraper_class": "shaked_wg_agent.scrapers.ronorp.RonorpScraper",
+    "requires_playwright": false,
+    "notes": "Swiss community classifieds. Uses cockpit.ronorp.net REST API (unauthenticated). WG subcategory_id=144, Basel city_id=4. robots.txt: User-agent:* + ClaudeBot explicitly allowed for /basel/market/* paths. Polite delay: 7s. Note: WG listings are loaded client-side on the website; the unauthenticated API endpoint /market/posts/housing?city_id=4 is used, filtered by sub_category_id=144 and Basel zip codes. During low-activity periods the scraper may return 0 results.",
+    "city_params": {
+      "basel": {
+        "search_url": "https://ronorp.net/basel/market/immobilien-basel/wg-zimmer-basel",
+        "connection_method": "cockpit_api",
+        "enabled": true
+      }
+    }
+  },
+  {
     "source_id": "homeless",
     "label": "homeless.co.il",
     "base_url": "https://www.homeless.co.il",
