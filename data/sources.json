@@ -75,6 +75,21 @@
     }
   },
   {
+    "source_id": "weegee",
+    "label": "weegee.ch",
+    "base_url": "https://weegee.ch",
+    "scraper_class": "shaked_wg_agent.scrapers.weegee.WeegeeScraper",
+    "requires_playwright": false,
+    "notes": "Schweizer WG-Portal. Parses __NEXT_DATA__ JSON embedded in search result pages. ~89 Basel listings. robots.txt: User-agent:* Allow:/ (ClaudeBot blocked, Chrome UA used). Polite delay: 7s.",
+    "city_params": {
+      "basel": {
+        "search_url": "https://weegee.ch/de/search/city-basel",
+        "connection_method": "city_slug",
+        "enabled": true
+      }
+    }
+  },
+  {
     "source_id": "homeless",
     "label": "homeless.co.il",
     "base_url": "https://www.homeless.co.il",
