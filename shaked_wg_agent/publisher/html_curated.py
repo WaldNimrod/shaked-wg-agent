@@ -385,7 +385,7 @@ _HTML_TEMPLATE = """\
       <!-- Publication date -->
       <div class="flex items-center gap-1 bg-white rounded-full border border-stone-300 px-1 py-0.5">
         <span class="text-xs text-slate-500 px-2">פורסם</span>
-        <template x-for="opt in [{{v:'all',l:'הכל'}},{{v:'today',l:'היום'}},{{v:'week',l:'השבוע'}}]" :key="opt.v">
+        <template x-for="opt in [{{v:'all',l:'הכל'}},{{v:'today',l:'היום'}},{{v:'recent',l:'יומיים'}},{{v:'week',l:'השבוע'}}]" :key="opt.v">
           <button @click="filters.published=opt.v"
                   :class="filters.published===opt.v?'bg-blue-600 text-white':'text-slate-600 hover:bg-stone-100'"
                   class="px-3 py-1 rounded-full text-xs font-medium transition" x-text="opt.l"></button>
@@ -487,7 +487,8 @@ _HTML_TEMPLATE = """\
                 <span x-show="l.isStudent" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">🎓 Studenten</span>
                 <span x-show="l.isQuiet" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-sky-100 text-sky-800">🤫 שקט</span>
                 <span x-show="l.firstSeenBucket==='today'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">🆕 היום</span>
-                <span x-show="l.firstSeenBucket==='week' && l.firstSeenBucket!=='today'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-100 text-stone-600">📅 השבוע</span>
+                <span x-show="l.firstSeenBucket==='recent'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-700">🕐 יומיים</span>
+                <span x-show="l.firstSeenBucket==='week'" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-100 text-stone-600">📅 השבוע</span>
               </div>
             </div>
           </div>
@@ -607,8 +608,8 @@ _HTML_TEMPLATE = """\
           <template x-for="l in sortedListings()" :key="'src-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.sourceLabel"></td></template></tr>
           <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">פורסם</td>
           <template x-for="l in sortedListings()" :key="'fs-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100">
-            <span :class="l.firstSeenBucket==='today'?'text-amber-700 font-bold':l.firstSeenBucket==='week'?'text-blue-600':'text-slate-400'"
-                  x-text="l.firstSeenBucket==='today'?'🆕 היום':l.firstSeenBucket==='week'?'השבוע':'ישן'"></span>
+            <span :class="l.firstSeenBucket==='today'?'text-amber-700 font-bold':l.firstSeenBucket==='recent'?'text-orange-600 font-semibold':l.firstSeenBucket==='week'?'text-blue-600':'text-slate-400'"
+                  x-text="l.firstSeenBucket==='today'?'🆕 היום':l.firstSeenBucket==='recent'?'🕐 יומיים':l.firstSeenBucket==='week'?'השבוע':'ישן'"></span>
             <div class="text-[10px] text-slate-400" x-text="l.firstSeenAt?l.firstSeenAt.substring(0,10):''"></div>
           </td></template></tr>
 
@@ -675,7 +676,7 @@ _HTML_TEMPLATE = """\
 <script>
 function app() {{
   return {{
-    showMatrix: window.innerWidth >= 768,
+    showMatrix: true,
     showFullTable: false,
     filters: {{ published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false }},
     sortBy: 'score',
@@ -686,7 +687,7 @@ function app() {{
         if (!l.firstSeenAt) {{ l.firstSeenBucket = 'older'; return; }}
         const d = new Date(l.firstSeenAt); d.setHours(0,0,0,0);
         const delta = Math.round((today - d) / 86400000);
-        l.firstSeenBucket = delta === 0 ? 'today' : delta <= 7 ? 'week' : 'older';
+        l.firstSeenBucket = delta === 0 ? 'today' : delta <= 2 ? 'recent' : delta <= 7 ? 'week' : 'older';
       }});
     }},
 
