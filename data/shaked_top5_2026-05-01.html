@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>שקד — 5 הדירות הנבחרות בבאזל · 2026-05-01</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --card: #ffffff;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --good: #059669;
+    --warn: #b45309;
+    --bad: #be123c;
+    --line: #e5e7eb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", "David", "Arial Hebrew", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 24px;
+    line-height: 1.55;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header {
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 18px;
+    margin-bottom: 28px;
+  }
+  h1 {
+    font-size: 28px;
+    margin: 0 0 6px;
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  h2 {
+    font-size: 22px;
+    margin: 36px 0 14px;
+    color: var(--ink);
+    border-right: 4px solid var(--accent);
+    padding-right: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.06);
+    font-size: 14px;
+  }
+  th, td {
+    padding: 12px 14px;
+    text-align: right;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  thead th {
+    background: #f3f4f6;
+    font-weight: 600;
+    color: #374151;
+    font-size: 13px;
+    text-transform: none;
+    border-bottom: 2px solid var(--line);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fafbfc; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  td.center, th.center { text-align: center; }
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .pill-good { background: #d1fae5; color: var(--good); }
+  .pill-warn { background: #fef3c7; color: var(--warn); }
+  .pill-bad { background: #fee2e2; color: var(--bad); }
+  .pill-na { background: #f3f4f6; color: var(--muted); }
+  .listing-card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04);
+    border-right: 5px solid var(--accent);
+  }
+  .listing-card h3 {
+    margin: 0 0 4px;
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .listing-card .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .listing-card a.link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 12px;
+    background: var(--accent);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .listing-card a.link:hover { background: #1d4ed8; }
+  .why { margin: 8px 0; }
+  .why strong { color: var(--good); }
+  .verify { margin: 8px 0; padding: 10px 14px; background: #fffbeb; border-radius: 6px; border-right: 3px solid var(--warn); }
+  .verify strong { color: var(--warn); }
+  .check { color: var(--good); font-weight: 700; }
+  .cross { color: var(--bad); font-weight: 700; }
+  .qmark { color: var(--muted); font-weight: 700; }
+  .partial { color: var(--warn); font-weight: 700; }
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .footnote {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: #fef3c7;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #78350f;
+  }
+  .listing-num {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    line-height: 26px;
+    text-align: center;
+    background: var(--accent);
+    color: white;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: 700;
+    margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>5 הדירות הנבחרות לשקד · בבאזל</h1>
+  <div class="subtitle">סקירה מדויקת לתאריך 1 במאי 2026 · אומתו חיות (HTTP 200) במועד הסקירה · WG ארוך-טווח · כניסה אופטימלית 01.06.2026</div>
+</header>
+
+<h2>טבלה ראשית — נתוני זיהוי</h2>
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>שכונה</th>
+      <th class="center">מחיר/חודש</th>
+      <th class="center">תאריך כניסה</th>
+      <th class="center">גודל חדר</th>
+      <th class="center">קווי טרם</th>
+      <th>סוג</th>
+      <th class="center">חוזה מינ׳</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="listing-num">1</span></td>
+      <td><strong>Gotthelf — Iselin 4054</strong></td>
+      <td class="num">746 CHF</td>
+      <td class="center"><span class="pill pill-good">01.06.2026</span></td>
+      <td class="num">16 m²</td>
+      <td class="center">14, 16</td>
+      <td>WG אישי · 4 שותפים בדירה 120m²</td>
+      <td class="center"><span class="pill pill-na">לא צוין</span></td>
+    </tr>
+    <tr>
+      <td><span class="listing-num">2</span></td>
+      <td><strong>Klingental 20 — Kleinhüningen</strong></td>
+      <td class="num">999 CHF</td>
+      <td class="center"><span class="pill pill-good">01.06.2026</span></td>
+      <td class="num">27 m²<br><small>+ מקלחת פרטית</small></td>
+      <td class="center">2, 14</td>
+      <td>דיור-סטודנטים מנוהל</td>
+      <td class="center"><strong>12 חודשים</strong></td>
+    </tr>
+    <tr>
+      <td><span class="listing-num">3</span></td>
+      <td><strong>Mattenstrasse — Kleinhüningen</strong></td>
+      <td class="num">829 CHF<br><small>(1 שנה)</small></td>
+      <td class="center"><span class="pill pill-warn">לא צוין</span></td>
+      <td class="num">28 m²</td>
+      <td class="center">2, 14</td>
+      <td>דיור מנוהל ("Code 102")</td>
+      <td class="center">גמיש 6ח׳-3ש׳</td>
+    </tr>
+    <tr>
+      <td><span class="listing-num">4</span></td>
+      <td><strong>Inselstrasse — Kleinbasel 4057</strong></td>
+      <td class="num">890 CHF</td>
+      <td class="center"><span class="pill pill-warn">לא צוין</span></td>
+      <td class="num">20 m²</td>
+      <td class="center"><strong>2, 3</strong></td>
+      <td>דיור משותף מנוהל</td>
+      <td class="center"><span class="pill pill-na">לא צוין</span></td>
+    </tr>
+    <tr>
+      <td><span class="listing-num">5</span></td>
+      <td><strong>Markircherstr — St.Alban 4055</strong></td>
+      <td class="num">815 CHF</td>
+      <td class="center"><span class="pill pill-warn">לא צוין</span></td>
+      <td class="num">11 m²<br><small>(קטן)</small></td>
+      <td class="center">3, 10</td>
+      <td>WG אישי 3er בהיווצרות</td>
+      <td class="center"><span class="pill pill-na">לא צוין</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>סקירה לכל דירה</h2>
+
+<div class="listing-card">
+  <h3><span class="listing-num">1</span> Gotthelf bioscience-WG · 746 CHF · Iselin 4054</h3>
+  <div class="meta">תאריך כניסה ודאי 01.06.2026 · חדר 16m² בדירת 120m² · קווי טרם 14, 16</div>
+  <p class="why">
+    ה-WG <strong>הכי תואם תרבותית</strong> מבין החמש. שלושת הדיירים — אנדריאה (25, נורווגיה), לוקה (24, שוויץ) ו-פאו (24, ספרד) — כולם לומדים או עובדים בביו-מדעים. רובע Gotthelf הוא רובע סטודנטים אקדמי קלאסי, 10 דקות באופניים מ-Uni Basel ומהריין. הדירה כוללת 4 חדרי שינה, 2 מקלחות, 2 מרפסות וחדר אופניים. תיאור באנגלית — סף שפה נמוך עבור שקד שעדיין בקורס גרמנית.
+  </p>
+  <div class="verify">
+    <strong>לבדוק לפני פנייה:</strong> השותפים כתבו "looking for a young professional" — שקד הוא סטודנט-עתידי (Frühjahr 2027) לא מועסק כרגע. צריך לפנות באופן ישיר לשאלה הזו ב-outreach. מדיניות עישון/דיאטה לא צוינה — לשאול. פיקדון 3 חודשי שכ"ד (~2240 CHF) צריך להיות זמין בתחילת שכירות.
+  </div>
+  <a class="link" href="https://flatfox.ch/de/wohnung/4054-basel/85993329/" target="_blank">פתח את המודעה ב-flatfox →</a>
+</div>
+
+<div class="listing-card">
+  <h3><span class="listing-num">2</span> Klingental 20 דיור-סטודנטים · 999 CHF · Kleinhüningen</h3>
+  <div class="meta">תאריך כניסה ודאי 01.06.2026 · חדר 27m² + מקלחת/שירותים פרטיים · קווי טרם 2, 14 · חוזה מינ׳ 12 חודשים</div>
+  <p class="why">
+    המודעה <strong>היחידה שמצהירה במפורש על קהל-יעד שתואם לשקד</strong>: "ausschliesslich Studenten oder Azubis, bis 28 Jahre jung". 27m² עם מקלחת ושירותים פרטיים בחדר זה איכות גבוהה במיוחד בטווח המחיר. המבנה הוא בית-סטודנטים בניהול מסחרי, לא WG קלאסי — מטבח קטן משותף בכל קומה ו-Aufenthaltsraum משותף בקומה 4. חוזה 12 חודשים מינימום מתאים לכוונה ארוכת-טווח.
+  </p>
+  <div class="verify">
+    <strong>לבדוק לפני פנייה:</strong> מחיר 999 CHF הוא הגבול העליון של התקציב — לוודא אם Nebenkosten כלולות. בעל-הבית רשאי לדרוש Zulassungsbescheid Uni Basel; אם שקד עדיין לא קיבל את האישור ל-Frühjahr 2027 — לשלוח עם ILS Bestätigung כעדות "Ausbildung". לא WG אישי — שקד יקבל פחות אינטימיות חברתית, יותר עצמאות.
+  </div>
+  <a class="link" href="https://flatfox.ch/de/wohnung/klingental-20-4058-basel/85994847/" target="_blank">פתח את המודעה ב-flatfox →</a>
+</div>
+
+<div class="listing-card">
+  <h3><span class="listing-num">3</span> Mattenstrasse סטודנטים-Friendly · 829 CHF · Kleinhüningen</h3>
+  <div class="meta">תאריך כניסה לא צוין · חדר 28m² מרוהט · קווי טרם 2, 14 · חוזה גמיש</div>
+  <p class="why">
+    כוללת <strong>סעיף ייחודי וקריטי</strong>: "Für Studierende ist kein Arbeitsvertrag erforderlich" — סעיף שמסיר את החסם הנפוץ ביותר ל-applicant בן 18 ללא משכורת. מבנה התמחור מעודד חוזה ארוך — 1 שנה 829 CHF, 2 שנים 809, 3 שנים 785. הסכום כולל חשמל, חימום ו-Wi-Fi — תקציב חודשי שקוף וקבוע. מטבח מודרני, מדיח כלים, מכונת כביסה משלה. הקרבה ל-Messe Basel ול-Badischer Bahnhof נותנת חיבור תחבורתי איכותי, אבל הרובע פחות מרכזי לחיי סטודנטים.
+  </p>
+  <div class="verify">
+    <strong>לבדוק לפני פנייה:</strong> תאריך הכניסה לא צוין במודעה — חובה לאמת זמינות ל-01.06.2026 לפני הגשת תיק. "Code: 102" מצביע על מבנה רב-יחידות מנוהל מסחרית — לא WG אישי. אופי השותפים-לקומה לא תואר במודעה (בניגוד ל-#1) — לבקש מידע על מי מתגוררים.
+  </div>
+  <a class="link" href="https://flatfox.ch/de/wohnung/mattenstrasse-4058-basel/85992112/" target="_blank">פתח את המודעה ב-flatfox →</a>
+</div>
+
+<div class="listing-card">
+  <h3><span class="listing-num">4</span> Inselstrasse — Kleinbasel · 890 CHF · 4057</h3>
+  <div class="meta">תאריך כניסה לא צוין · חדר 20m² מרוהט · קווי טרם 2, 3 (התאמת טרם הגבוהה ביותר!)</div>
+  <p class="why">
+    <strong>היחידה מבין החמש שמתאימה לשני קווי הטרם המועדפים של שקד</strong> (2 ו-3 שניהם מתוך 2/3/8/16). Kleinbasel הוא רובע צעיר ותוסס, פופולרי בקרב סטודנטים. המודעה מצהירה: "Wir verlangen keinen Betreibungsauszug und keine Arbeitgeberbescheinigung" — לא רלוונטי בפועל לאזרח שוויצרי, אך מצביע על מנהל גמיש וקל לעבודה. כל Nebenkosten + שירות ניקיון של החללים המשותפים כלולים במחיר. מודעה זהה כמעט במחיר זהה לחדר 16m² (1148577) באותו בניין — שווה לבדוק את שתיהן.
+  </p>
+  <div class="verify">
+    <strong>לבדוק לפני פנייה:</strong> תאריך כניסה לא צוין — חובה לאמת. מבנה מנוהל בסגנון "מעונות מסחריים" (LCD-TV מובנה, ניקיון אוטומטי) — אופי השותפים שטחי יותר מ-WG קלאסי. תיאור השותפים מוגבל ל-"freundliche und ruhige Mitbewohnerin" — מומלץ לבקש פרטים על גילם, עיסוקם, שפותיהם.
+  </div>
+  <a class="link" href="https://flatfox.ch/de/wohnung/inselstrasse-4057-basel/1206700/" target="_blank">פתח את המודעה ב-flatfox →</a>
+</div>
+
+<div class="listing-card">
+  <h3><span class="listing-num">5</span> Markircherstr — 3er-WG בהיווצרות · 815 CHF · St.Alban 4055</h3>
+  <div class="meta">תאריך כניסה לא צוין · חדר 11m² מרוהט · קווי טרם 3, 10 · WG אישי</div>
+  <p class="why">
+    <strong>הסיכוי הטוב ביותר לחוויית WG אישית-טריה</strong>: ה-WG בהיווצרות עכשיו, כך ששקד יצטרף כחבר-מהיום-הראשון ולא יצטרך לפרוץ לתוך דינמיקה קיימת. הטון של המודעה — "Bei Interesse gerne kurz per Chat vorstellen :)" — לא-פורמלי ורומז על מארחים צעירים. יש מרפסת לחדר. מרוהט אך אופציונלי (אפשר לאחסן רהיטים במחסן). הקרבה לקו טרם 3 (אחד מהמועדפים) טובה.
+  </p>
+  <div class="verify">
+    <strong>לבדוק לפני פנייה:</strong> חדר 11m² קטן מאוד — שקד צריך לוודא שזה מקובל עליו. תאריך כניסה לא צוין — חובה לאמת. אין מידע על המארחים — גיל, עיסוק, שפות, הרגלי חיים. זמן השכירות לא צוין. מודעה דומה (85962304) באותה כתובת — אולי חדר אחר באותה דירה; שווה לבדוק את שתיהן.
+  </div>
+  <a class="link" href="https://flatfox.ch/de/wohnung/markircherstrasse-52-4055-basel/85945148/" target="_blank">פתח את המודעה ב-flatfox →</a>
+</div>
+
+<h2>טבלת התאמה לפרמטרי הפרופיל</h2>
+<div class="legend">
+  <span><span class="check">✓</span> = עומד בקריטריון</span>
+  <span><span class="cross">✗</span> = לא עומד</span>
+  <span><span class="partial">◐</span> = חלקי / כפוף לבירור</span>
+  <span><span class="qmark">?</span> = לא צוין במודעה — לבדוק בפנייה</span>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>פרמטר פרופיל</th>
+      <th class="center">#1 Gotthelf</th>
+      <th class="center">#2 Klingental</th>
+      <th class="center">#3 Mattenstr</th>
+      <th class="center">#4 Inselstr</th>
+      <th class="center">#5 Markirch</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>תקציב 200-1000 CHF</td>
+      <td class="center"><span class="check">✓</span> 746</td>
+      <td class="center"><span class="partial">◐</span> 999 (גבול)</td>
+      <td class="center"><span class="check">✓</span> 829</td>
+      <td class="center"><span class="check">✓</span> 890</td>
+      <td class="center"><span class="check">✓</span> 815</td>
+    </tr>
+    <tr>
+      <td>WG (לא דירה עצמאית)</td>
+      <td class="center"><span class="check">✓</span> WG אישי</td>
+      <td class="center"><span class="partial">◐</span> מנוהל</td>
+      <td class="center"><span class="partial">◐</span> מנוהל</td>
+      <td class="center"><span class="partial">◐</span> מנוהל</td>
+      <td class="center"><span class="check">✓</span> WG אישי</td>
+    </tr>
+    <tr>
+      <td>תאריך כניסה 01.06.2026</td>
+      <td class="center"><span class="check">✓</span></td>
+      <td class="center"><span class="check">✓</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+    </tr>
+    <tr>
+      <td>חוזה ארוך-טווח (permanent)</td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="check">✓</span> 12 ח׳ מינ׳</td>
+      <td class="center"><span class="check">✓</span> ל-3 שנים</td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+    </tr>
+    <tr>
+      <td>קווי טרם 2/3/8/16</td>
+      <td class="center"><span class="partial">◐</span> 16 (1/2)</td>
+      <td class="center"><span class="partial">◐</span> 2 (1/2)</td>
+      <td class="center"><span class="partial">◐</span> 2 (1/2)</td>
+      <td class="center"><span class="check">✓✓</span> 2+3</td>
+      <td class="center"><span class="partial">◐</span> 3 (1/2)</td>
+    </tr>
+    <tr>
+      <td>שותפים צעירים</td>
+      <td class="center"><span class="check">✓</span> 24-25</td>
+      <td class="center"><span class="check">✓</span> ≤28</td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="partial">◐</span> טון רומז</td>
+    </tr>
+    <tr>
+      <td>צמחוני / טבעוני (יתרון)</td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+    </tr>
+    <tr>
+      <td>סביבה ללא עישון (חובה)</td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+      <td class="center"><span class="qmark">?</span></td>
+    </tr>
+    <tr>
+      <td>שפת מודעה — גרמנית</td>
+      <td class="center"><span class="cross">✗</span> אנגלית</td>
+      <td class="center"><span class="check">✓</span></td>
+      <td class="center"><span class="check">✓</span></td>
+      <td class="center"><span class="check">✓</span> + EN</td>
+      <td class="center"><span class="check">✓</span></td>
+    </tr>
+    <tr>
+      <td>גודל חדר ≥ 15m²</td>
+      <td class="center"><span class="check">✓</span> 16m²</td>
+      <td class="center"><span class="check">✓</span> 27m²</td>
+      <td class="center"><span class="check">✓</span> 28m²</td>
+      <td class="center"><span class="check">✓</span> 20m²</td>
+      <td class="center"><span class="cross">✗</span> 11m²</td>
+    </tr>
+    <tr>
+      <td>קרבה ל-Uni Basel (≤25 דק׳)</td>
+      <td class="center"><span class="check">✓</span> 10 דק׳ אופניים</td>
+      <td class="center"><span class="check">✓</span> 15 דק׳ טרם</td>
+      <td class="center"><span class="partial">◐</span> 20 דק׳</td>
+      <td class="center"><span class="check">✓</span> 15 דק׳ טרם</td>
+      <td class="center"><span class="check">✓</span> 15 דק׳ טרם</td>
+    </tr>
+    <tr>
+      <td>תיאור אישי של שותפים</td>
+      <td class="center"><span class="check">✓</span> מפורט</td>
+      <td class="center"><span class="cross">✗</span></td>
+      <td class="center"><span class="cross">✗</span></td>
+      <td class="center"><span class="cross">✗</span></td>
+      <td class="center"><span class="cross">✗</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footnote">
+  <strong>הערות שקיפות:</strong>
+  <ul style="margin: 8px 0 0; padding-right: 20px;">
+    <li><strong>תאריך כניסה</strong> צוין רק ב-#1 ו-#2. ב-#3, #4, #5 לא מופיע במודעה — חובה לשאול לפני הגשת תיק רשמי.</li>
+    <li><strong>3 מתוך 5</strong> (#2, #3, #4) הן דיור-סטודנטים מנוהל ולא WG אישי קלאסי. שקד יקבל פחות אינטימיות חברתית, יותר עצמאות. #1 ו-#5 הן WG אישיות.</li>
+    <li><strong>מדיניות צמחוני/עישון</strong> לא צוינה באף אחת מ-5 המודעות. שקד לא מעשן (חובה), צמחוני/טבעוני יתרון. כדאי לשאול בפנייה — לא לבסס דחיה מראש על היעדר מידע.</li>
+    <li><strong>חוויה חברתית</strong>: #1 (Gotthelf) הכי מפורט בתיאור השותפים האישי — מציג שלושה אנשים בשמות, גילים ומקצועות. שאר ה-4 כמעט לא מתארים את האנשים שתחיו איתם — זה פער מהותי באיכות-החלטה.</li>
+  </ul>
+</div>
+
+<p style="text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px;">
+  סקירה הופקה ב-2026-05-01 · אומתה ב-HTTP חי על כל 5 הקישורים · קלט: 49 מודעות חיות בבאזל · נסקרה ע"י סוכני מחקר עצמאיים (team_80)
+</p>
+
+</div>
+</body>
+</html>

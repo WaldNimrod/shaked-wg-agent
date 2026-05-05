@@ -12,7 +12,7 @@
   "transit_lines": ["2", "3", "8", "16"],
   "custom_tags": [],
   "language_policy": {
-    "primary_listing_language": "de",
+    "primary_listing_language": "en",
     "translation_required": false,
     "preserve_source_text": true
   },
@@ -27,6 +27,95 @@
   "occupation_status": "student",
   "studies_field": "chemistry (planned)",
   "studies_institution": "Universität Basel",
-  "studies_start": "2026-09",
-  "move_in_optimal": "2026-06-01"
+  "studies_start": "2027-02",
+  "move_in_optimal": "2026-06-01",
+
+  "_pending_schema_extension_notes": "Profile v1.8 — Layer 1 (system-derived) + Layer 2 (client-stated requests from Shaked). The fields below are documented but NOT YET parsed by config.py. They define the refined Shaked profile and serve as the spec for the M8 mandate (schema extension + scorer flexibility). See data/profiles/default_PROFILE_POLICY.md for full evolution log including Layer 2 client refinements 2026-05-01.",
+
+  "gender": "male",
+  "nationality": "swiss_citizen",
+  "guarantor_status": "swiss_citizen_non_resident_father",
+  "secondary_acceptable_languages": ["de"],
+  "preferred_listing_language_priority": "en_strong_preference",
+  "current_activity": "ILS Basel — intensive German course, 5 days/week, ongoing 3+ months",
+  "current_activity_url": "https://ils-basel.ch/en/",
+  "studies_admission_status": "Zulassung confirmed for Frühjahrssemester 2027",
+
+  "diet_priority": "vegetarian_or_vegan_advantage_not_requirement",
+  "smoking_policy_strictness": "hard_constraint_required",
+  "preferred_roommate_age_band": [18, 26],
+  "preferred_roommate_age_max_gap_years": 7,
+
+  "community_proxy_signals": {
+    "diaspora_terms_bonus": ["Israeli", "Hebrew", "Israelisch", "hebräisch", "Tel Aviv", "Jerusalem"],
+    "workplace_proxy_terms_bonus": ["Roche", "Novartis", "Pharma", "Biotech"],
+    "preferred_districts_bonus": ["4058", "Hirzbrunnen", "Kleinbasel", "4057"],
+    "bonus_weight_each": 15
+  },
+
+  "flexibility_rules": {
+    "budget_max_stretch_chf": 1000,
+    "_budget_change_2026-05-01": "Reduced from 1150 to 1000 per Shaked's explicit request — does NOT want to exceed 1000 CHF. Hard cap, not flex.",
+    "move_in_window_earliest": "2026-05-15",
+    "move_in_window_latest": "2026-08-01",
+    "stretch_allowed_when_listing_score_above": 80,
+    "hard_constraints_never_flex": [
+      "smoking_policy",
+      "gender_compatibility",
+      "wg_or_shared_room_only",
+      "no_living_alone",
+      "no_room_in_family_or_with_landlord",
+      "budget_max_1000_chf"
+    ]
+  },
+
+  "layer_2_client_refinements_2026-05-01": {
+    "source": "Direct client (Shaked) statements — refinements based on his preferences after reviewing v1.7 candidates",
+    "tram_lines_priority": {
+      "primary": ["3", "8", "2"],
+      "secondary": ["10", "11", "16"],
+      "_rationale": "Shaked's revised preference based on actual usage planning"
+    },
+    "amenities_priorities": {
+      "private_bathroom_in_room": "advantage_significant",
+      "internet_quality": "advantage_minor",
+      "modern_quality_heating": "advantage_minor",
+      "balcony": "nice_to_have_not_critical",
+      "fully_furnished_with_bed": "advantage_significant_no_furniture_owned"
+    },
+    "kitchen_priorities": {
+      "preference": "nice_kitchen_where_people_actually_cook",
+      "vegetarian_kitchen_bonus": "very_high_advantage",
+      "dietary_environment": "vegetarian_or_vegan_kitchen_strong_plus"
+    },
+    "common_space_vs_private": {
+      "preference": "common_space_size_more_important_than_private_room_size",
+      "private_room_size_constraint": "does_not_need_to_be_large"
+    },
+    "social_environment_HARD_REQUIREMENTS": {
+      "must_have_roommates": true,
+      "no_living_alone": true,
+      "no_room_in_family_setup": true,
+      "no_room_with_landlord_in_same_unit": true,
+      "_explanation": "Shaked explicitly requires WG-style with peer roommates. Private apartment alone or rooming-with-family arrangements are HARD REJECT."
+    },
+    "roommate_personality_preferences": {
+      "young_relatively": true,
+      "tolerant": true,
+      "not_too_strict_or_rigid": true
+    },
+    "noise_sensitivity": {
+      "level": "high",
+      "sound_insulation_importance": "critical",
+      "preference": "quiet_apartment_good_internal_insulation"
+    },
+    "language_preference_strengthened": {
+      "english_priority": "very_strong_preference_(strengthened_from_strong)"
+    },
+    "budget_clarification_HARD": {
+      "max_chf": 1000,
+      "stance": "Shaked does not want to increase budget. Hard cap, not flex.",
+      "supersedes_v1_6_flex_rules": true
+    }
+  }
 }

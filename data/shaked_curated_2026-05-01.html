@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>שקד · 10 דירות באזל · WG ארוך-טווח · v1.8 · 2026-05-01</title>
+<meta name="description" content="10 דירות מאומתות בבאזל עבור שקד — פרופיל v1.8 משלב בקשות לקוח מפורשות.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Helvetica Neue", "Arial Hebrew", sans-serif; -webkit-font-smoothing: antialiased; }
+  .card-shadow { box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.06); }
+  @media (min-width: 768px) { .card-shadow:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.06); } }
+  .score-ring { background: conic-gradient(var(--c) calc(var(--p)*1%), #e5e7eb 0); border-radius: 50%; }
+  [x-cloak] { display: none !important; }
+  .sticky-filter { position: sticky; top: 0; z-index: 40; backdrop-filter: blur(8px); background: rgba(250, 250, 247, 0.94); }
+  .matrix table { font-variant-numeric: tabular-nums; }
+  .matrix td.scorecell { text-align: center; font-weight: 600; }
+  .matrix td.total { background: #f1f5f9; font-weight: 700; }
+  .heatmap-1 { background: #fee2e2; color: #991b1b; }
+  .heatmap-2 { background: #fed7aa; color: #9a3412; }
+  .heatmap-3 { background: #fef3c7; color: #92400e; }
+  .heatmap-4 { background: #d9f99d; color: #3f6212; }
+  .heatmap-5 { background: #a7f3d0; color: #065f46; }
+  .heatmap-max { background: #6ee7b7; color: #064e3b; }
+  /* mobile-first scroll smoothness */
+  .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; }
+  /* Filter chip strip — horizontal scroll on mobile */
+  .filter-strip { display: flex; flex-wrap: wrap; gap: 8px; }
+  @media (max-width: 767px) {
+    .filter-strip { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; scrollbar-width: thin; }
+    .filter-strip > * { flex-shrink: 0; }
+    /* Larger tap targets */
+    .filter-strip button, .filter-strip label { min-height: 36px; }
+    /* Tighter padding throughout on small screens */
+    h1 { font-size: 1.5rem !important; line-height: 2rem !important; }
+    h2 { font-size: 1.25rem !important; }
+    /* Card CTA full-width on mobile */
+    .cta-btn { width: 100%; justify-content: center; padding: 12px 16px !important; font-size: 14px !important; }
+    /* Scroll hint pulse on tables */
+    .scroll-hint::after {
+      content: '← גלול אופקית →'; display: block; text-align: center;
+      font-size: 11px; color: #64748b; padding: 4px; background: #f1f5f9;
+      border-radius: 6px; margin-top: 6px;
+    }
+  }
+</style>
+</head>
+<body class="bg-stone-50 text-slate-800" x-data="listingsApp()" x-cloak>
+
+<header class="bg-gradient-to-l from-blue-700 to-blue-900 text-white">
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
+    <div class="flex items-baseline flex-wrap gap-2 mb-2">
+      <h1 class="text-xl md:text-3xl font-bold">10 דירות לשקד · באזל</h1>
+      <span class="text-blue-200 text-xs md:text-sm">v1.9 · 2026-05-03 · 3 חדשות</span>
+    </div>
+    <p class="text-blue-100 text-sm md:text-lg max-w-3xl">
+      WG ארוך-טווח · כניסה 01.06.2026 · תקציב <strong>≤ 1000 CHF</strong> · אזרח שוויצרי בן 18, סטודנט עתידי כימיה Uni Basel · ILS Basel · אנגלית מועדפת · <strong>טבעוני</strong>
+    </p>
+    <div class="mt-3 bg-emerald-900/40 border border-emerald-500/40 rounded-lg p-3 text-sm text-emerald-100">
+      <strong>🌱 מטבח צמחוני / טבעוני</strong> = יתרון משמעותי בחיפוש (שקד טבעוני). מסומן בבירור על כרטיסים כשנמצא. <span class="text-emerald-300">סטטוס נוכחי במאגר: 0 דירות עם הצהרה מפורשת בתקציב; 2 עם cooking-culture חזק (Gotthelf "cook together", Gundeldingerstr Mina "enjoys cooking")</span>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mt-4 md:mt-6">
+      <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">מאומתות חיות</div><div class="text-lg md:text-2xl font-bold">10/10</div></div>
+      <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">טווח מחיר</div><div class="text-lg md:text-2xl font-bold">746-999</div></div>
+      <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">01.06 ודאי</div><div class="text-lg md:text-2xl font-bold">4</div></div>
+      <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">WG אישי</div><div class="text-lg md:text-2xl font-bold">5</div></div>
+    </div>
+    <details class="mt-6 bg-white/10 rounded-lg p-4 text-sm">
+      <summary class="cursor-pointer font-semibold">📌 שינויים מ-v1.7 לפי בקשות שקד</summary>
+      <ul class="mt-3 space-y-1 list-disc list-inside text-blue-100">
+        <li><strong>תקציב 1000 CHF — קשיח</strong> (היה גמיש עד 1150). יצאו: Mattenstr 50 (1070), Bäumlihof (1143)</li>
+        <li><strong>חובה: WG עם שותפים</strong> — לא לבד, לא חדר אצל משפחה. יצא: 4054 male tenants (Swiss lady on 1st floor)</li>
+        <li><strong>קווי טרם:</strong> ראשוני 3/8/2 · משני 10/11/16 (היה אחיד)</li>
+        <li><strong>פרמטרים חדשים בציינון:</strong> מטבח · מקלחת פרטית · בידוד אקוסטי · מרפסת · מרוהט-עם-מיטה · אינטרנט+חימום · Migros/Coop קרוב · גודל שטח משותף</li>
+        <li><strong>שטח משותף &gt; שטח פרטי</strong> — חדר קטן OK אם הדירה גדולה</li>
+        <li><strong>מטבח צמחוני</strong> — יתרון משמעותי</li>
+        <li><strong>אנגלית</strong> — חוזק העדפה</li>
+      </ul>
+    </details>
+  </div>
+</header>
+
+<!-- COMPARISON MATRIX -->
+<section class="bg-white border-b-2 border-stone-200">
+  <div class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-2xl font-bold text-slate-900">📊 טבלת השוואת ציונים — 13 פרמטרים</h2>
+      <button @click="showMatrix = !showMatrix" class="text-sm text-blue-600 hover:text-blue-800 font-medium" x-text="showMatrix ? 'כווץ ▲' : 'הרחב ▼'"></button>
+    </div>
+    <p class="text-sm text-slate-600 mb-4">כל ציון = סכום 13 פרמטרים. תאי הטבלה צבועים לפי <em>אחוז המקסימום</em> שכל פרמטר השיג. תקציב, חברתי-שותפים, ולא-משפחה הם hard constraints (אם נכשלו — הדירה לא בטבלה).</p>
+
+    <div x-show="showMatrix" class="matrix scroll-x scroll-hint" x-transition>
+      <table class="w-full text-xs border border-stone-200 rounded-lg overflow-hidden" style="min-width: 1100px;">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="text-right p-2 sticky right-0 bg-slate-50 border-l border-stone-200 min-w-[180px]">דירה</th>
+            <th class="text-center p-2" title="01.06.2026 = 15">📅<br>תאריך<br><span class="text-xs text-slate-400">/15</span></th>
+            <th class="text-center p-2" title="גיל קרוב + קהילה">👥<br>שותפים<br><span class="text-xs text-slate-400">/20</span></th>
+            <th class="text-center p-2" title="EN מועדף">🇬🇧<br>שפה<br><span class="text-xs text-slate-400">/12</span></th>
+            <th class="text-center p-2" title="3/8/2 ראשוני, 10/11/16 משני">🚊<br>טרם<br><span class="text-xs text-slate-400">/8</span></th>
+            <th class="text-center p-2" title="מרוהט מלא + מיטה">🛏<br>ריהוט<br><span class="text-xs text-slate-400">/8</span></th>
+            <th class="text-center p-2" title="פרטית/חצי/משותפת">🚿<br>מקלחת<br><span class="text-xs text-slate-400">/6</span></th>
+            <th class="text-center p-2" title="איכות מטבח + cooking culture">🍳<br>מטבח<br><span class="text-xs text-slate-400">/6</span></th>
+            <th class="text-center p-2" title="גודל שטח משותף">🏠<br>שטח<br>משותף<br><span class="text-xs text-slate-400">/4</span></th>
+            <th class="text-center p-2" title="בידוד+שקט">🤫<br>שקט<br><span class="text-xs text-slate-400">/4</span></th>
+            <th class="text-center p-2" title="Studenten/cohort">🎓<br>סטודנט<br><span class="text-xs text-slate-400">/8</span></th>
+            <th class="text-center p-2" title="מרפסת/Sitzplatz">🌳<br>מרפסת<br><span class="text-xs text-slate-400">/3</span></th>
+            <th class="text-center p-2" title="Migros/Coop קרוב">🛒<br>קניות<br><span class="text-xs text-slate-400">/3</span></th>
+            <th class="text-center p-2" title="WiFi + heating quality">⚡<br>תשתיות<br><span class="text-xs text-slate-400">/3</span></th>
+            <th class="text-center p-2 bg-slate-100">סה״כ<br><span class="text-xs text-slate-400">/100</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="l in listings.slice().sort((a,b) => b.score - a.score)" :key="l.id">
+            <tr class="border-t border-stone-100 hover:bg-blue-50/30">
+              <td class="p-2 sticky right-0 bg-white border-l border-stone-200">
+                <a :href="l.url" target="_blank" class="font-semibold text-slate-900 hover:text-blue-700 text-xs" x-text="l.title"></a>
+                <div class="text-xs text-slate-500" x-text="l.location"></div>
+              </td>
+              <td class="scorecell" :class="hm(l.s.date,15)" x-text="l.s.date"></td>
+              <td class="scorecell" :class="hm(l.s.roommates,20)" x-text="l.s.roommates"></td>
+              <td class="scorecell" :class="hm(l.s.lang,12)" x-text="l.s.lang"></td>
+              <td class="scorecell" :class="hm(l.s.tram,8)" x-text="l.s.tram"></td>
+              <td class="scorecell" :class="hm(l.s.furn,8)" x-text="l.s.furn"></td>
+              <td class="scorecell" :class="hm(l.s.bath,6)" x-text="l.s.bath"></td>
+              <td class="scorecell" :class="hm(l.s.kitchen,6)" x-text="l.s.kitchen"></td>
+              <td class="scorecell" :class="hm(l.s.common,4)" x-text="l.s.common"></td>
+              <td class="scorecell" :class="hm(l.s.quiet,4)" x-text="l.s.quiet"></td>
+              <td class="scorecell" :class="hm(l.s.student,8)" x-text="l.s.student"></td>
+              <td class="scorecell" :class="hm(l.s.balcony,3)" x-text="l.s.balcony"></td>
+              <td class="scorecell" :class="hm(l.s.migros,3)" x-text="l.s.migros"></td>
+              <td class="scorecell" :class="hm(l.s.intheat,3)" x-text="l.s.intheat"></td>
+              <td class="total scorecell text-base" x-text="l.score"></td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
+    <details class="mt-4 text-sm">
+      <summary class="cursor-pointer text-slate-700 font-semibold">📖 כיצד מחושב כל פרמטר ב-v1.8?</summary>
+      <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-600">
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">📅 תאריך כניסה (15)</div>15=01.06 ודאי · 12=05.15-30.06 · 8=Sofort · 7=Vereinbarung · 4=01.07-15.08</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">👥 שותפים (20)</div>17-20=שותפים בשמות וגילים &lt;27 · 12-15=שותפים בשמות אבל מבוגרים · 7-10=ידועים אבל אנונימיים · 5=טווח כללי · 0=לא ידוע. <strong>חובה:</strong> WG עם שותפים, לא לבד, לא בבית של משפחה</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🇬🇧 שפה (12)</div>12=EN בלבד · 10=EN+DE+FR · 4=DE בלבד</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🚊 קווי טרם (8)</div>3 נק׳ לכל קו ראשוני (3/8/2), 1.5 נק׳ לכל קו משני (10/11/16), max 8</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🛏 ריהוט+מיטה (8)</div>8=möbliert מלא כולל מיטה · 4=ריהוט חלקי/אופציונלי · 0=unmöbliert (לשקד אין כלום)</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🚿 מקלחת (6)</div>6=פרטית בחדר · 4=חצי-פרטית (משותפת עם 1 דייר) · 2=משותפת לכל הדירה</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🍳 מטבח (6)</div>6=מודרני, מצוין, צמחוני/cooking culture · 4=מאובזר היטב · 3=בסיסי · 1=לא צוין. בונוס לאיכות צמחונית</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🏠 שטח משותף (4)</div>4=≥120m² · 3=80-120m² · 2=&lt;80m² או לא צוין</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🤫 שקט+בידוד (4)</div>4="ruhig"/"quiet" מפורש · 2=לא צוין · 0=אזהרת רעש (e.g., car noise)</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🎓 סטודנט (8)</div>8="ausschliesslich Studenten" · 6=clause "kein Arbeitsvertrag" · 5=cohort match · 2=neutral · 0=anti-student</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🌳 מרפסת (3)</div>3=מרפסת/גג · 0=אין/לא צוין</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">🛒 Migros/Coop (3)</div>3=≤300m אומת · 2=שכונה עם חנויות · 1=לא צוין במפורש</div>
+        <div class="bg-stone-50 rounded p-3"><div class="font-semibold text-slate-800 mb-1">⚡ תשתיות (3)</div>3=WiFi מהיר + חימום מודרני · 2=אחד בלבד · 1=לא מוזכר</div>
+      </div>
+    </details>
+  </div>
+</section>
+
+<!-- STICKY FILTER BAR -->
+<div class="sticky-filter border-b border-stone-200 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 md:py-4">
+    <div class="filter-strip items-center text-sm">
+      <span class="font-semibold text-slate-700 text-xs md:text-sm">סינון:</span>
+      <div class="flex items-center gap-1 bg-white rounded-full border border-stone-300 px-1 py-0.5">
+        <span class="text-xs text-slate-500 px-2">תאריך</span>
+        <template x-for="opt in [{v:'all',l:'הכל'},{v:'jun_confirmed',l:'01.06 ודאי'},{v:'flex_window',l:'גמיש'},{v:'immediate',l:'מיידי'}]" :key="opt.v">
+          <button @click="filters.date=opt.v" :class="filters.date===opt.v ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-stone-100'" class="px-3 py-1 rounded-full text-xs font-medium transition" x-text="opt.l"></button>
+        </template>
+      </div>
+      <div class="flex items-center gap-1 bg-white rounded-full border border-stone-300 px-1 py-0.5">
+        <span class="text-xs text-slate-500 px-2">תקציב</span>
+        <template x-for="opt in [{v:'all',l:'הכל'},{v:'le800',l:'≤800'},{v:'le900',l:'≤900'},{v:'le1000',l:'≤1000'}]" :key="opt.v">
+          <button @click="filters.budget=opt.v" :class="filters.budget===opt.v ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-stone-100'" class="px-3 py-1 rounded-full text-xs font-medium transition" x-text="opt.l"></button>
+        </template>
+      </div>
+      <div class="flex items-center gap-1 bg-white rounded-full border border-stone-300 px-1 py-0.5">
+        <span class="text-xs text-slate-500 px-2">סוג</span>
+        <template x-for="opt in [{v:'all',l:'הכל'},{v:'personal',l:'WG אישי'},{v:'managed',l:'מנוהל'}]" :key="opt.v">
+          <button @click="filters.type=opt.v" :class="filters.type===opt.v ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-stone-100'" class="px-3 py-1 rounded-full text-xs font-medium transition" x-text="opt.l"></button>
+        </template>
+      </div>
+      <div class="flex items-center gap-1 bg-white rounded-full border border-stone-300 px-1 py-0.5">
+        <span class="text-xs text-slate-500 px-2">שפה</span>
+        <template x-for="opt in [{v:'all',l:'הכל'},{v:'en',l:'אנגלית'},{v:'de',l:'גרמנית'}]" :key="opt.v">
+          <button @click="filters.lang=opt.v" :class="filters.lang===opt.v ? 'bg-blue-600 text-white' : 'text-slate-600 hover:bg-stone-100'" class="px-3 py-1 rounded-full text-xs font-medium transition" x-text="opt.l"></button>
+        </template>
+      </div>
+      <label class="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+        <input type="checkbox" x-model="filters.privateBath" class="rounded">
+        <span>מקלחת פרטית</span>
+      </label>
+      <label class="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+        <input type="checkbox" x-model="filters.fullyFurnished" class="rounded">
+        <span>מרוהט מלא</span>
+      </label>
+      <label class="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+        <input type="checkbox" x-model="filters.knownRoommates" class="rounded">
+        <span>שותפים בשמות</span>
+      </label>
+      <label class="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+        <input type="checkbox" x-model="filters.balcony" class="rounded">
+        <span>מרפסת</span>
+      </label>
+      <label class="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+        <input type="checkbox" x-model="filters.tramPrimary" class="rounded">
+        <span>קו ראשוני (3/8/2)</span>
+      </label>
+      <div class="mr-auto flex items-center gap-2">
+        <span class="text-xs text-slate-500">מיין לפי:</span>
+        <select x-model="sortBy" class="text-sm border border-stone-300 rounded-lg px-3 py-1.5 bg-white">
+          <option value="score">ציון התאמה</option>
+          <option value="price_asc">מחיר ↑</option>
+          <option value="price_desc">מחיר ↓</option>
+          <option value="size_desc">גודל חדר ↓</option>
+          <option value="sbb_asc">⏱ ל-SBB ↑</option>
+          <option value="uni_asc">⏱ ל-Uni ↑</option>
+        </select>
+      </div>
+      <button @click="resetFilters()" class="text-xs text-slate-600 hover:text-slate-900 underline">איפוס</button>
+    </div>
+    <div class="mt-2 text-xs text-slate-500">מציג <span class="font-semibold" x-text="filtered().length"></span> מתוך 10 דירות</div>
+  </div>
+</div>
+
+<!-- LISTINGS GRID -->
+<main class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+    <template x-for="(l, i) in filtered()" :key="l.id">
+      <article class="bg-white rounded-xl card-shadow overflow-hidden border border-stone-100 transition">
+        <div class="p-5 pb-3 border-b border-stone-100">
+          <div class="flex items-start gap-4">
+            <div class="score-ring flex-shrink-0 w-14 h-14 flex items-center justify-center" :style="`--p:${l.score}; --c:${l.score>=65?'#059669':l.score>=50?'#2563eb':'#b45309'}`">
+              <div class="w-11 h-11 bg-white rounded-full flex items-center justify-center">
+                <span class="font-bold text-lg" :class="l.score>=65?'text-emerald-700':l.score>=50?'text-blue-700':'text-amber-700'" x-text="l.score"></span>
+              </div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-baseline gap-2 mb-1">
+                <span class="text-xs font-semibold text-slate-500" x-text="`#${i+1}`"></span>
+                <h2 class="font-bold text-lg text-slate-900" x-text="l.title"></h2>
+              </div>
+              <div class="text-sm text-slate-600" x-text="l.district + ' · ' + l.location"></div>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" :class="l.type==='personal'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'" x-text="l.type==='personal'?'WG אישי':'דיור מנוהל'"></span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" :class="l.lang==='en'?'bg-blue-100 text-blue-800':l.lang==='multi'?'bg-purple-100 text-purple-800':'bg-stone-100 text-stone-700'" x-text="l.lang==='multi'?'EN+DE+FR':l.lang.toUpperCase()"></span>
+                <span x-show="l.privateBath" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cyan-100 text-cyan-800">🚿 פרטית</span>
+                <span x-show="l.fullyFurnished" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-100 text-rose-800">🛏 מרוהט מלא</span>
+                <span x-show="l.studentExplicit" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">🎓 Studenten</span>
+                <span x-show="l.tramPrimary" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">🚊 ראשוני</span>
+                <span x-show="l.cookingCulture" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-200 text-green-900 ring-2 ring-green-500/40">🌱 Cooking-Culture</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 p-5 pb-3">
+          <div><div class="text-xs text-slate-500">מחיר/חודש</div><div class="font-bold text-slate-900" x-text="l.price + ' CHF'"></div><div class="text-xs text-slate-500" x-text="l.priceNote || ''"></div></div>
+          <div><div class="text-xs text-slate-500">תאריך כניסה</div><div class="font-bold text-slate-900" x-text="l.availableLabel"></div><div class="text-xs" :class="l.availStatus==='confirmed'?'text-emerald-700':l.availStatus==='immediate'?'text-blue-700':'text-amber-700'" x-text="l.availStatusLabel"></div></div>
+          <div><div class="text-xs text-slate-500">חדר / דירה</div><div class="font-bold text-slate-900" x-text="`${l.size}m² · ${l.apartmentSize ? l.apartmentSize+'m²' : '?'}`"></div></div>
+          <div><div class="text-xs text-slate-500">קווי טרם</div><div class="font-bold text-slate-900" x-text="l.tram.join(', ')"></div><div class="text-xs" :class="l.tramPrimaryCount>0?'text-emerald-700':'text-slate-500'" x-text="`${l.tramPrimaryCount} ראשוני · ${l.tramSecondaryCount} משני`"></div></div>
+        </div>
+
+        <!-- TRANSIT INFO -->
+        <div class="px-5 pb-3 pt-1">
+          <div class="text-xs text-slate-500 mb-2">🚊 תחבורה ציבורית · transport.opendata.ch</div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-blue-50/60 rounded p-2 border border-blue-100"><div class="text-xs text-blue-900/70">Basel SBB</div><div class="font-bold text-blue-900" x-text="`${l.transit.sbb} דק׳`"></div><div class="text-xs text-blue-800/70" x-text="l.transit.sbbRoute"></div></div>
+            <div class="bg-emerald-50/60 rounded p-2 border border-emerald-100"><div class="text-xs text-emerald-900/70">Uni כימיה</div><div class="font-bold text-emerald-900" x-text="`${l.transit.uni} דק׳`"></div><div class="text-xs text-emerald-800/70" x-text="l.transit.uniRoute"></div></div>
+            <div class="bg-purple-50/60 rounded p-2 border border-purple-100"><div class="text-xs text-purple-900/70">ILS Basel</div><div class="font-bold text-purple-900" x-text="`${l.transit.ils} דק׳`"></div><div class="text-xs text-purple-800/70" x-text="l.transit.ilsRoute"></div></div>
+          </div>
+        </div>
+
+        <!-- SCORE BREAKDOWN -->
+        <div class="px-5 py-3 bg-slate-50/60 border-y border-stone-100">
+          <button @click="l._open = !l._open" class="text-xs font-semibold text-slate-700 hover:text-slate-900 flex items-center gap-1 w-full">
+            <span x-text="l._open ? '▼' : '▶'"></span>
+            <span>פירוט הציון לפי 13 פרמטרים</span>
+            <span class="ms-auto text-slate-500" x-text="`${l.score}/100`"></span>
+          </button>
+          <div x-show="l._open" x-transition class="mt-3 grid grid-cols-4 sm:grid-cols-7 gap-1.5">
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">📅</div><div class="font-bold text-xs" :class="hmtxt(l.s.date,15)" x-text="`${l.s.date}/15`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">👥</div><div class="font-bold text-xs" :class="hmtxt(l.s.roommates,20)" x-text="`${l.s.roommates}/20`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🇬🇧</div><div class="font-bold text-xs" :class="hmtxt(l.s.lang,12)" x-text="`${l.s.lang}/12`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🚊</div><div class="font-bold text-xs" :class="hmtxt(l.s.tram,8)" x-text="`${l.s.tram}/8`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🛏</div><div class="font-bold text-xs" :class="hmtxt(l.s.furn,8)" x-text="`${l.s.furn}/8`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🚿</div><div class="font-bold text-xs" :class="hmtxt(l.s.bath,6)" x-text="`${l.s.bath}/6`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🍳</div><div class="font-bold text-xs" :class="hmtxt(l.s.kitchen,6)" x-text="`${l.s.kitchen}/6`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🏠</div><div class="font-bold text-xs" :class="hmtxt(l.s.common,4)" x-text="`${l.s.common}/4`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🤫</div><div class="font-bold text-xs" :class="hmtxt(l.s.quiet,4)" x-text="`${l.s.quiet}/4`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🎓</div><div class="font-bold text-xs" :class="hmtxt(l.s.student,8)" x-text="`${l.s.student}/8`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🌳</div><div class="font-bold text-xs" :class="hmtxt(l.s.balcony,3)" x-text="`${l.s.balcony}/3`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">🛒</div><div class="font-bold text-xs" :class="hmtxt(l.s.migros,3)" x-text="`${l.s.migros}/3`"></div></div>
+            <div class="bg-white rounded p-1.5 text-center"><div class="text-[10px] text-slate-500">⚡</div><div class="font-bold text-xs" :class="hmtxt(l.s.intheat,3)" x-text="`${l.s.intheat}/3`"></div></div>
+          </div>
+        </div>
+
+        <div x-show="l.roommates && l.roommates.length > 0" class="px-5 pb-3 pt-3">
+          <div class="text-xs text-slate-500 mb-1.5">שותפים</div>
+          <div class="flex flex-wrap gap-1.5">
+            <template x-for="r in l.roommates" :key="r.name">
+              <span class="inline-flex items-center gap-1 bg-stone-100 rounded px-2 py-1 text-xs">
+                <span class="font-semibold" x-text="r.name"></span>
+                <span class="text-slate-600" x-text="`(${r.age})`"></span>
+                <span x-show="r.origin" class="text-slate-500" x-text="r.origin"></span>
+                <span x-show="r.role" class="text-slate-500" x-text="'· ' + r.role"></span>
+              </span>
+            </template>
+          </div>
+        </div>
+        <div x-show="!l.roommates || l.roommates.length === 0" class="px-5 pb-3 pt-3">
+          <div class="text-xs text-slate-500 mb-1">שותפים</div>
+          <div class="text-xs text-amber-700">⚠ לא צוינו במודעה — לשאול בפנייה</div>
+        </div>
+
+        <div class="px-5 py-3 bg-emerald-50/40 border-t border-stone-100">
+          <div class="text-xs font-semibold text-emerald-800 mb-1.5">למה נבחרה</div>
+          <ul class="text-sm text-slate-700 space-y-1">
+            <template x-for="s in l.strengths" :key="s">
+              <li class="flex gap-2"><span class="text-emerald-600 flex-shrink-0">✓</span><span x-text="s"></span></li>
+            </template>
+          </ul>
+        </div>
+
+        <div class="px-5 py-3 bg-amber-50/40 border-t border-stone-100">
+          <div class="text-xs font-semibold text-amber-800 mb-1.5">לבדוק לפני פנייה</div>
+          <ul class="text-sm text-slate-700 space-y-1">
+            <template x-for="c in l.concerns" :key="c">
+              <li class="flex gap-2"><span class="text-amber-600 flex-shrink-0">!</span><span x-text="c"></span></li>
+            </template>
+          </ul>
+        </div>
+
+        <div class="px-5 py-3 bg-stone-50 border-t border-stone-100 flex items-center justify-between">
+          <div class="flex items-center gap-3 text-xs text-slate-600">
+            <span>📷 <span x-text="l.photos"></span> תמונות</span>
+            <span x-show="l.minLease">📋 מינ׳ <span x-text="l.minLease"></span></span>
+            <span x-show="l.swissCaution" class="text-emerald-700">✓ SwissCaution</span>
+          </div>
+          <a :href="l.url" target="_blank" rel="noopener" class="cta-btn inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+            פתח ב-flatfox →
+          </a>
+        </div>
+      </article>
+    </template>
+  </div>
+
+  <div x-show="filtered().length === 0" class="text-center py-16">
+    <div class="text-6xl mb-3">🔍</div>
+    <p class="text-slate-600">אין דירות שעונות לסינון הנוכחי.</p>
+    <button @click="resetFilters()" class="mt-3 text-blue-600 hover:underline">איפוס סינון</button>
+  </div>
+
+  <!-- FULL PARAMETERS MATRIX (transposed: rows=parameters, cols=listings) -->
+  <section class="mt-12 pt-8 border-t-2 border-stone-200">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-2xl font-bold text-slate-900">📋 מטריצת מאפיינים מלאה — שורה לכל פרמטר</h2>
+      <button @click="showFullTable = !showFullTable" class="text-sm text-blue-600 hover:text-blue-800 font-medium" x-text="showFullTable ? 'כווץ ▲' : 'הרחב ▼'"></button>
+    </div>
+    <p class="text-sm text-slate-600 mb-4">10 דירות (עמודות, מימין: ציון גבוה→נמוך) · ~40 פרמטרים (שורות) · ערכים בפועל מתוך המודעה החיה — לא ציונים מחושבים. <span class="text-amber-600">"?"</span> = לא צוין במודעה.</p>
+
+    <div x-show="showFullTable" x-transition class="scroll-x scroll-hint" dir="rtl">
+      <table class="text-xs border border-stone-200 rounded-lg bg-white" style="min-width: 100%;">
+        <thead class="bg-slate-50">
+          <tr>
+            <th class="text-right p-2 sticky right-0 bg-slate-50 border-l-2 border-stone-300 min-w-[170px]">פרמטר</th>
+            <template x-for="l in sortedListings()" :key="'h-'+l.id">
+              <th class="text-center p-2 min-w-[140px] border-l border-stone-200" :title="l.title">
+                <div class="font-bold text-slate-900 text-xs leading-tight" x-text="l.title.length > 22 ? l.title.substring(0,22)+'…' : l.title"></div>
+                <div class="text-slate-500 text-[10px]" x-text="l.location"></div>
+                <div class="mt-1 inline-block px-2 py-0.5 rounded font-bold" :class="l.score>=65?'bg-emerald-100 text-emerald-800':l.score>=50?'bg-blue-100 text-blue-800':'bg-amber-100 text-amber-800'" x-text="l.score"></div>
+              </th>
+            </template>
+          </tr>
+        </thead>
+        <tbody class="text-slate-700">
+
+          <!-- 🎯 בסיס -->
+          <tr class="bg-blue-50/40"><td colspan="11" class="text-right p-1.5 font-bold text-blue-900 sticky right-0">🎯 בסיס</td></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מחיר חודשי (CHF)</td><template x-for="l in sortedListings()" :key="'p-'+l.id"><td class="text-center p-2 font-bold border-l border-stone-100" x-text="l.price"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">כלול במחיר</td><template x-for="l in sortedListings()" :key="'inc-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.priceIncludes"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">תאריך כניסה</td><template x-for="l in sortedListings()" :key="'d-'+l.id"><td class="text-center p-2 border-l border-stone-100"><div class="font-medium" x-text="l.availableLabel"></div><div class="text-[10px]" :class="l.availStatus==='confirmed'?'text-emerald-700':l.availStatus==='immediate'?'text-blue-700':'text-amber-700'" x-text="l.availStatus==='confirmed'?'✓ ודאי':l.availStatus==='immediate'?'◐ מיידי':'◐ גמיש'"></div></td></template></tr>
+
+          <!-- 📐 גודל ומיקום -->
+          <tr class="bg-purple-50/40"><td colspan="11" class="text-right p-1.5 font-bold text-purple-900 sticky right-0">📐 גודל ומיקום</td></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">גודל חדר (m²)</td><template x-for="l in sortedListings()" :key="'sz-'+l.id"><td class="text-center p-2 font-semibold border-l border-stone-100" x-text="l.size"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">גודל דירה (m²)</td><template x-for="l in sortedListings()" :key="'asz-'+l.id"><td class="text-center p-2 border-l border-stone-100" x-text="l.apartmentSize || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">רובע / שכונה</td><template x-for="l in sortedListings()" :key="'dst-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.district"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">סוג שכירות</td><template x-for="l in sortedListings()" :key="'ty-'+l.id"><td class="text-center p-2 border-l border-stone-100"><span class="px-1.5 py-0.5 rounded text-[11px]" :class="l.type==='personal'?'bg-emerald-100 text-emerald-800':'bg-slate-100 text-slate-700'" x-text="l.type==='personal'?'WG אישי':'דיור מנוהל'"></span></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">שפת המודעה</td><template x-for="l in sortedListings()" :key="'lg-'+l.id"><td class="text-center p-2 border-l border-stone-100"><span class="px-1.5 py-0.5 rounded text-[11px]" :class="l.lang==='en'?'bg-blue-100 text-blue-800':l.lang==='multi'?'bg-purple-100 text-purple-800':'bg-stone-100 text-stone-700'" x-text="l.lang==='multi'?'DE+EN+FR':l.lang.toUpperCase()"></span></td></template></tr>
+
+          <!-- 🚊 תחבורה -->
+          <tr class="bg-cyan-50/40"><td colspan="11" class="text-right p-1.5 font-bold text-cyan-900 sticky right-0">🚊 תחבורה</td></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">קווי טרם בכתובת</td><template x-for="l in sortedListings()" :key="'tr-'+l.id"><td class="text-center p-2 font-medium border-l border-stone-100" x-text="l.tram.join(', ')"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">קווים ראשוניים (3/8/2)</td><template x-for="l in sortedListings()" :key="'trp-'+l.id"><td class="text-center p-2 border-l border-stone-100" :class="l.tramPrimaryCount===2?'text-emerald-700 font-bold':l.tramPrimaryCount===1?'text-blue-700':'text-slate-400'" x-text="l.tramPrimaryCount + ' מ-2'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">קווים משניים (10/11/16)</td><template x-for="l in sortedListings()" :key="'trs-'+l.id"><td class="text-center p-2 border-l border-stone-100 text-slate-600" x-text="l.tramSecondaryCount + ' מ-3'"></td></template></tr>
+          <tr class="bg-blue-50/30"><td class="p-2 sticky right-0 bg-blue-50/30 border-l-2 border-stone-200 font-medium">⏱ ל-Basel SBB (דק׳)</td><template x-for="l in sortedListings()" :key="'sb-'+l.id"><td class="text-center p-2 font-bold text-blue-900 border-l border-stone-100" x-text="l.transit.sbb"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מסלול ל-SBB</td><template x-for="l in sortedListings()" :key="'sbr-'+l.id"><td class="text-center p-2 text-[11px] text-slate-600 border-l border-stone-100" x-text="l.transit.sbbRoute"></td></template></tr>
+          <tr class="bg-emerald-50/30"><td class="p-2 sticky right-0 bg-emerald-50/30 border-l-2 border-stone-200 font-medium">⏱ ל-Universitätsspital (דק׳)</td><template x-for="l in sortedListings()" :key="'un-'+l.id"><td class="text-center p-2 font-bold text-emerald-900 border-l border-stone-100" x-text="l.transit.uni"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מסלול ל-Uni</td><template x-for="l in sortedListings()" :key="'unr-'+l.id"><td class="text-center p-2 text-[11px] text-slate-600 border-l border-stone-100" x-text="l.transit.uniRoute"></td></template></tr>
+          <tr class="bg-purple-50/30"><td class="p-2 sticky right-0 bg-purple-50/30 border-l-2 border-stone-200 font-medium">⏱ ל-ILS Basel (דק׳)</td><template x-for="l in sortedListings()" :key="'il-'+l.id"><td class="text-center p-2 font-bold text-purple-900 border-l border-stone-100" x-text="l.transit.ils"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מסלול ל-ILS</td><template x-for="l in sortedListings()" :key="'ilr-'+l.id"><td class="text-center p-2 text-[11px] text-slate-600 border-l border-stone-100" x-text="l.transit.ilsRoute"></td></template></tr>
+
+          <!-- 👥 שותפים -->
+          <tr class="bg-rose-50/40"><td colspan="11" class="text-right p-1.5 font-bold text-rose-900 sticky right-0">👥 שותפים</td></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">שמות וגילים</td><template x-for="l in sortedListings()" :key="'rn-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100"><template x-if="l.roommates && l.roommates.length"><div><template x-for="r in l.roommates" :key="r.name"><div x-text="r.name + ' (' + r.age + ')'"></div></template></div></template><span x-show="!l.roommates || !l.roommates.length" class="text-amber-600">?</span></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">עיסוקים / רקע</td><template x-for="l in sortedListings()" :key="'ro-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100"><template x-if="l.roommates && l.roommates.length"><div><template x-for="r in l.roommates" :key="r.name+'-r'"><div class="text-slate-600" x-text="r.role"></div></template></div></template><span x-show="!l.roommates || !l.roommates.length" class="text-amber-600">?</span></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">שפות מארחים</td><template x-for="l in sortedListings()" :key="'lh-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.hostLanguages || '?'"></td></template></tr>
+
+          <!-- 🛏 ריהוט וחללים -->
+          <tr class="bg-orange-50/40"><td colspan="11" class="text-right p-1.5 font-bold text-orange-900 sticky right-0">🛏 ריהוט וחללים</td></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">ריהוט</td><template x-for="l in sortedListings()" :key="'fr-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.furnishLabel"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מיטה כלולה</td><template x-for="l in sortedListings()" :key="'bd-'+l.id"><td class="text-center p-2 border-l border-stone-100" x-text="l.bedLabel"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מקלחת</td><template x-for="l in sortedListings()" :key="'bt-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.bathLabel"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מטבח</td><template x-for="l in sortedListings()" :key="'kt-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.kitchenLabel"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מרפסת / Sitzplatz</td><template x-for="l in sortedListings()" :key="'bc-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.balconyLabel"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">רצפה</td><template x-for="l in sortedListings()" :key="'fl-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.floorType || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">קומה</td><template x-for="l in sortedListings()" :key="'flo-'+l.id"><td class="text-center p-2 border-l border-stone-100" x-text="l.floorNum || '?'"></td></template></tr>
+
+          <!-- 🔌 ציוד -->
+          <tr class="bg-amber-50/40"><td colspan="11" class="text-right p-1.5 font-bold text-amber-900 sticky right-0">🔌 ציוד</td></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מכונת כביסה</td><template x-for="l in sortedListings()" :key="'wm-'+l.id"><td class="text-center p-2 border-l border-stone-100" x-text="l.washer || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מייבש</td><template x-for="l in sortedListings()" :key="'dr-'+l.id"><td class="text-center p-2 border-l border-stone-100" x-text="l.dryer || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מדיח כלים</td><template x-for="l in sortedListings()" :key="'dw-'+l.id"><td class="text-center p-2 border-l border-stone-100" x-text="l.dishwasher || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">אינטרנט</td><template x-for="l in sortedListings()" :key="'in-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.internet || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">חימום</td><template x-for="l in sortedListings()" :key="'ht-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.heating || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מעלית</td><template x-for="l in sortedListings()" :key="'lf-'+l.id"><td class="text-center p-2 border-l border-stone-100" x-text="l.lift || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מקום אופניים</td><template x-for="l in sortedListings()" :key="'bk-'+l.id"><td class="text-center p-2 border-l border-stone-100" x-text="l.bikeStorage || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מחסן</td><template x-for="l in sortedListings()" :key="'st-'+l.id"><td class="text-center p-2 border-l border-stone-100" x-text="l.storage || '?'"></td></template></tr>
+
+          <!-- ✨ סיגנלים -->
+          <tr class="bg-indigo-50/40"><td colspan="11" class="text-right p-1.5 font-bold text-indigo-900 sticky right-0">✨ סיגנלים מסחריים</td></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">סטודנטים בלבד</td><template x-for="l in sortedListings()" :key="'se-'+l.id"><td class="text-center p-2 border-l border-stone-100"><span x-show="l.studentExplicit" class="text-indigo-700 font-bold">✓</span><span x-show="!l.studentExplicit" class="text-slate-300">—</span></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">פטור Betreibungsauszug</td><template x-for="l in sortedListings()" :key="'wa-'+l.id"><td class="text-center p-2 border-l border-stone-100"><span x-show="l.docWaiver" class="text-emerald-700 font-bold">✓</span><span x-show="!l.docWaiver" class="text-slate-300">—</span></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">SwissCaution מקובל</td><template x-for="l in sortedListings()" :key="'sc-'+l.id"><td class="text-center p-2 border-l border-stone-100"><span x-show="l.swissCaution" class="text-emerald-700 font-bold">✓</span><span x-show="!l.swissCaution" class="text-slate-300">—</span></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">רובע Roche/Hirzbrunnen</td><template x-for="l in sortedListings()" :key="'rc-'+l.id"><td class="text-center p-2 border-l border-stone-100"><span x-show="l.rocheNbhd" class="text-purple-700 font-bold">✓</span><span x-show="!l.rocheNbhd" class="text-slate-300">—</span></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">שקט / בידוד</td><template x-for="l in sortedListings()" :key="'qt-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.quietLabel"></td></template></tr>
+
+          <!-- 🛒 שירותים שכונתיים -->
+          <tr class="bg-pink-50/40"><td colspan="11" class="text-right p-1.5 font-bold text-pink-900 sticky right-0">🛒 שירותים שכונתיים</td></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">Migros / Coop קרוב</td><template x-for="l in sortedListings()" :key="'mc-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.migrosNearby || '?'"></td></template></tr>
+
+          <!-- 📋 פורמליות -->
+          <tr class="bg-slate-100"><td colspan="11" class="text-right p-1.5 font-bold text-slate-900 sticky right-0">📋 פורמליות הפנייה</td></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">מספר תמונות</td><template x-for="l in sortedListings()" :key="'ph-'+l.id"><td class="text-center p-2 font-semibold border-l border-stone-100" x-text="l.photos"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">חוזה מינ׳</td><template x-for="l in sortedListings()" :key="'ml-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.minLease || '—'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">פיקדון</td><template x-for="l in sortedListings()" :key="'dp-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.deposit || '?'"></td></template></tr>
+          <tr><td class="p-2 sticky right-0 bg-white border-l-2 border-stone-200 font-medium">דרישות מיוחדות</td><template x-for="l in sortedListings()" :key="'rq-'+l.id"><td class="text-center p-2 text-[11px] border-l border-stone-100" x-text="l.specialReqs || '—'"></td></template></tr>
+
+          <!-- 🔗 קישור -->
+          <tr class="bg-stone-50"><td class="p-2 sticky right-0 bg-stone-50 border-l-2 border-stone-200 font-medium">🔗 קישור flatfox</td><template x-for="l in sortedListings()" :key="'lk-'+l.id"><td class="text-center p-2 border-l border-stone-100"><a :href="l.url" target="_blank" rel="noopener" class="text-blue-600 hover:text-blue-800 font-medium underline">פתח ↗</a></td></template></tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-3 text-xs text-slate-500">
+      ⏱ זמני נסיעה — נתוני אמת מ-<a href="https://transport.opendata.ch/" target="_blank" class="underline">transport.opendata.ch</a> · נשלפו 2026-05-01 · מסלול אופטימלי בלבד · "?" משמעו: לא צוין במודעה — יש לשאול בפנייה
+    </div>
+  </section>
+</main>
+
+<footer class="bg-slate-900 text-slate-300 mt-12">
+  <div class="max-w-7xl mx-auto px-6 py-10">
+    <h3 class="text-xl font-bold text-white mb-4">פרופיל v1.8 · שכבת בקשות לקוח</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+      <div>
+        <h4 class="font-semibold text-white mb-2">שכבה 1 — נתוני יסוד</h4>
+        <p>שקד 18, אזרח שוויצרי, סטודנט-עתידי לכימיה ב-Uni Basel (Frühjahr 2027), Sprachschüler ב-ILS Basel, אבא שוויצרי ערב.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white mb-2">שכבה 2 — בקשות מפורשות</h4>
+        <p>תקציב <strong>קשיח 1000 CHF</strong> · WG עם שותפים (לא לבד, לא משפחה) · טרם 3/8/2 · מטבח cooking culture · בידוד אקוסטי · אנגלית · מרוהט עם מיטה · שטח משותף &gt; פרטי.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-white mb-2">חישוב הציון</h4>
+        <p>13 פרמטרים, 100 נקודות. סולם פתוח לכל פרמטר. אין AI black-box. ראה הסבר מתחת לטבלת ההשוואה.</p>
+      </div>
+    </div>
+    <div class="mt-8 pt-6 border-t border-slate-700">
+      <h4 class="font-semibold text-white mb-2">מה לא ניתן לאמת מהמודעה (לבירור בפנייה)</h4>
+      <ul class="text-sm space-y-1 list-disc list-inside text-slate-400">
+        <li>מדיניות עישון — צוינה רק במודעות בודדות</li>
+        <li>מטבח צמחוני — צוין רק ב-Bäumlihof (יצא בגלל תקציב)</li>
+        <li>איכות בידוד אקוסטי — לרוב לא מצוין</li>
+        <li>תאריכי "Sofort"/"Vereinbarung" — לוודא ב-01.06</li>
+      </ul>
+    </div>
+    <div class="mt-6 text-xs text-slate-500 text-center">v1.8 · בנוי 2026-05-01 · WG search · profile=default · שכבה 2 שולבה · 13 פרמטרים שקופים</div>
+  </div>
+</footer>
+
+<script>
+function listingsApp() {
+  return {
+    showMatrix: window.matchMedia('(min-width: 768px)').matches, showFullTable: window.matchMedia('(min-width: 768px)').matches,
+    filters: { date:'all', budget:'all', type:'all', lang:'all', privateBath:false, fullyFurnished:false, knownRoommates:false, balcony:false, tramPrimary:false },
+    sortBy: 'score',
+
+    hm(v, max) {
+      const p = v / max;
+      if (p === 1) return 'heatmap-max';
+      if (p >= 0.75) return 'heatmap-5';
+      if (p >= 0.5) return 'heatmap-4';
+      if (p >= 0.3) return 'heatmap-3';
+      if (p > 0) return 'heatmap-2';
+      return 'heatmap-1';
+    },
+    hmtxt(v, max) {
+      const p = v / max;
+      if (p === 1) return 'text-emerald-700';
+      if (p >= 0.6) return 'text-emerald-600';
+      if (p >= 0.4) return 'text-blue-600';
+      if (p >= 0.2) return 'text-amber-600';
+      return 'text-rose-600';
+    },
+    sortedListings() { return this.listings.slice().sort((a,b) => b.score - a.score); },
+
+    listings: [
+      {
+        id: 'flatfox-85993329', title: 'Gotthelf bioscience-WG',
+        location: '4054 Basel', district: 'Iselin / Gotthelf',
+        price: 746, priceNote: '+ NK · פיקדון 3 חודשים',
+        available: '2026-06-01', availableLabel: '01.06.2026', availStatus: 'confirmed', availStatusLabel: '✓ ודאי',
+        size: 16, apartmentSize: 120, type: 'personal',
+        tram: ['14','16'], tramPrimaryCount: 0, tramSecondaryCount: 1,
+        lang: 'en', photos: 5, minLease: null,
+        transit: { sbb:16, sbbRoute:'T8', uni:13, uniRoute:'walk', ils:13, ilsRoute:'walk' },
+        privateBath: false, fullyFurnished: false, balcony: true, tramPrimary: false, studentExplicit: false, swissCaution: false, cookingCulture: true,
+        furnishLabel: '⚠ חלקי', bathLabel: 'משותפת (×2)', kitchenLabel: '✓ מאובזר + "cook together" 🌱', balconyLabel: '✓ ×2', quietLabel: '?',
+        priceIncludes: 'NK', bedLabel: '?', washer: '✓ בדירה', dryer: '?', dishwasher: '✓', internet: '?', heating: '?',
+        lift: '?', bikeStorage: '✓ Bike room', storage: '✓', migrosNearby: 'אזור Iselin · חנויות', deposit: '3 חודשי שכ"ד',
+        specialReqs: '"young professional, tidy"', hostLanguages: 'EN+', floorType: '?', floorNum: '?', docWaiver: false,
+        s: { date: 15, roommates: 17, lang: 12, tram: 2, furn: 4, bath: 2, kitchen: 6, common: 4, quiet: 2, student: 5, balcony: 3, migros: 1, intheat: 1 },
+        score: 74, _open: false,
+        roommates: [
+          { name: 'Andrea', age: 25, origin: 'נורווגיה', role: 'ביו-מדעים' },
+          { name: 'Luca', age: 24, origin: 'שוויץ', role: 'ביו-מדעים' },
+          { name: 'Pau', age: 24, origin: 'ברצלונה', role: 'ביו-מדעים' }
+        ],
+        strengths: [
+          'התאמה אקדמית מובהקת — שלושת השותפים בביו-מדעים',
+          'גילים 24-25 בשמות וסיפור — הקרובים ביותר במאגר',
+          'תיאור באנגלית בלבד',
+          'תאריך 01.06.2026 ודאי + 10 דקות אופניים מ-Uni',
+          'דירה 120m² עם 2 מקלחות, 2 מרפסות — שטח משותף גדול ✓'
+        ],
+        concerns: [
+          '"Looking for young professional" — שקד סטודנט, לטפל בפנייה',
+          'מדיניות עישון/דיאטה לא צוינה',
+          'פיקדון 3 חודשים (~2240 CHF)',
+          'קווי טרם 14+16 — אין ב-3/8/2 הראשוניים'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/4054-basel/85993329/'
+      },
+      {
+        id: 'flatfox-85976439', title: 'Gundeldingerstr 191 · multilingual',
+        location: 'Gundeldingerstr 191, 4053 Basel', district: 'Bachletten / Gundeli',
+        price: 920, priceNote: 'inkl. הכל (Strom/Internet/Serafe/ניקיון)',
+        available: '2026-06-01', availableLabel: '01.06.2026', availStatus: 'confirmed', availStatusLabel: '✓ ודאי',
+        size: 16, apartmentSize: 120, type: 'personal',
+        tram: ['3','6'], tramPrimaryCount: 1, tramSecondaryCount: 0,
+        lang: 'multi', photos: 9, minLease: null,
+        transit: { sbb:10, sbbRoute:'walk', uni:22, uniRoute:'walk', ils:15, ilsRoute:'?' },
+        privateBath: false, fullyFurnished: false, balcony: true, tramPrimary: true, studentExplicit: false, swissCaution: false, cookingCulture: true,
+        furnishLabel: '⚠ חלקי', bathLabel: '2 משותפות', kitchenLabel: '✓ מאובזר + Mina "enjoys cooking" 🌱', balconyLabel: '✓ Sitzplatz', quietLabel: '✓ "calm tidy"',
+        priceIncludes: 'Strom + Internet + Serafe + ניקיון', bedLabel: '?', washer: '✓', dryer: '✓', dishwasher: '✓', internet: '✓ Broadband', heating: '✓ כלול NK',
+        lift: '?', bikeStorage: '?', storage: '?', migrosNearby: 'Gundeli — חנויות במרחק הליכה', deposit: '?',
+        specialReqs: 'Reliable, calm, structured', hostLanguages: 'DE+EN+FR', floorType: 'Parkett', floorNum: '3', docWaiver: false,
+        s: { date: 15, roommates: 7, lang: 10, tram: 3, furn: 4, bath: 3, kitchen: 6, common: 4, quiet: 3, student: 2, balcony: 3, migros: 2, intheat: 3 },
+        score: 65, _open: false,
+        roommates: [
+          { name: 'Mina', age: 31, origin: '', role: 'נבל ומורה למוזיקה' },
+          { name: 'Patrick', age: 42, origin: '', role: 'crypto trader · COO' }
+        ],
+        strengths: [
+          'תיאור 3-לשוני (DE+EN+FR) — שפות גמישות',
+          '120m² + 2 מקלחות + מרפסת — שטח משותף עשיר',
+          'תאריך 01.06 ודאי + 10 דק׳ הליכה ל-SBB',
+          'inkl. כולל ניקיון + Serafe + Internet — תקציב שקוף',
+          'Gundeli — אזור חי, חנויות במרחק הליכה'
+        ],
+        concerns: [
+          'Mina 31, Patrick 42 — מבוגרים יחסית (לא תרבות סטודנטיאלית-צעירה)',
+          'גודל חדר ספציפי לא צוין במודעה',
+          '22 דק׳ ל-Uni — הכי רחוק במאגר',
+          'Patrick "calm tidy structured" — סטנדרט ניקיון גבוה'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/gundeldingerstrasse-191-4053-basel/85976439/'
+      },
+      {
+        id: 'flatfox-85994847', title: 'Klingental 20 · 26m² + מקלחת פרטית',
+        location: 'Klingental 20, 4058 Basel', district: 'Kleinbasel · ליד הריין',
+        price: 999, priceNote: 'inkl. NK',
+        available: '2026-06-01', availableLabel: '01.06.2026', availStatus: 'confirmed', availStatusLabel: '✓ ודאי',
+        size: 26, apartmentSize: null, type: 'managed',
+        tram: ['2','14'], tramPrimaryCount: 1, tramSecondaryCount: 0,
+        lang: 'de', photos: 4, minLease: '12 חודשים',
+        transit: { sbb:19, sbbRoute:'T8', uni:7, uniRoute:'B34', ils:13, ilsRoute:'T6' },
+        privateBath: true, fullyFurnished: true, balcony: false, tramPrimary: true, studentExplicit: true, swissCaution: false,
+        furnishLabel: '✓ מלא', bathLabel: '✓ פרטית בחדר', kitchenLabel: 'קטן בקומה משותף', balconyLabel: '✗', quietLabel: '?',
+        priceIncludes: 'NK', bedLabel: '✓', washer: '✓', dryer: '✓', dishwasher: '✓', internet: '✓ Broadband + Cable', heating: '?',
+        lift: '?', bikeStorage: '?', storage: '?', migrosNearby: 'Kleinbasel · ליד הריין', deposit: '?',
+        specialReqs: '"ausschliesslich Studenten/Azubis bis 28"', hostLanguages: 'DE', floorType: 'Parkett', floorNum: '2', docWaiver: false,
+        s: { date: 15, roommates: 8, lang: 4, tram: 3, furn: 8, bath: 6, kitchen: 2, common: 2, quiet: 2, student: 8, balcony: 0, migros: 1, intheat: 2 },
+        score: 61, _open: false,
+        roommates: [],
+        strengths: [
+          'מקלחת + שירותים פרטיים בחדר — נדיר במחיר זה',
+          '"Ausschliesslich Studenten oder Azubis bis 28 Jahre" — תואם פרופיל מושלם',
+          'מרוהט מלא, חוזה 12 חודשים מינ׳, קו 2 ראשוני',
+          '7 דק׳ בלבד ל-Uni Basel — הכי קרוב במאגר',
+          'תאריך 01.06.2026 ודאי במודעה'
+        ],
+        concerns: [
+          '999 CHF — קצה התקציב הקשיח',
+          'דיור-סטודנטים מנוהל "Buden" — פחות אינטימי מ-WG אישי',
+          'מטבח קטן בקומה (לא בחדר) — לא cooking-culture WG',
+          'Aufenthaltsraum משותף בקומה 4 בלבד — שטח משותף מוגבל'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/klingental-20-4058-basel/85994847/'
+      },
+      {
+        id: 'flatfox-85975005', title: '4057 Maisonette + Dachterrasse',
+        location: '4057 Basel', district: 'Matthäusquartier (Kleinbasel)',
+        price: 800, priceNote: 'Untermiete · inkl. NK',
+        available: '2026-06-01', availableLabel: '01.06.2026', availStatus: 'confirmed', availStatusLabel: '✓ ודאי',
+        size: 18, apartmentSize: null, type: 'personal',
+        tram: ['2','3'], tramPrimaryCount: 2, tramSecondaryCount: 0,
+        lang: 'de', photos: 5, minLease: null,
+        transit: { sbb:20, sbbRoute:'B30', uni:12, uniRoute:'?', ils:18, ilsRoute:'?' },
+        privateBath: false, fullyFurnished: false, balcony: true, tramPrimary: true, studentExplicit: false, swissCaution: false,
+        furnishLabel: '✗ unmöbliert (bed/ארון transferable)', bathLabel: 'משותפת', kitchenLabel: '✓ מטבח פתוח + Dachterrasse', balconyLabel: '✓ Dachterrasse', quietLabel: '?',
+        priceIncludes: 'NK (Untermiete)', bedLabel: '◐ bedframe transferable', washer: '✓', dryer: '✓', dishwasher: '✓', internet: '?', heating: '?',
+        lift: '✓ Lift', bikeStorage: '?', storage: '✓ Keller', migrosNearby: 'Matthäusquartier · 3 דק׳ ל-Feldbergstrasse', deposit: '?',
+        specialReqs: 'WG-erfahren + CV im Anhang', hostLanguages: 'DE', floorType: 'Parkett', floorNum: '4 (Maisonette)', docWaiver: false,
+        s: { date: 15, roommates: 12, lang: 4, tram: 6, furn: 0, bath: 2, kitchen: 5, common: 4, quiet: 2, student: 1, balcony: 3, migros: 2, intheat: 1 },
+        score: 57, _open: false,
+        roommates: [
+          { name: 'מארח', age: 28, origin: '', role: 'berufstätig · social' }
+        ],
+        strengths: [
+          'שני קווים ראשוניים (2 + 3) — התאמת טרם מקסימלית',
+          'תאריך 01.06.2026 ודאי + 3 דק׳ הליכה ל-Feldbergstrasse',
+          'דירה 2 קומות עם מטבח פתוח + Dachterrasse — שטח משותף נדיר',
+          '3er-WG עם 2 חדרים מתפנים יחד (דינמיקה מתחדשת)',
+          'מארח 28, פתוח, "viel unterwegs" — אינטראקציה לא תובענית'
+        ],
+        concerns: [
+          '⚠ unmöbliert — שקד צריך לקנות הכל (רק bed-frame+ארון transferable)',
+          '"WG-erfahren + CV im Anhang" — שקד first-time renter, לטפל בפנייה',
+          'גרמנית בלבד — סף שפה',
+          'אין מידע על מקלחת/חימום/אינטרנט'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/4057-basel/85975005/'
+      },
+      {
+        id: 'flatfox-85951711', title: 'Grenzacherstr · ליד Roche',
+        location: 'Grenzacherstr 223, 4058 Basel', district: 'Hirzbrunnen · רובע Roche',
+        price: 855, priceNote: 'inkl. NK',
+        available: 'arrangement', availableLabel: 'בתיאום', availStatus: 'flexible', availStatusLabel: '◐ Vereinbarung',
+        size: 18, apartmentSize: null, type: 'managed',
+        tram: ['2','14'], tramPrimaryCount: 1, tramSecondaryCount: 0,
+        lang: 'en', photos: 7, minLease: null,
+        transit: { sbb:23, sbbRoute:'B36 → T3', uni:15, uniRoute:'B34', ils:16, ilsRoute:'B31 → T2' },
+        privateBath: false, fullyFurnished: true, balcony: true, tramPrimary: true, studentExplicit: false, swissCaution: false,
+        furnishLabel: '✓ מלא', bathLabel: 'משותפת', kitchenLabel: 'מאובזר (large fridge, dishwasher, oven, gas stove)', balconyLabel: '✓ Sitzplatz', quietLabel: '⚠ "car noise"',
+        priceIncludes: 'NK', bedLabel: '✓ Queensize bed', washer: '✓', dryer: '✓', dishwasher: '✓', internet: '✓ Broadband', heating: '?',
+        lift: '?', bikeStorage: '?', storage: '?', migrosNearby: 'Hirzbrunnen · ליד Roche', deposit: '?',
+        specialReqs: '"OK with car noise from outside"', hostLanguages: 'EN', floorType: 'Parkett', floorNum: '3 (Top floor)', docWaiver: false,
+        s: { date: 8, roommates: 8, lang: 12, tram: 3, furn: 8, bath: 2, kitchen: 4, common: 2, quiet: 0, student: 3, balcony: 3, migros: 1, intheat: 2 },
+        score: 56, _open: false,
+        roommates: [],
+        strengths: [
+          'תיאור באנגלית בלבד',
+          'ליד Roche Tower — סטטיסטית קהילה ישראלית',
+          'מרוהט מלא, 7 תמונות, washer/dryer/dishwasher/broadband',
+          'WG עם 2 שותפים, קומה 3'
+        ],
+        concerns: [
+          '⚠ "OK with car noise from outside" — שקד רגיש לרעש',
+          'תאריך "Vereinbarung" — לוודא 01.06',
+          'אין מידע על השותפים — לבקש פרטים',
+          '23 דק׳ ל-SBB עם 2 קווים — נסיעה ארוכה יחסית'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/grenzacherstrasse-223-4058-basel/85951711/'
+      },
+      {
+        id: 'flatfox-85994865', title: 'Klingental 20 · 29m² + מרפסת',
+        location: 'Klingental 20, 4058 Basel', district: 'Kleinbasel',
+        price: 996, priceNote: 'inkl. NK',
+        available: '2026-immediate', availableLabel: 'מיידי', availStatus: 'immediate', availStatusLabel: '◐ Sofort',
+        size: 29, apartmentSize: null, type: 'managed',
+        tram: ['2','14'], tramPrimaryCount: 1, tramSecondaryCount: 0,
+        lang: 'de', photos: 4, minLease: '12 חודשים',
+        transit: { sbb:19, sbbRoute:'T8', uni:7, uniRoute:'B34', ils:13, ilsRoute:'T6' },
+        privateBath: false, fullyFurnished: true, balcony: true, tramPrimary: true, studentExplicit: true, swissCaution: false,
+        furnishLabel: '✓ מלא', bathLabel: 'חצי-פרטית (משותף עם דייר 1)', kitchenLabel: 'קטן בקומה משותף', balconyLabel: '✓ פרטית', quietLabel: '?',
+        priceIncludes: 'NK', bedLabel: '✓', washer: '✓', dryer: '✓', dishwasher: '✓', internet: '✓ Broadband + Cable', heating: '?',
+        lift: '?', bikeStorage: '?', storage: '?', migrosNearby: 'Kleinbasel · ליד הריין', deposit: '?',
+        specialReqs: '"ausschliesslich Studenten/Azubis bis 28"', hostLanguages: 'DE', floorType: 'Parkett', floorNum: '4', docWaiver: false,
+        s: { date: 8, roommates: 8, lang: 4, tram: 3, furn: 8, bath: 4, kitchen: 2, common: 2, quiet: 2, student: 8, balcony: 3, migros: 1, intheat: 2 },
+        score: 55, _open: false,
+        roommates: [],
+        strengths: [
+          'הגדול ביותר במאגר — 29m² + מרפסת פרטית',
+          '"Ausschliesslich Studenten oder Azubis bis 28"',
+          'מרוהט מלא, חוזה 12 ח׳ מינ׳',
+          '7 דק׳ ל-Uni Basel'
+        ],
+        concerns: [
+          'תאריך "Sofort" — סיכון שכבר נתפס',
+          'מקלחת משותפת עם דייר אחד (לא פרטית כמו #3)',
+          'אותו mode מנוהל "Buden" כמו #3',
+          'מטבח קטן בקומה'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/klingental-20-4058-basel/85994865/'
+      },
+      {
+        id: 'flatfox-1206700', title: 'Inselstrasse 20m² · waiver',
+        location: 'Inselstrasse, 4057 Basel', district: 'Kleinbasel',
+        price: 890, priceNote: 'inkl. הכל + ניקיון',
+        available: '2026-immediate', availableLabel: 'מיידי', availStatus: 'immediate', availStatusLabel: '◐ Sofort',
+        size: 20, apartmentSize: null, type: 'managed',
+        tram: ['2','3'], tramPrimaryCount: 2, tramSecondaryCount: 0,
+        lang: 'de', photos: 3, minLease: null,
+        transit: { sbb:26, sbbRoute:'T8', uni:19, uniRoute:'T8 → B34', ils:19, ilsRoute:'T8' },
+        privateBath: false, fullyFurnished: true, balcony: false, tramPrimary: true, studentExplicit: false, swissCaution: false,
+        furnishLabel: '✓ מלא + LCD-TV', bathLabel: 'משותפת', kitchenLabel: 'משותף', balconyLabel: '✗', quietLabel: '✓ "ruhige Mitbewohner"',
+        priceIncludes: 'הכל + ניקיון מקצועי + WiFi חינם + חימום', bedLabel: '✓', washer: '✓ זמינה', dryer: '?', dishwasher: '?', internet: '✓ Free WiFi', heating: '✓ כלול',
+        lift: '?', bikeStorage: '?', storage: '?', migrosNearby: 'Kleinbasel — אזור חי', deposit: '?',
+        specialReqs: '✓ אין דרישת Betreibungsauszug · אין דרישת Arbeitgeberbescheinigung (Apartment24.ch)', hostLanguages: 'DE+EN', floorType: 'Parkett', floorNum: '?', docWaiver: true,
+        s: { date: 8, roommates: 7, lang: 10, tram: 6, furn: 8, bath: 2, kitchen: 2, common: 2, quiet: 4, student: 2, balcony: 0, migros: 1, intheat: 3 },
+        score: 55, _open: false,
+        roommates: [],
+        strengths: [
+          'התאמת טרם מקסימלית — קווים 2 + 3 שניהם ראשוניים',
+          'מרוהט מלא + ניקיון + WiFi + heating כלולים',
+          'מנוהל ע"י Apartment24.ch — "keinen Betreibungsauszug, keine Arbeitgeberbescheinigung"',
+          'תיאור DE+EN — שפות גמישות',
+          '"freundliche und ruhige Mitbewohner" — שקט מובטח'
+        ],
+        concerns: [
+          'רק 3 תמונות — מודעה דלה ויזואלית',
+          'תאריך "Sofort"',
+          '26 דק׳ ל-SBB — הכי ארוך במאגר',
+          'מטבח+מקלחת משותפים, דיור מנוהל'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/inselstrasse-4057-basel/1206700/'
+      },
+      {
+        id: 'flatfox-86002865', title: '🆕 Markgräflerstr 76 · 4 שותפים בשמות',
+        location: 'Markgräflerstr 76, 4057 Basel', district: 'Kleinbasel · attic',
+        price: 670, priceNote: 'נטו 625 + NK 45',
+        available: '2026-06-01', availableLabel: '01.06.2026', availStatus: 'confirmed', availStatusLabel: '✓ ודאי',
+        size: 12, apartmentSize: 80, type: 'personal',
+        tram: ['2','3'], tramPrimaryCount: 2, tramSecondaryCount: 0,
+        lang: 'multi', photos: 4, minLease: null,
+        transit: { sbb:27, sbbRoute:'T14', uni:14, uniRoute:'?', ils:23, ilsRoute:'?' },
+        privateBath: false, fullyFurnished: true, balcony: false, tramPrimary: true, studentExplicit: false, swissCaution: false, cookingCulture: false,
+        furnishLabel: '✓ מרוהט (אופציונלי)', bathLabel: 'משותפת', kitchenLabel: 'משותף', balconyLabel: '✗', quietLabel: '⚠ "next to living room" — חברתי',
+        priceIncludes: 'NK 45 כלול', bedLabel: '✓', washer: '?', dryer: '?', dishwasher: '?', internet: '✓ WiFi', heating: '?',
+        lift: '?', bikeStorage: '?', storage: '✓ Hidden chamber', migrosNearby: 'Kleinbasel — אזור צעיר וחי', deposit: '?',
+        specialReqs: 'טון משעשע — "kiwi-eating habits"', hostLanguages: 'DE+EN', floorType: '?', floorNum: 'Attic (slope)', docWaiver: false,
+        s: { date: 15, roommates: 19, lang: 10, tram: 6, furn: 5, bath: 2, kitchen: 2, common: 3, quiet: 1, student: 5, balcony: 0, migros: 1, intheat: 2 },
+        score: 71, _open: false,
+        roommates: [
+          { name: 'Constantin', age: 22, origin: '', role: 'Theoretical physicist (יוצא)' },
+          { name: 'Nelly', age: 26, origin: '', role: 'Student · human rights' },
+          { name: 'Ilker', age: 27, origin: '', role: 'Student · artist' },
+          { name: 'Frank', age: 26, origin: '', role: 'Cybersecurity engineer' }
+        ],
+        strengths: [
+          '★ 4 שותפים בשמות+גילים — 22, 26, 26, 27 — Constantin (פיזיקאי) ידידותי לכימאי-עתידי',
+          'תאריך 01.06.2026 ודאי + תקציב נמוך 670 CHF',
+          'WG אישי 4-איש מעורב מגדרית, סטודנטים+טכנולוגים — תרבותית עשירה',
+          'תיאור משעשע באנגלית+גרמנית — סף שפה נמוך',
+          '2 קווי טרם ראשוניים (2+3)'
+        ],
+        concerns: [
+          'חדר 12m² קטן + עליית גג עם תקרה משופעת (צד אחד נמוך)',
+          '⚠ "Right next to living room" — סף רעש: שקד רגיש',
+          '27 דקות ל-SBB — הכי ארוך במאגר',
+          'Constantin יוצא — ה-WG בשינוי הרכב, ייתכן עוד שינויים',
+          'מטבח/מקלחת לא תוארו במפורש'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/markgraflerstrasse-76-4057-basel/86002865/'
+      },
+      {
+        id: 'flatfox-86003974', title: '🆕 4057 Maisonette 120m² · Kleinbasel',
+        location: '4057 Basel · Claraplatz/Messeplatz', district: 'Kleinbasel · maisonette',
+        price: 980, priceNote: 'inkl. הכל',
+        available: '2026-immediate', availableLabel: 'מיידי', availStatus: 'immediate', availStatusLabel: '◐ Sofort — לוודא',
+        size: null, apartmentSize: 120, type: 'personal',
+        tram: ['2','3'], tramPrimaryCount: 2, tramSecondaryCount: 0,
+        lang: 'multi', photos: 5, minLease: null,
+        transit: { sbb:16, sbbRoute:'B34 → T2', uni:4, uniRoute:'walk', ils:9, ilsRoute:'?' },
+        privateBath: false, fullyFurnished: true, balcony: true, tramPrimary: true, studentExplicit: false, swissCaution: false, cookingCulture: true,
+        furnishLabel: '✓ מלא', bathLabel: 'משותפת', kitchenLabel: '✓ מטבח פתוח + lounge עליון (cooking culture)', balconyLabel: '✓ Terrasse', quietLabel: '✓ "calm and respectful"',
+        priceIncludes: 'הכל', bedLabel: '✓', washer: '✓', dryer: '✓', dishwasher: '✗', internet: '?', heating: '?',
+        lift: '?', bikeStorage: '?', storage: '?', migrosNearby: 'Claraplatz/Messeplatz · חנויות, בתי-קפה', deposit: '?',
+        specialReqs: 'Pets allowed · Calm respectful', hostLanguages: 'DE+EN', floorType: 'Parkett + stone wall', floorNum: '3 (Maisonette)', docWaiver: false,
+        s: { date: 8, roommates: 5, lang: 10, tram: 6, furn: 8, bath: 2, kitchen: 5, common: 4, quiet: 4, student: 2, balcony: 3, migros: 2, intheat: 1 },
+        score: 60, _open: false,
+        roommates: [],
+        strengths: [
+          '★ 4 דקות בלבד ל-Uni Basel — הכי קצר במאגר!',
+          'Maisonette 120m² עם lounge עליון, קורות עץ, קיר אבן + Terrasse',
+          'מטבח פתוח + lounge → שטח משותף עשיר ועיצובי',
+          '2 קווי טרם ראשוניים (2+3)',
+          '"Calm and respectful" — שקט מובטח · Pets allowed'
+        ],
+        concerns: [
+          'תאריך Sofort — לוודא זמינות 01.06',
+          'גודל חדר ספציפי לא צוין (במאומת רק 120m² כללי)',
+          'אין מידע על המארח (sharing with one person)',
+          'אין מדיח כלים'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/4057-basel/86003974/'
+      },
+      {
+        id: 'flatfox-86001936', title: '🆕 Holeestrasse 61 · all-incl. + private fridge',
+        location: 'Holeestrasse 61, 4054 Basel', district: 'Iselin',
+        price: 790, priceNote: 'inkl. הכל (WLAN+Heizung+Wasser+Strom+מצעים+ניקיון)',
+        available: '2026-07-01', availableLabel: '01.07.2026', availStatus: 'flexible', availStatusLabel: '◐ חודש מאוחר',
+        size: 16, apartmentSize: null, type: 'managed',
+        tram: ['2'], tramPrimaryCount: 1, tramSecondaryCount: 0,
+        lang: 'de', photos: 4, minLease: null,
+        transit: { sbb:16, sbbRoute:'T2', uni:15, uniRoute:'?', ils:19, ilsRoute:'?' },
+        privateBath: false, fullyFurnished: true, balcony: true, tramPrimary: true, studentExplicit: false, swissCaution: false, cookingCulture: false,
+        furnishLabel: '✓ מלא + מצעים', bathLabel: '2 משותפות', kitchenLabel: '✓ מצויד + מקרר פרטי + ארון פרטי', balconyLabel: '✓', quietLabel: '?',
+        priceIncludes: 'הכל (WiFi + heating + water + electricity + bedding + cleaning)', bedLabel: '✓ + מצעים', washer: '✓', dryer: '✓', dishwasher: '✗', internet: '✓ WLAN', heating: '✓ כלול',
+        lift: '?', bikeStorage: '?', storage: '?', migrosNearby: 'Iselin', deposit: '?',
+        specialReqs: 'נדיר: מקרר פרטי + ארון כלים פרטי', hostLanguages: 'DE', floorType: '?', floorNum: '4', docWaiver: false,
+        s: { date: 12, roommates: 3, lang: 4, tram: 3, furn: 8, bath: 3, kitchen: 4, common: 2, quiet: 2, student: 2, balcony: 3, migros: 1, intheat: 3 },
+        score: 50, _open: false,
+        roommates: [],
+        strengths: [
+          'all-inclusive — WLAN + Heizung + Strom + מצעים + ניקיון משותף בכל חודש',
+          'מקרר פרטי וארון כלים פרטי — לתת לשקד טבעוני אזור-מטבח משלו ⭐',
+          'מבנה משופץ 2021, 4 חדרי שינה, 2 שירותים',
+          'תאריך 01.07 קצת מאוחר — שווה לבדוק האם יש קודם'
+        ],
+        concerns: [
+          'תאריך 01.07 — חודש איחור משקד צריך',
+          'רק קו 2 בפרופיל (1 בלבד)',
+          'אין מידע על השותפים',
+          'אין מדיח כלים'
+        ],
+        url: 'https://flatfox.ch/de/wohnung/holeestrasse-61-4054-basel/86001936/'
+      }
+    ],
+
+    filtered() {
+      let arr = this.listings.slice();
+      if (this.filters.budget !== 'all') {
+        const cap = { le800: 800, le900: 900, le1000: 1000 }[this.filters.budget];
+        arr = arr.filter(l => l.price <= cap);
+      }
+      if (this.filters.date !== 'all') {
+        if (this.filters.date === 'jun_confirmed') arr = arr.filter(l => l.availStatus === 'confirmed');
+        if (this.filters.date === 'flex_window') arr = arr.filter(l => l.availStatus === 'flexible' || l.availStatus === 'confirmed');
+        if (this.filters.date === 'immediate') arr = arr.filter(l => l.availStatus === 'immediate');
+      }
+      if (this.filters.type !== 'all') arr = arr.filter(l => l.type === this.filters.type);
+      if (this.filters.lang !== 'all') {
+        if (this.filters.lang === 'en') arr = arr.filter(l => l.lang === 'en' || l.lang === 'multi');
+        if (this.filters.lang === 'de') arr = arr.filter(l => l.lang === 'de' || l.lang === 'multi');
+      }
+      if (this.filters.privateBath) arr = arr.filter(l => l.privateBath);
+      if (this.filters.fullyFurnished) arr = arr.filter(l => l.fullyFurnished);
+      if (this.filters.knownRoommates) arr = arr.filter(l => l.roommates && l.roommates.length > 0);
+      if (this.filters.balcony) arr = arr.filter(l => l.balcony);
+      if (this.filters.tramPrimary) arr = arr.filter(l => l.tramPrimary);
+
+      const sortFns = {
+        score: (a,b) => b.score - a.score,
+        price_asc: (a,b) => a.price - b.price,
+        price_desc: (a,b) => b.price - a.price,
+        size_desc: (a,b) => b.size - a.size,
+        sbb_asc: (a,b) => a.transit.sbb - b.transit.sbb,
+        uni_asc: (a,b) => a.transit.uni - b.transit.uni,
+      };
+      arr.sort(sortFns[this.sortBy] || sortFns.score);
+      return arr;
+    },
+
+    resetFilters() {
+      this.filters = { date:'all', budget:'all', type:'all', lang:'all', privateBath:false, fullyFurnished:false, knownRoommates:false, balcony:false, tramPrimary:false };
+      this.sortBy = 'score';
+    }
+  };
+}
+</script>
+
+</body>
+</html>
