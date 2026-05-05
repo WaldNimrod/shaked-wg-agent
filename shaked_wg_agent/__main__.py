@@ -184,6 +184,20 @@ def cmd_list() -> None:
     console.print(f"\n[dim]{len(listings)} listings total[/dim]")
 
 
+def cmd_rebuild_html(args: argparse.Namespace) -> None:
+    """Rebuild the curated HTML report from listings.json."""
+    from shaked_wg_agent.publisher.html_curated import rebuild_html
+
+    out_path = rebuild_html(
+        profile_id=args.profile,
+        top=args.top,
+        out=args.out,
+    )
+    console.print(f"[bold green]✅ HTML rebuilt:[/bold green] {out_path}")
+    console.print(f"   Top N  : {args.top}")
+    console.print(f"   Profile: {args.profile or '(default)'}")
+
+
 def cmd_mark_contacted(args: argparse.Namespace) -> None:
     """Mark a listing as contacted."""
     from shaked_wg_agent.outreach import mark_contacted
@@ -289,6 +303,12 @@ def main() -> None:
     p_mrej.add_argument("listing_id", type=str)
     p_mrej.add_argument("--reason", type=str, default=None, help="optional rejection reason")
     p_mrej.set_defaults(func=cmd_mark_rejected)
+
+    p_rebuild = sub.add_parser("rebuild-html", help="rebuild curated HTML from listings.json")
+    p_rebuild.add_argument("--profile", type=str, default=None, help="Profile ID (default: from agent.json)")
+    p_rebuild.add_argument("--top", type=int, default=10, help="number of top listings to include")
+    p_rebuild.add_argument("--out", type=str, required=True, help="output HTML file path")
+    p_rebuild.set_defaults(func=cmd_rebuild_html)
 
     args = parser.parse_args()
     args.func(args)
