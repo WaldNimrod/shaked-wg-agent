@@ -81,8 +81,11 @@
           <template x-for="l in sortedListings()" :key="'m-'+l.id">
             <tr class="border-t border-stone-100 hover:bg-blue-50/30">
               <td class="p-2 sticky right-0 bg-white border-l border-stone-200">
-                <a :href="l.url" target="_blank" class="font-semibold text-slate-900 hover:text-blue-700 text-xs" x-text="l.title.substring(0,40)"></a>
-                <div class="text-[10px] text-slate-500" x-text="l.district || l.location"></div>
+                <div class="flex items-center gap-1.5">
+                  <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-bold flex-shrink-0" x-text="`#${l.rank}`"></span>
+                  <a :href="l.url" target="_blank" class="font-semibold text-slate-900 hover:text-blue-700 text-xs" x-text="l.title.substring(0,38)"></a>
+                </div>
+                <div class="text-[10px] text-slate-500 mt-0.5" x-text="l.district || l.location"></div>
               </td>
               <td class="sc p-1" :class="hm(l.s.date,15)" x-text="l.s.date"></td>
               <td class="sc p-1" :class="hm(l.s.roommates,20)" x-text="l.s.roommates"></td>
@@ -215,7 +218,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-baseline gap-2 mb-1">
-                <span class="text-xs font-semibold text-slate-400" x-text="`#${i+1}`"></span>
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-800 text-white text-xs font-bold flex-shrink-0" x-text="`#${l.rank}`"></span>
                 <h2 class="font-bold text-base text-slate-900 leading-tight" x-text="l.title"></h2>
               </div>
               <div class="text-sm text-slate-500" x-text="(l.district||'') + (l.location?' · '+l.location:'')"></div>
@@ -321,6 +324,7 @@
             <th class="text-right p-2 sticky right-0 bg-slate-50 border-l-2 border-stone-300 min-w-[160px]">פרמטר</th>
             <template x-for="l in sortedListings()" :key="'fh-'+l.id">
               <th class="text-center p-2 min-w-[130px] border-l border-stone-200">
+                <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-bold mb-1" x-text="`#${l.rank}`"></span>
                 <div class="font-bold text-slate-900 text-[11px] leading-tight" x-text="l.title.substring(0,22)"></div>
                 <div class="text-slate-400 text-[10px]" x-text="l.district||l.location"></div>
                 <div class="mt-1 inline-block px-2 py-0.5 rounded font-bold text-xs"
