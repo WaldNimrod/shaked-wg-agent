@@ -105,6 +105,21 @@
     }
   },
   {
+    "source_id": "unimarkt",
+    "label": "unimarkt.ch",
+    "base_url": "https://www.unimarkt.ch",
+    "scraper_class": "shaked_wg_agent.scrapers.unimarkt.UnimarktScraper",
+    "requires_playwright": false,
+    "notes": "Swiss classified platform. tRPC/Supabase JSON API (GET /api/trpc/post.getPublicList). WG-Zimmer category UUID: e70b7bef-981e-4410-9780-7d14db95c2f4. No auth needed for public listings. Polite delay: 5s. robots.txt: unreachable from scraper host at time of implementation (2026-05-05) — fixture-only mode; live access to be validated when connectivity is confirmed. ~10 Basel WG listings confirmed by team_00 research agent.",
+    "city_params": {
+      "basel": {
+        "search_url": "https://www.unimarkt.ch/api/trpc/post.getPublicList",
+        "connection_method": "trpc_api",
+        "enabled": true
+      }
+    }
+  },
+  {
     "source_id": "homeless",
     "label": "homeless.co.il",
     "base_url": "https://www.homeless.co.il",
