@@ -392,12 +392,20 @@ _HTML_TEMPLATE = """\
         </template>
       </div>
 
-      <!-- Budget -->
+      <!-- Budget min/max -->
       <div class="flex items-center gap-1 bg-white rounded-full border border-stone-300 px-1 py-0.5">
-        <span class="text-xs text-slate-500 px-2">תקציב</span>
+        <span class="text-xs text-slate-500 px-2">מינ׳</span>
+        <template x-for="opt in [{{v:'all',l:'הכל'}},{{v:'ge500',l:'≥500'}},{{v:'ge600',l:'≥600'}},{{v:'ge700',l:'≥700'}}]" :key="opt.v">
+          <button @click="filters.budgetMin=opt.v"
+                  :class="filters.budgetMin===opt.v?'bg-blue-600 text-white':'text-slate-600 hover:bg-stone-100'"
+                  class="px-3 py-1 rounded-full text-xs font-medium transition" x-text="opt.l"></button>
+        </template>
+      </div>
+      <div class="flex items-center gap-1 bg-white rounded-full border border-stone-300 px-1 py-0.5">
+        <span class="text-xs text-slate-500 px-2">מקס׳</span>
         <template x-for="opt in [{{v:'all',l:'הכל'}},{{v:'le800',l:'≤800'}},{{v:'le900',l:'≤900'}},{{v:'le1000',l:'≤1000'}}]" :key="opt.v">
-          <button @click="filters.budget=opt.v"
-                  :class="filters.budget===opt.v?'bg-blue-600 text-white':'text-slate-600 hover:bg-stone-100'"
+          <button @click="filters.budgetMax=opt.v"
+                  :class="filters.budgetMax===opt.v?'bg-blue-600 text-white':'text-slate-600 hover:bg-stone-100'"
                   class="px-3 py-1 rounded-full text-xs font-medium transition" x-text="opt.l"></button>
         </template>
       </div>
@@ -669,8 +677,18 @@ function app() {{
   return {{
     showMatrix: window.innerWidth >= 768,
     showFullTable: false,
-    filters: {{ published:'all', budget:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false }},
+    filters: {{ published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false }},
     sortBy: 'score',
+
+    init() {{
+      const today = new Date(); today.setHours(0,0,0,0);
+      this.listings.forEach(l => {{
+        if (!l.firstSeenAt) {{ l.firstSeenBucket = 'older'; return; }}
+        const d = new Date(l.firstSeenAt); d.setHours(0,0,0,0);
+        const delta = Math.round((today - d) / 86400000);
+        l.firstSeenBucket = delta === 0 ? 'today' : delta <= 7 ? 'week' : 'older';
+      }});
+    }},
 
     hm(v, max) {{
       const p = v/max;
@@ -689,9 +707,12 @@ function app() {{
     filtered() {{
       let list = this.listings.filter(l => {{
         if (this.filters.published !== 'all' && l.firstSeenBucket !== this.filters.published) return false;
-        if (this.filters.budget === 'le800' && l.price > 800) return false;
-        if (this.filters.budget === 'le900' && l.price > 900) return false;
-        if (this.filters.budget === 'le1000' && l.price > 1000) return false;
+        if (this.filters.budgetMin === 'ge500' && l.price < 500) return false;
+        if (this.filters.budgetMin === 'ge600' && l.price < 600) return false;
+        if (this.filters.budgetMin === 'ge700' && l.price < 700) return false;
+        if (this.filters.budgetMax === 'le800' && l.price > 800) return false;
+        if (this.filters.budgetMax === 'le900' && l.price > 900) return false;
+        if (this.filters.budgetMax === 'le1000' && l.price > 1000) return false;
         if (this.filters.avail !== 'all' && l.availBucket !== this.filters.avail) return false;
         if (this.filters.source !== 'all' && l.source !== this.filters.source) return false;
         if (this.filters.cooking && !l.cookingCulture) return false;
@@ -710,7 +731,7 @@ function app() {{
     }},
 
     resetFilters() {{
-      this.filters = {{ published:'all', budget:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false }};
+      this.filters = {{ published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false }};
       this.sortBy = 'score';
     }},
 
