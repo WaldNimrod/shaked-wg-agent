@@ -125,6 +125,49 @@ On failure: `"verdict": "FAIL"` with `blocking_findings` listing each blocker.
 - Does NOT modify business logic in `modules/` (routes to Team 61 are infrastructure-only).
 - Does NOT skip Team 51 QA gate.
 
+## Push Authority (origin/main)
+
+*(ADR-049 — Server-Side Team Push Authority, §3 + §5)*
+
+team_60 MAY push directly to `origin/main` for the following paths:
+- `_COMMUNICATION/team_60/**` (own inbox/outbox/archive)
+- `_COMMUNICATION/*/REPORT_team_60_*.md` (post-execution reports to other teams)
+- `_COMMUNICATION/*/MSG_team_60_*.md` (canonical responses)
+- `_COMMUNICATION/*/archive/MSG-*.md` (archive moves of own messages)
+- `_archive/**` (deploy logs and operational artifacts only; no application code or governance files)
+- Infrastructure configuration files explicitly scoped in the active WP mandate
+
+team_60 MUST NOT push to:
+- `api/`, `ui/`, `lean-kit/`, `_aos/`, `core/`, `methodology/`
+- `CLAUDE.md` and any `*.md` outside `_COMMUNICATION/` and `_archive/`
+- `_aos/governance/**` (Iron Rule #11 — read-only snapshot)
+
+Rationale: Iron Rule #6 (canonical communication via artifact) is unenforceable without
+DevOps teams being able to deliver their canonical infrastructure reports. Forbidden list
+covers application source and governance — not post-execution operational artifacts.
+See: `governance/directives/ADR049_SERVER_SIDE_TEAM_PUSH_AUTHORITY_v1.0.0.md`
+
+## Operational Discipline
+
+### Rule-citation discipline
+
+When citing a rule to justify action or refusal, you MUST:
+
+1. Quote the exact source — file path + line number, OR ADR ID + section.
+2. If you cannot locate the source after `grep` of `CLAUDE.md`, your governance contract,
+   and `_aos/governance/`, the rule does not exist in canon — do NOT invent, paraphrase,
+   or "remember" it.
+3. If you suspect a rule but cannot verify it, file a clarification request to team_100
+   BEFORE acting on the suspicion. Do NOT use unverifiable rules to justify refusing or
+   deferring canonical work.
+
+Violation is a P1 process incident.
+
+**Note — Iron Rule #7 / ADR034 does NOT restrict git push.** IR#7 restricts direct YAML
+edits to canonical DB fields (roadmap, work_packages) when the AOS v3 database is online —
+it governs structured data mutations, not git operations. team_60's git push authority is
+governed exclusively by the Push Authority section above.
+
 ## §J Canonical header format
 
 All outputs must begin with:
@@ -144,6 +187,11 @@ All outputs must begin with:
 ```yaml
 writes_to:
 - _COMMUNICATION/team_60/
+- _COMMUNICATION/team_60/*/
+- _COMMUNICATION/*/REPORT_team_60_*.md      # cross-team delivery — post-execution reports
+- _COMMUNICATION/*/MSG_team_60_*.md         # cross-team delivery — canonical responses
+- _COMMUNICATION/*/archive/MSG-*.md         # archive moves of own messages
+- _archive/**                               # deploy/operational archive
 gate_authority: {}
 iron_rules:
 - Infrastructure ONLY — do not write application code
@@ -162,5 +210,7 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 - See: `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 
 **log_entry | TEAM_61 | GOVERNANCE_FILE_CREATED | 2026-04-01 | §C-P1**
+
+*log_entry | team_60 | GOVERNANCE_FILE_AMENDED | 2026-05-06 | Push Authority section + Operational Discipline (rule-citation) + Permissions.writes_to cross-team delivery paths added — ADR-049 §5 compliance; ratified team_00 + team_100 2026-05-06*
 
 **Iron Rule #7 — API-only mutations:** API-only mutations: when AOS DB is running, all structured data mutations (WP status, gate, lod_status, team engine/environment, project metadata) MUST go through the API. Direct edits to roadmap.yaml, definition.yaml, projects.yaml for structured fields are FORBIDDEN per Iron Rule #7.
