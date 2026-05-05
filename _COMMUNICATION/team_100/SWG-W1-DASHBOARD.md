@@ -1,6 +1,6 @@
 # SWG-W1-SPRINT — Dashboard
 
-**Last updated:** 2026-05-06 09:30
+**Last updated:** 2026-05-06 16:30
 **⚡ SHIP TARGET MOVED: Thu 2026-05-07 EOD (Shaked in Basel until Fri AM)**
 **Sprint:** SWG-W1-SPRINT | 2026-05-04 → 2026-05-08
 **Strategic deadline:** Shaked signs Basel WG lease before 2026-05-30
@@ -15,8 +15,8 @@
 | W1.2 | Full-description extraction | ✅ GATE PASS | L-GATE_BUILD_R1_INTERNAL PASS | 7/7 checks. 116 listings migrated. commit 57b08e9 |
 | W1.3 | RonOrp + signal extractors | ✅ GATE PASS | L-GATE_BUILD_R1_INTERNAL PASS | 9/9 (AC#4 advisory: 2 detections now, ≥3 after live scrape). commit 1b43899 |
 | W1.4 | One-click HTML rebuild | ✅ GATE PASS | L-GATE_BUILD_R1_INTERNAL PASS | 8/8 (1 skip). 0.07s runtime. commit 580e71f |
-| W1.5 | Integration + prod run | ⏳ Thu 2026-05-07 | — | merge manual_finds → live scrape → rebuild → upload |
-| W1.6 *(stretch)* | Unimarkt API scraper | 🔄 IN BUILD | — | Dispatch Wed morning. tRPC API discovered. |
+| W1.5 | Integration + prod run | ⏳ Thu 2026-05-07 | — | --extra-listings ready. Waiting: manual_finds_2026-05-05.json from team_00, Thu live run |
+| W1.6 *(stretch)* | Unimarkt API scraper | ✅ GATE PASS | L-GATE_BUILD_R1_INTERNAL PASS | tRPC scraper. Advisory: TCP timeout from local host (resolved at live run). commit 7a9f369 |
 
 ---
 

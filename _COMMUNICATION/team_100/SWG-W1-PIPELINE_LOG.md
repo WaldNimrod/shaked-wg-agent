@@ -132,6 +132,31 @@ to W1.4. The merge step is a W1.5 orchestrator action.
 
 ---
 
+## 2026-05-06 (Day 3) — Late afternoon: W1.5 prep + W1.6 gate
+
+### 10:00 — W1.6 Unimarkt sub-agent dispatched (stretch goal)
+- Scope: tRPC scraper + 20 tests + fixture
+- API: `/api/trpc/post.getPublicList`, WG UUID `e70b7bef-981e-4410-9780-7d14db95c2f4`
+- NOTE: www.unimarkt.ch TCP timeout from local host — code ready, live validation deferred to W1.5
+
+### 11:30 — W1.6 build committed + gate dispatched
+- commit 7a9f369: feat(SWG-W1-6) — Unimarkt tRPC scraper, 308/308 tests
+- haiku gate dispatched
+
+### ~12:00 — W1.6 gate PASS (haiku)
+- Advisory: live connectivity timeout (TCP) — code correct, W1.5 live run resolves
+- commit 0a83ca2: W1.6 verdict
+
+### ~16:30 — W1.5 prep: --extra-listings support
+- Added `--extra-listings PATH` to `rebuild-html` CLI and `rebuild_html()` function
+- Merge logic: load JSON array, dedup by source+source_listing_id (extra wins), append to pool
+- Smoke test: 308/308 tests PASS, 10 cards rendered in 0.07s
+- commit f277131: feat(SWG-W1-5) — extra-listings merge
+
+### Status: waiting for manual_finds_2026-05-05.json from team_00 before W1.5 live run
+
+---
+
 ## 2026-05-07 (Day 4) — W1.5 Integration + Production Run
 
-*(scheduled)*
+*(scheduled: live scrape → merge manual_finds → rebuild HTML → upload)*
