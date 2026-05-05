@@ -157,6 +157,42 @@ to W1.4. The merge step is a W1.5 orchestrator action.
 
 ---
 
-## 2026-05-07 (Day 4) — W1.5 Integration + Production Run
+## 2026-05-06 (Day 3) — W1.5 Integration (completed same day, ahead of schedule)
 
-*(scheduled: live scrape → merge manual_finds → rebuild HTML → upload)*
+### 17:00 — Diagnostics: sources not active
+- `data/cities/basel.json` missing weegee/ronorp/unimarkt in available_sources
+- `data/profiles/default.json` enabled_sources = ["wgzimmer","flatfox"] only
+- Fix: added all 3 new sources to both files
+
+### 17:15 — Diagnosis: ronorp pagination hang
+- cockpit.ronorp.net API: no server-side sub_category_id filter
+- API returns all housing posts (~800+), WG sub_cat=144 absent (inactive market)
+- Scraper was scanning 800+ posts × 7s delay = 10+ min hang
+- Fix: added `_MAX_PAGES=5` hard limit → 42s / 0 WG results
+
+### 17:20 — unimarkt disabled for this run (TCP timeout)
+- www.unimarkt.ch unreachable from dev host (confirmed TCP timeout)
+- unimarkt removed from enabled_sources for W1.5 run
+- Scrapers verified individually: flatfox 17.6s / weegee 70.8s / ronorp 41.8s
+
+### 17:45 — W1.5 live run COMPLETE
+- run-20260505-155159-d49b: 3 sources / 137 scanned / 146s
+- weegee: 89 new listings ingested
+- ronorp: 0 WG listings (inactive market — expected)
+- listings.json: 208 total (flatfox=120, weegee=88)
+
+### 18:00 — HTML rebuilt + uploaded
+- python3 -m shaked_wg_agent rebuild-html --profile default --top 10 --out data/shaked_curated_2026-05-06.html
+- WP REST media upload: media_id=91346
+- Live URL: https://www.nimrod.bio/wp-content/uploads/2026/05/shaked_curated_2026-05-06.html
+
+### Sprint DOD final check
+| Criterion | Result |
+|-----------|--------|
+| ≥150 listings | ✅ 208 |
+| full_description ≥80% | ✅ 97% (202/208) |
+| ≥3 diet detections | ⚠️ 2 (advisory-PARTIAL, accepted) |
+| HTML ≤30s | ✅ 0.07s |
+| pytest 100% | ✅ 308/308 |
+| ruff clean | ✅ |
+| validate_aos 0 FAIL | ✅ |
