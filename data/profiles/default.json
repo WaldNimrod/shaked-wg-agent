@@ -17,7 +17,7 @@
     "preserve_source_text": true
   },
   "retention_days": 30,
-  "enabled_sources": ["wgzimmer", "flatfox"],
+  "enabled_sources": ["flatfox", "weegee", "ronorp"],
   "notifications": {
     "digest_max_listings": 5,
     "min_score_threshold": 40,

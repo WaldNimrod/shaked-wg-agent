@@ -71,6 +71,12 @@ _ZIP_DISTRICT: dict[str, str] = {
 # Posts to fetch per page
 _PAGE_SIZE = 20
 
+# Max pages to scan before giving up — the API returns ALL housing sub-categories
+# (no server-side WG filter). With 800+ posts and zero WG sub_cat=144 in low-activity
+# periods, unlimited pagination wastes 10+ minutes. 5 pages = 100 posts is plenty to
+# detect any active WG listings.
+_MAX_PAGES = 5
+
 
 class RonorpScraper(BaseScraper):
     """Scraper for ronorp.net Basel WG listings using the cockpit.ronorp.net REST API.
@@ -82,17 +88,23 @@ class RonorpScraper(BaseScraper):
     _POLITE_DELAY = _POLITE_DELAY
 
     def fetch_listings(self) -> list[ScrapedListing]:
-        """Fetch all Basel WG listings from ronorp.net cockpit API."""
+        """Fetch Basel WG listings from ronorp.net cockpit API.
+
+        The API returns all housing sub-categories (no server-side WG filter).
+        We stop after _MAX_PAGES pages to avoid scanning 800+ posts when the
+        WG market is inactive (sub_category_id=144 absent).
+        """
         results: list[ScrapedListing] = []
         skip = 0
+        page = 0
 
-        while True:
+        while page < _MAX_PAGES:
             url = (
                 f"{_API_BASE}/market/posts/housing"
                 f"?city_id={_BASEL_CITY_ID}&is_mobile=0"
                 f"&skip={skip}&take={_PAGE_SIZE}"
             )
-            logger.debug("RonorpScraper: fetching skip=%d — %s", skip, url)
+            logger.debug("RonorpScraper: fetching page %d (skip=%d) — %s", page + 1, skip, url)
 
             try:
                 resp = self._get(url)
@@ -116,10 +128,12 @@ class RonorpScraper(BaseScraper):
             if len(housing) < _PAGE_SIZE:
                 break
 
+            page += 1
             skip += _PAGE_SIZE
-            time.sleep(self._POLITE_DELAY)
+            if page < _MAX_PAGES:
+                time.sleep(self._POLITE_DELAY)
 
-        logger.info("RonorpScraper: fetched %d WG listings total.", len(results))
+        logger.info("RonorpScraper: fetched %d WG listings total (scanned %d pages).", len(results), page + 1)
         return results
 
     # ------------------------------------------------------------------
