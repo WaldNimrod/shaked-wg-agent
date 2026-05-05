@@ -492,6 +492,7 @@ def rebuild_html(
     profile_id: str | None = None,
     top: int = 10,
     out: str | Path = "shaked_curated.html",
+    extra_listings_path: str | Path | None = None,
 ) -> Path:
     """High-level entry point: load config + listings, build, write file.
 
@@ -503,14 +504,37 @@ def rebuild_html(
         Number of top listings to include.
     out:
         Output path for the HTML file.
+    extra_listings_path:
+        Optional path to a JSON file with additional listings to merge
+        (e.g. data/manual_finds_2026-05-05.json). Deduplicates by
+        source+source_listing_id; extra entries win on conflict.
 
     Returns
     -------
     Path
         Resolved path of the written file.
     """
+    import json
+
     cfg = load_config(profile_id)
     listings = load_listings()
+
+    if extra_listings_path is not None:
+        extra_path = Path(extra_listings_path)
+        extra_raw: list[dict[str, Any]] = json.loads(extra_path.read_text(encoding="utf-8"))
+        # Build a dedup index from the base listings
+        seen: dict[tuple[str, str], int] = {}
+        for idx, lst in enumerate(listings):
+            key = (lst.get("source", ""), lst.get("source_listing_id", ""))
+            seen[key] = idx
+        # Merge extra listings — update in place if key exists, else append
+        for extra in extra_raw:
+            key = (extra.get("source", ""), extra.get("source_listing_id", ""))
+            if key in seen:
+                listings[seen[key]].update(extra)
+            else:
+                listings.append(extra)
+
     html = build_html(listings, cfg.profile, cfg.city, top=top)
     out_path = Path(out)
     out_path.write_text(html, encoding="utf-8")

@@ -188,14 +188,18 @@ def cmd_rebuild_html(args: argparse.Namespace) -> None:
     """Rebuild the curated HTML report from listings.json."""
     from shaked_wg_agent.publisher.html_curated import rebuild_html
 
+    extra = getattr(args, "extra_listings", None)
     out_path = rebuild_html(
         profile_id=args.profile,
         top=args.top,
         out=args.out,
+        extra_listings_path=extra,
     )
     console.print(f"[bold green]✅ HTML rebuilt:[/bold green] {out_path}")
     console.print(f"   Top N  : {args.top}")
     console.print(f"   Profile: {args.profile or '(default)'}")
+    if extra:
+        console.print(f"   Extra  : {extra}")
 
 
 def cmd_mark_contacted(args: argparse.Namespace) -> None:
@@ -308,6 +312,8 @@ def main() -> None:
     p_rebuild.add_argument("--profile", type=str, default=None, help="Profile ID (default: from agent.json)")
     p_rebuild.add_argument("--top", type=int, default=10, help="number of top listings to include")
     p_rebuild.add_argument("--out", type=str, required=True, help="output HTML file path")
+    p_rebuild.add_argument("--extra-listings", type=str, default=None, dest="extra_listings",
+                           help="path to JSON file with additional listings to merge (e.g. manual_finds)")
     p_rebuild.set_defaults(func=cmd_rebuild_html)
 
     args = parser.parse_args()
