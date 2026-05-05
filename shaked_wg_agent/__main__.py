@@ -319,7 +319,7 @@ def main() -> None:
 
     p_rebuild = sub.add_parser("rebuild-html", help="rebuild curated HTML from listings.json")
     p_rebuild.add_argument("--profile", type=str, default=None, help="Profile ID (default: from agent.json)")
-    p_rebuild.add_argument("--top", type=int, default=10, help="number of top listings to include")
+    p_rebuild.add_argument("--top", type=int, default=20, help="number of top listings to include")
     p_rebuild.add_argument("--out", type=str, required=True, help="output HTML file path")
     p_rebuild.add_argument("--extra-listings", type=str, default=None, dest="extra_listings",
                            help="path to JSON file with additional listings to merge (e.g. manual_finds)")

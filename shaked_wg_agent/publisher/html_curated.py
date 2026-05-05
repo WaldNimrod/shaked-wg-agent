@@ -15,7 +15,9 @@ all filtering, sorting, and UI state client-side.
 """
 from __future__ import annotations
 
+import base64
 import json
+import os
 import re
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -204,10 +206,11 @@ def _listing_js(lst: dict[str, Any], profile: SearchProfile, rank: int) -> dict[
     return {
         "id": lst.get("listing_id", f"lst-{rank}"),
         "rank": rank,
-        "title": lst.get("title") or f"Listing #{rank}",
+        "title": _make_display_title(lst),
         "location": lst.get("location_text") or "",
         "district": lst.get("district") or "",
-        "price": lst.get("price") or 0,
+        "price": lst.get("price") or lst.get("price_chf") or 0,
+        "embeddedStatus": lst.get("status") or "neu",
         "available": avail,
         "availBucket": _avail_bucket(avail),
         "source": source,
@@ -230,6 +233,43 @@ def _listing_js(lst: dict[str, Any], profile: SearchProfile, rank: int) -> dict[
         "score": score,
         "_open": False,
     }
+
+
+_GENERIC_TITLE_RE = re.compile(
+    r"^(wg[- ]?zimmer?|[0-9][- ]zimmer[- ]?(wohnung|einzelzimmer|wg)?|zimmer in wg|zimmer)$",
+    re.I,
+)
+
+
+def _make_display_title(lst: dict[str, Any]) -> str:
+    """Build a human-readable title when the source title is generic (e.g. 'WG Zimmer')."""
+    raw = (lst.get("title") or "").strip()
+    if raw and not _GENERIC_TITLE_RE.match(raw):
+        return raw
+    # Build from available fields
+    parts: list[str] = []
+    district = (lst.get("district") or "").strip()
+    if district and district not in ("Basel", ""):
+        parts.append(district)
+    else:
+        loc = lst.get("location_text") or ""
+        street = loc.split(",")[0].strip()
+        if street:
+            parts.append(street[:22])
+    price = lst.get("price") or lst.get("price_chf")
+    if price:
+        parts.append(f"{price} CHF")
+    avail = (lst.get("available_from") or "").strip()
+    if avail:
+        if "2026-06-01" in avail or "01.06" in avail:
+            parts.append("01.06")
+        elif "2026-05" in avail:
+            parts.append("Mai")
+        elif "sofort" in avail.lower() or "immediately" in avail.lower():
+            parts.append("Sofort")
+        else:
+            parts.append(avail[:7])
+    return " · ".join(parts) if parts else (raw or "WG Basel")
 
 
 def _avail_bucket(avail: str) -> str:
@@ -430,6 +470,16 @@ _HTML_TEMPLATE = """\
         </template>
       </div>
 
+      <!-- Status filter -->
+      <div class="flex items-center gap-1 bg-white rounded-full border border-stone-300 px-1 py-0.5">
+        <span class="text-xs text-slate-500 px-2">סטטוס</span>
+        <template x-for="opt in [{{v:'active',l:'פעיל'}},{{v:'all',l:'הכל'}},{{v:'sent',l:'💬 פניתי'}},{{v:'progress',l:'⏳ בתהליך'}}]" :key="opt.v">
+          <button @click="filters.status=opt.v"
+                  :class="filters.status===opt.v?'bg-blue-600 text-white':'text-slate-600 hover:bg-stone-100'"
+                  class="px-3 py-1 rounded-full text-xs font-medium transition" x-text="opt.l"></button>
+        </template>
+      </div>
+
       <!-- Checkboxes -->
       <label class="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
         <input type="checkbox" x-model="filters.cooking" class="rounded">🌱 cooking culture
@@ -461,7 +511,8 @@ _HTML_TEMPLATE = """\
 <main class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6" data-listing-count="{top_n}">
     <template x-for="(l, i) in filtered()" :key="l.id">
-      <article data-listing-card class="bg-white rounded-xl overflow-hidden border border-stone-100 shadow-sm transition hover:shadow-md">
+      <article data-listing-card class="bg-white rounded-xl overflow-hidden border border-stone-100 shadow-sm transition hover:shadow-md"
+               :class="statusCardClass(getStatus(l.id))">
 
         <!-- Card header -->
         <div class="p-4 pb-3 border-b border-stone-100">
@@ -545,14 +596,27 @@ _HTML_TEMPLATE = """\
                class="mt-2 text-xs text-emerald-700">🌱 <span x-text="l.veganSignal"></span></div>
         </div>
 
+        <!-- Status buttons -->
+        <div class="px-3 py-2 bg-stone-50/80 border-t border-stone-100">
+          <div class="flex items-center gap-1 flex-wrap">
+            <span class="text-[10px] text-slate-400 ml-1">סטטוס:</span>
+            <template x-for="[sv, sl] in Object.entries(statusLabels)" :key="sv">
+              <button @click.stop="setStatus(l.id, sv)"
+                      :class="getStatus(l.id)===sv ? statusActiveClass(sv) : 'bg-white text-slate-500 border-stone-200 hover:bg-stone-100'"
+                      class="px-2 py-0.5 text-[11px] rounded border transition"
+                      x-text="sl"></button>
+            </template>
+          </div>
+        </div>
+
         <!-- CTA -->
-        <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex items-center justify-between">
-          <div class="text-xs text-slate-500">
-            <span x-show="l.firstSeenAt" x-text="'נראה לראשונה: '+l.firstSeenAt.substring(0,10)"></span>
+        <div class="px-4 py-2.5 border-t border-stone-100 flex items-center justify-between bg-white">
+          <div class="text-xs text-slate-400">
+            <span x-show="l.firstSeenAt" x-text="l.firstSeenAt.substring(0,10)"></span>
           </div>
           <a :href="l.url" target="_blank" rel="noopener"
-             class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-            פתח מודעה ↗
+             class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition">
+            פתח ↗
           </a>
         </div>
       </article>
@@ -673,13 +737,27 @@ _HTML_TEMPLATE = """\
   </div>
 </footer>
 
+<!-- ═══ FLOATING SYNC BUTTON ═══ -->
+<div class="fixed bottom-5 left-4 z-50 flex flex-col items-start gap-2" x-show="pendingSync || syncing">
+  <button @click="syncStatus()"
+          :disabled="syncing"
+          class="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg transition">
+    <span x-show="!syncing">☁️ שמור סטטוסים</span>
+    <span x-show="syncing">⏳ שומר…</span>
+  </button>
+</div>
+
 <script>
 function app() {{
   return {{
     showMatrix: true,
     showFullTable: false,
-    filters: {{ published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false }},
+    filters: {{ published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false, status:'active' }},
     sortBy: 'score',
+    statusMap: {{}},
+    statusLabels: {{'neu':'◯ חדש','sent':'💬 פניתי','progress':'⏳ בתהליך','visited':'🏠 ביקרתי','skip':'❌ לא רלוונטי','signed':'✅ חתמתי'}},
+    pendingSync: false,
+    syncing: false,
 
     init() {{
       const today = new Date(); today.setHours(0,0,0,0);
@@ -689,6 +767,43 @@ function app() {{
         const delta = Math.round((today - d) / 86400000);
         l.firstSeenBucket = delta === 0 ? 'today' : delta <= 2 ? 'recent' : delta <= 7 ? 'week' : 'older';
       }});
+      const saved = localStorage.getItem('shaked_wg_status');
+      if (saved) try {{ this.statusMap = JSON.parse(saved); }} catch(e) {{}}
+      this.listings.forEach(l => {{
+        if (!this.statusMap[l.id] && l.embeddedStatus && l.embeddedStatus !== 'neu')
+          this.statusMap[l.id] = l.embeddedStatus;
+      }});
+      localStorage.setItem('shaked_wg_status', JSON.stringify(this.statusMap));
+    }},
+
+    getStatus(id) {{ return this.statusMap[id] || 'neu'; }},
+    setStatus(id, sv) {{
+      if (sv === 'neu') delete this.statusMap[id]; else this.statusMap[id] = sv;
+      this.statusMap = {{...this.statusMap}};
+      localStorage.setItem('shaked_wg_status', JSON.stringify(this.statusMap));
+      this.pendingSync = true;
+    }},
+    statusCardClass(s) {{
+      return {{'sent':'border-l-4 border-l-blue-400','progress':'border-l-4 border-l-amber-400','visited':'border-l-4 border-l-purple-400','skip':'opacity-40 border-l-4 border-l-red-300','signed':'border-l-4 border-l-emerald-500 bg-emerald-50/20'}}[s] || '';
+    }},
+    statusActiveClass(sv) {{
+      return {{'sent':'bg-blue-100 text-blue-800 border-blue-300','progress':'bg-amber-100 text-amber-800 border-amber-300','visited':'bg-purple-100 text-purple-800 border-purple-300','skip':'bg-red-100 text-red-800 border-red-300','signed':'bg-emerald-100 text-emerald-800 border-emerald-300','neu':'bg-slate-200 text-slate-700 border-slate-300'}}[sv] || '';
+    }},
+    async syncStatus() {{
+      this.syncing = true;
+      try {{
+        const tok = '{wp_token}';
+        const base = '{wp_rest_base}';
+        const oldId = localStorage.getItem('shaked_status_mid');
+        if (oldId) await fetch(base+'/wp/v2/media/'+oldId+'?force=1', {{method:'DELETE',headers:{{Authorization:'Basic '+tok}}}});
+        const r = await fetch(base+'/wp/v2/media', {{method:'POST',headers:{{Authorization:'Basic '+tok,'Content-Disposition':'attachment; filename="shaked-status.json"','Content-Type':'application/json'}},body:JSON.stringify(this.statusMap)}});
+        if (!r.ok) throw new Error(await r.text());
+        const j = await r.json();
+        localStorage.setItem('shaked_status_mid', String(j.id));
+        this.pendingSync = false;
+        alert('✅ סנכרון הצליח! ID: '+j.id);
+      }} catch(e) {{ alert('❌ שגיאה בסנכרון: '+e); }}
+      finally {{ this.syncing = false; }}
     }},
 
     hm(v, max) {{
@@ -719,6 +834,10 @@ function app() {{
         if (this.filters.cooking && !l.cookingCulture) return false;
         if (this.filters.tram && !l.tramPrimary) return false;
         if (this.filters.quiet && !l.isQuiet) return false;
+        const st = this.getStatus(l.id);
+        if (this.filters.status === 'active' && (st === 'skip' || st === 'signed')) return false;
+        if (this.filters.status === 'sent' && st !== 'sent') return false;
+        if (this.filters.status === 'progress' && st !== 'progress') return false;
         return true;
       }});
       const dir = this.sortBy === 'price_asc' ? 1 : -1;
@@ -732,7 +851,7 @@ function app() {{
     }},
 
     resetFilters() {{
-      this.filters = {{ published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false }};
+      this.filters = {{ published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false, status:'active' }};
       this.sortBy = 'score';
     }},
 
@@ -753,7 +872,9 @@ def build_html(
     listings: list[dict[str, Any]],
     profile: SearchProfile,
     city: CityDefinition | None = None,
-    top: int = 10,
+    top: int = 20,
+    wp_token: str = "",
+    wp_rest_base: str = "https://www.nimrod.bio/wp-json",
 ) -> str:
     """Score, select top-N, and render the curated HTML page."""
     # Score all listings with 13-param system, sort, take top N
@@ -788,12 +909,36 @@ def build_html(
         sources_full=", ".join(sources) if sources else "—",
         total_count=total_count,
         listings_json=listings_json,
+        wp_token=wp_token,
+        wp_rest_base=wp_rest_base,
     )
+
+
+def _load_status_map() -> dict[str, str]:
+    """Download shaked-status.json from WP (current month) or fall back to local file."""
+    import requests
+    now = datetime.now(timezone.utc)  # noqa: UP017
+    public_base = os.environ.get("UPRESS_PUBLIC_BASE", "https://www.nimrod.bio")
+    url = f"{public_base}/wp-content/uploads/{now.year}/{now.month:02d}/shaked-status.json"
+    try:
+        r = requests.get(url, timeout=8)
+        if r.status_code == 200:
+            data = r.json()
+            Path("data/shaked-status.json").write_text(
+                json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            return data
+    except Exception:
+        pass
+    local = Path("data/shaked-status.json")
+    if local.exists():
+        return json.loads(local.read_text(encoding="utf-8"))
+    return {}
 
 
 def rebuild_html(
     profile_id: str | None = None,
-    top: int = 10,
+    top: int = 20,
     out: str | Path = "shaked_curated.html",
     extra_listings_path: str | Path | None = None,
 ) -> Path:
@@ -803,8 +948,25 @@ def rebuild_html(
         Optional path to a JSON file with additional listings to merge.
         Deduplicates by source+source_listing_id; extra entries win on conflict.
     """
+    from dotenv import load_dotenv
+    load_dotenv()
+
+    # Build WP auth token for embedding in the HTML (status sync)
+    wp_user = os.environ.get("UPRESS_WP_APP_USER", "")
+    wp_pass = os.environ.get("UPRESS_WP_APP_PASS", "")
+    wp_token = base64.b64encode(f"{wp_user}:{wp_pass}".encode()).decode() if wp_user else ""
+    wp_rest_base = os.environ.get("UPRESS_WP_REST_BASE", "https://www.nimrod.bio/wp-json")
+
     cfg = load_config(profile_id)
     listings = load_listings()
+
+    # Apply persisted statuses (from previous browser syncs)
+    status_map = _load_status_map()
+    if status_map:
+        for lst in listings:
+            lid = lst.get("listing_id")
+            if lid and lid in status_map:
+                lst["status"] = status_map[lid]
 
     if extra_listings_path is not None:
         extra_path = Path(extra_listings_path)
@@ -820,7 +982,8 @@ def rebuild_html(
             else:
                 listings.append(extra)
 
-    html = build_html(listings, cfg.profile, cfg.city, top=top)
+    html = build_html(listings, cfg.profile, cfg.city, top=top,
+                      wp_token=wp_token, wp_rest_base=wp_rest_base)
     out_path = Path(out)
     out_path.write_text(html, encoding="utf-8")
     return out_path

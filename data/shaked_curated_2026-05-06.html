@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>שקד · 10N דירות באזל · v2.0 · 2026-05-05</title>
+<title>שקד · 20N דירות באזל · v2.0 · 2026-05-05</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <style>
@@ -28,7 +28,7 @@
 <header class="bg-gradient-to-l from-blue-700 to-blue-900 text-white">
   <div class="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-10">
     <div class="flex items-baseline flex-wrap gap-2 mb-2">
-      <h1 class="text-xl md:text-3xl font-bold">10 דירות לשקד · באזל</h1>
+      <h1 class="text-xl md:text-3xl font-bold">20 דירות לשקד · באזל</h1>
       <span class="text-blue-200 text-xs md:text-sm">v2.0 · 2026-05-05</span>
     </div>
     <p class="text-blue-100 text-sm md:text-lg max-w-3xl">
@@ -40,9 +40,9 @@
       <span class="text-emerald-300">סטטוס במאגר: 1 דירות עם cooking-culture</span>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mt-4">
-      <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">מאומתות חיות</div><div class="text-lg md:text-2xl font-bold">10/10</div></div>
+      <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">מאומתות חיות</div><div class="text-lg md:text-2xl font-bold">20/20</div></div>
       <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">טווח מחיר</div><div class="text-lg md:text-2xl font-bold">670–1000</div></div>
-      <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">מקורות</div><div class="text-lg md:text-2xl font-bold">flatfox</div></div>
+      <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">מקורות</div><div class="text-lg md:text-2xl font-bold">flatfox+weegee</div></div>
       <div class="bg-white/10 rounded-lg p-2 md:p-3"><div class="text-[10px] md:text-xs text-blue-200">🌱 צמחוני</div><div class="text-lg md:text-2xl font-bold">1</div></div>
     </div>
   </div>
@@ -180,6 +180,16 @@
         </template>
       </div>
 
+      <!-- Status filter -->
+      <div class="flex items-center gap-1 bg-white rounded-full border border-stone-300 px-1 py-0.5">
+        <span class="text-xs text-slate-500 px-2">סטטוס</span>
+        <template x-for="opt in [{v:'active',l:'פעיל'},{v:'all',l:'הכל'},{v:'sent',l:'💬 פניתי'},{v:'progress',l:'⏳ בתהליך'}]" :key="opt.v">
+          <button @click="filters.status=opt.v"
+                  :class="filters.status===opt.v?'bg-blue-600 text-white':'text-slate-600 hover:bg-stone-100'"
+                  class="px-3 py-1 rounded-full text-xs font-medium transition" x-text="opt.l"></button>
+        </template>
+      </div>
+
       <!-- Checkboxes -->
       <label class="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
         <input type="checkbox" x-model="filters.cooking" class="rounded">🌱 cooking culture
@@ -203,15 +213,16 @@
       </div>
       <button @click="resetFilters()" class="text-xs text-slate-600 hover:text-slate-900 underline">איפוס</button>
     </div>
-    <div class="mt-1.5 text-xs text-slate-500">מציג <span class="font-semibold" x-text="filtered().length"></span> מתוך 10 דירות</div>
+    <div class="mt-1.5 text-xs text-slate-500">מציג <span class="font-semibold" x-text="filtered().length"></span> מתוך 20 דירות</div>
   </div>
 </div>
 
 <!-- ═══ LISTING CARDS ═══ -->
 <main class="max-w-7xl mx-auto px-3 md:px-6 py-4 md:py-8">
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6" data-listing-count="10">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6" data-listing-count="20">
     <template x-for="(l, i) in filtered()" :key="l.id">
-      <article data-listing-card class="bg-white rounded-xl overflow-hidden border border-stone-100 shadow-sm transition hover:shadow-md">
+      <article data-listing-card class="bg-white rounded-xl overflow-hidden border border-stone-100 shadow-sm transition hover:shadow-md"
+               :class="statusCardClass(getStatus(l.id))">
 
         <!-- Card header -->
         <div class="p-4 pb-3 border-b border-stone-100">
@@ -295,14 +306,27 @@
                class="mt-2 text-xs text-emerald-700">🌱 <span x-text="l.veganSignal"></span></div>
         </div>
 
+        <!-- Status buttons -->
+        <div class="px-3 py-2 bg-stone-50/80 border-t border-stone-100">
+          <div class="flex items-center gap-1 flex-wrap">
+            <span class="text-[10px] text-slate-400 ml-1">סטטוס:</span>
+            <template x-for="[sv, sl] in Object.entries(statusLabels)" :key="sv">
+              <button @click.stop="setStatus(l.id, sv)"
+                      :class="getStatus(l.id)===sv ? statusActiveClass(sv) : 'bg-white text-slate-500 border-stone-200 hover:bg-stone-100'"
+                      class="px-2 py-0.5 text-[11px] rounded border transition"
+                      x-text="sl"></button>
+            </template>
+          </div>
+        </div>
+
         <!-- CTA -->
-        <div class="px-4 py-3 bg-stone-50 border-t border-stone-100 flex items-center justify-between">
-          <div class="text-xs text-slate-500">
-            <span x-show="l.firstSeenAt" x-text="'נראה לראשונה: '+l.firstSeenAt.substring(0,10)"></span>
+        <div class="px-4 py-2.5 border-t border-stone-100 flex items-center justify-between bg-white">
+          <div class="text-xs text-slate-400">
+            <span x-show="l.firstSeenAt" x-text="l.firstSeenAt.substring(0,10)"></span>
           </div>
           <a :href="l.url" target="_blank" rel="noopener"
-             class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-            פתח מודעה ↗
+             class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition">
+            פתח ↗
           </a>
         </div>
       </article>
@@ -419,17 +443,31 @@
       <div><h4 class="font-semibold text-white mb-2">חישוב הציון</h4>
         <p>13 פרמטרים, 100 נקודות. ניתוח אוטומטי מהמודעות. ? = לא צוין — לשאול בפנייה.</p></div>
     </div>
-    <div class="mt-6 text-xs text-slate-500 text-center">v2.0 · 2026-05-05 · 208 דירות במאגר · מקורות: flatfox</div>
+    <div class="mt-6 text-xs text-slate-500 text-center">v2.0 · 2026-05-05 · 208 דירות במאגר · מקורות: flatfox, weegee</div>
   </div>
 </footer>
+
+<!-- ═══ FLOATING SYNC BUTTON ═══ -->
+<div class="fixed bottom-5 left-4 z-50 flex flex-col items-start gap-2" x-show="pendingSync || syncing">
+  <button @click="syncStatus()"
+          :disabled="syncing"
+          class="flex items-center gap-2 bg-blue-700 hover:bg-blue-800 disabled:opacity-60 text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-lg transition">
+    <span x-show="!syncing">☁️ שמור סטטוסים</span>
+    <span x-show="syncing">⏳ שומר…</span>
+  </button>
+</div>
 
 <script>
 function app() {
   return {
     showMatrix: true,
     showFullTable: false,
-    filters: { published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false },
+    filters: { published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false, status:'active' },
     sortBy: 'score',
+    statusMap: {},
+    statusLabels: {'neu':'◯ חדש','sent':'💬 פניתי','progress':'⏳ בתהליך','visited':'🏠 ביקרתי','skip':'❌ לא רלוונטי','signed':'✅ חתמתי'},
+    pendingSync: false,
+    syncing: false,
 
     init() {
       const today = new Date(); today.setHours(0,0,0,0);
@@ -439,6 +477,43 @@ function app() {
         const delta = Math.round((today - d) / 86400000);
         l.firstSeenBucket = delta === 0 ? 'today' : delta <= 2 ? 'recent' : delta <= 7 ? 'week' : 'older';
       });
+      const saved = localStorage.getItem('shaked_wg_status');
+      if (saved) try { this.statusMap = JSON.parse(saved); } catch(e) {}
+      this.listings.forEach(l => {
+        if (!this.statusMap[l.id] && l.embeddedStatus && l.embeddedStatus !== 'neu')
+          this.statusMap[l.id] = l.embeddedStatus;
+      });
+      localStorage.setItem('shaked_wg_status', JSON.stringify(this.statusMap));
+    },
+
+    getStatus(id) { return this.statusMap[id] || 'neu'; },
+    setStatus(id, sv) {
+      if (sv === 'neu') delete this.statusMap[id]; else this.statusMap[id] = sv;
+      this.statusMap = {...this.statusMap};
+      localStorage.setItem('shaked_wg_status', JSON.stringify(this.statusMap));
+      this.pendingSync = true;
+    },
+    statusCardClass(s) {
+      return {'sent':'border-l-4 border-l-blue-400','progress':'border-l-4 border-l-amber-400','visited':'border-l-4 border-l-purple-400','skip':'opacity-40 border-l-4 border-l-red-300','signed':'border-l-4 border-l-emerald-500 bg-emerald-50/20'}[s] || '';
+    },
+    statusActiveClass(sv) {
+      return {'sent':'bg-blue-100 text-blue-800 border-blue-300','progress':'bg-amber-100 text-amber-800 border-amber-300','visited':'bg-purple-100 text-purple-800 border-purple-300','skip':'bg-red-100 text-red-800 border-red-300','signed':'bg-emerald-100 text-emerald-800 border-emerald-300','neu':'bg-slate-200 text-slate-700 border-slate-300'}[sv] || '';
+    },
+    async syncStatus() {
+      this.syncing = true;
+      try {
+        const tok = 'bmltcm9kYWRtaW46Mkl1ZSBnTUFlIHNSN2YgWlNqNiA4ZGFRIEdJdTM=';
+        const base = 'https://www.nimrod.bio/wp-json';
+        const oldId = localStorage.getItem('shaked_status_mid');
+        if (oldId) await fetch(base+'/wp/v2/media/'+oldId+'?force=1', {method:'DELETE',headers:{Authorization:'Basic '+tok}});
+        const r = await fetch(base+'/wp/v2/media', {method:'POST',headers:{Authorization:'Basic '+tok,'Content-Disposition':'attachment; filename="shaked-status.json"','Content-Type':'application/json'},body:JSON.stringify(this.statusMap)});
+        if (!r.ok) throw new Error(await r.text());
+        const j = await r.json();
+        localStorage.setItem('shaked_status_mid', String(j.id));
+        this.pendingSync = false;
+        alert('✅ סנכרון הצליח! ID: '+j.id);
+      } catch(e) { alert('❌ שגיאה בסנכרון: '+e); }
+      finally { this.syncing = false; }
     },
 
     hm(v, max) {
@@ -469,6 +544,10 @@ function app() {
         if (this.filters.cooking && !l.cookingCulture) return false;
         if (this.filters.tram && !l.tramPrimary) return false;
         if (this.filters.quiet && !l.isQuiet) return false;
+        const st = this.getStatus(l.id);
+        if (this.filters.status === 'active' && (st === 'skip' || st === 'signed')) return false;
+        if (this.filters.status === 'sent' && st !== 'sent') return false;
+        if (this.filters.status === 'progress' && st !== 'progress') return false;
         return true;
       });
       const dir = this.sortBy === 'price_asc' ? 1 : -1;
@@ -482,7 +561,7 @@ function app() {
     },
 
     resetFilters() {
-      this.filters = { published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false };
+      this.filters = { published:'all', budgetMin:'all', budgetMax:'all', avail:'all', source:'all', cooking:false, tram:false, quiet:false, status:'active' };
       this.sortBy = 'score';
     },
 
@@ -490,10 +569,11 @@ function app() {
   {
     "id": "flatfox-86002865",
     "rank": 1,
-    "title": "WG Zimmer",
+    "title": "Kleinbasel · 670 CHF · 01.06",
     "location": "Markgräflerstrasse, 76, 4057 Basel",
     "district": "Kleinbasel",
     "price": 670,
+    "embeddedStatus": "neu",
     "available": "2026-06-01",
     "availBucket": "jun_confirmed",
     "source": "flatfox",
@@ -536,10 +616,11 @@ function app() {
   {
     "id": "flatfox-85978891",
     "rank": 2,
-    "title": "WG Zimmer",
+    "title": "Kleinbasel · 800 CHF · Mai",
     "location": "Kleihüningerstrasse 192, 4057 Basel",
     "district": "Kleinbasel",
     "price": 800,
+    "embeddedStatus": "neu",
     "available": "2026-05-16",
     "availBucket": "flex_window",
     "source": "flatfox",
@@ -582,10 +663,11 @@ function app() {
   {
     "id": "flatfox-86001132",
     "rank": 3,
-    "title": "WG Zimmer",
+    "title": "Kleinbasel · 780 CHF · 01.06",
     "location": "Claragraben 152, 4057 Basel",
     "district": "Kleinbasel",
     "price": 780,
+    "embeddedStatus": "neu",
     "available": "2026-06-01",
     "availBucket": "jun_confirmed",
     "source": "flatfox",
@@ -628,10 +710,11 @@ function app() {
   {
     "id": "flatfox-85976439",
     "rank": 4,
-    "title": "WG Zimmer",
+    "title": "Bachletten · 920 CHF · 01.06",
     "location": "Gundeldingerstrasse 191, 4053 Basel",
     "district": "Bachletten",
     "price": 920,
+    "embeddedStatus": "neu",
     "available": "2026-06-01",
     "availBucket": "jun_confirmed",
     "source": "flatfox",
@@ -674,10 +757,11 @@ function app() {
   {
     "id": "flatfox-85941535",
     "rank": 5,
-    "title": "1 Zimmer-Einzelzimmer",
+    "title": "Kleinbasel · 850 CHF",
     "location": "4057 Basel",
     "district": "Kleinbasel",
     "price": 850,
+    "embeddedStatus": "neu",
     "available": "?",
     "availBucket": "flex_window",
     "source": "flatfox",
@@ -720,10 +804,11 @@ function app() {
   {
     "id": "flatfox-85978488",
     "rank": 6,
-    "title": "1 Zimmer-Wohnung",
+    "title": "St. Alban · 790 CHF · 01.06",
     "location": "Missionsstrasse 34, 4055 Basel",
     "district": "St. Alban",
     "price": 790,
+    "embeddedStatus": "neu",
     "available": "2026-06-01",
     "availBucket": "jun_confirmed",
     "source": "flatfox",
@@ -766,10 +851,11 @@ function app() {
   {
     "id": "flatfox-85979618",
     "rank": 7,
-    "title": "WG Zimmer",
+    "title": "Bachletten · 910 CHF · 2026-07",
     "location": "4053 Basel",
     "district": "Bachletten",
     "price": 910,
+    "embeddedStatus": "neu",
     "available": "2026-07-01",
     "availBucket": "flex_window",
     "source": "flatfox",
@@ -812,10 +898,11 @@ function app() {
   {
     "id": "flatfox-85850422",
     "rank": 8,
-    "title": "1 Zimmer-Wohnung",
+    "title": "Kleinhüningen · 950 CHF · 01.06",
     "location": "Fasanenstr. 140, 4058 Basel",
     "district": "Kleinhüningen",
     "price": 950,
+    "embeddedStatus": "neu",
     "available": "2026-06-01",
     "availBucket": "jun_confirmed",
     "source": "flatfox",
@@ -858,10 +945,11 @@ function app() {
   {
     "id": "flatfox-85993329",
     "rank": 9,
-    "title": "WG Zimmer",
+    "title": "Iselin · 746 CHF · 01.06",
     "location": "4054 Basel",
     "district": "Iselin",
     "price": 746,
+    "embeddedStatus": "neu",
     "available": "2026-06-01",
     "availBucket": "jun_confirmed",
     "source": "flatfox",
@@ -904,10 +992,11 @@ function app() {
   {
     "id": "flatfox-85964075",
     "rank": 10,
-    "title": "WG Zimmer",
+    "title": "Kleinbasel · 1000 CHF · 01.06",
     "location": "4057 Basel",
     "district": "Kleinbasel",
     "price": 1000,
+    "embeddedStatus": "neu",
     "available": "2026-06-01",
     "availBucket": "jun_confirmed",
     "source": "flatfox",
@@ -945,6 +1034,467 @@ function app() {
       "intheat": 2
     },
     "score": 55,
+    "_open": false
+  },
+  {
+    "id": "flatfox-1148577",
+    "rank": 11,
+    "title": "Kleinbasel · 890 CHF",
+    "location": "Inselstrasse, 4057 Basel",
+    "district": "Kleinbasel",
+    "price": 890,
+    "embeddedStatus": "neu",
+    "available": "?",
+    "availBucket": "flex_window",
+    "source": "flatfox",
+    "sourceLabel": "flatfox.ch",
+    "url": "https://flatfox.ch/de/wohnung/inselstrasse-4057-basel/1148577/",
+    "tram": [
+      "2",
+      "3"
+    ],
+    "tramPrimaryCount": 2,
+    "tramSecondaryCount": 0,
+    "tramPrimary": true,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": true,
+    "isStudent": false,
+    "summary": "**English text bellow**  \nWir bieten Ihnen ein gepflegtes möbliertes Zimmer in Basel an. Die Wohnung wird regelmässig von unseren Reinigungsdienst gereinigt – und dieser Service ist bereits in der Miete enthalten. Sauberkeit ist uns sehr wichtig! Das Zimmer ist hell und modern eingerichtet, mit eine…",
+    "firstSeenBucket": "week",
+    "firstSeenAt": "2026-04-30T21:31:43+00:00",
+    "status": "neu",
+    "verifiedActive": true,
+    "s": {
+      "date": 7,
+      "roommates": 7,
+      "lang": 12,
+      "tram": 6,
+      "furn": 4,
+      "bath": 6,
+      "kitchen": 2,
+      "common": 2,
+      "quiet": 4,
+      "student": 2,
+      "balcony": 0,
+      "migros": 1,
+      "intheat": 2
+    },
+    "score": 55,
+    "_open": false
+  },
+  {
+    "id": "flatfox-1206700",
+    "rank": 12,
+    "title": "Kleinbasel · 890 CHF",
+    "location": "Inselstrasse, 4057 Basel",
+    "district": "Kleinbasel",
+    "price": 890,
+    "embeddedStatus": "neu",
+    "available": "?",
+    "availBucket": "flex_window",
+    "source": "flatfox",
+    "sourceLabel": "flatfox.ch",
+    "url": "https://flatfox.ch/de/wohnung/inselstrasse-4057-basel/1206700/",
+    "tram": [
+      "2",
+      "3"
+    ],
+    "tramPrimaryCount": 2,
+    "tramSecondaryCount": 0,
+    "tramPrimary": true,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": true,
+    "isStudent": false,
+    "summary": "**English text bellow**  \nWir bieten Ihnen ein gepflegtes möbliertes Zimmer in Basel an. Die Wohnung wird regelmässig von unseren Reinigungsdienst gereinigt – und dieser Service ist bereits in der Miete enthalten. Sauberkeit ist uns sehr wichtig! Das Zimmer ist hell und modern eingerichtet, mit eine…",
+    "firstSeenBucket": "week",
+    "firstSeenAt": "2026-04-30T21:31:43+00:00",
+    "status": "neu",
+    "verifiedActive": true,
+    "s": {
+      "date": 7,
+      "roommates": 7,
+      "lang": 12,
+      "tram": 6,
+      "furn": 4,
+      "bath": 6,
+      "kitchen": 2,
+      "common": 2,
+      "quiet": 4,
+      "student": 2,
+      "balcony": 0,
+      "migros": 1,
+      "intheat": 2
+    },
+    "score": 55,
+    "_open": false
+  },
+  {
+    "id": "flatfox-86003974",
+    "rank": 13,
+    "title": "Kleinbasel · 980 CHF",
+    "location": "4057 Basel",
+    "district": "Kleinbasel",
+    "price": 980,
+    "embeddedStatus": "neu",
+    "available": "?",
+    "availBucket": "flex_window",
+    "source": "flatfox",
+    "sourceLabel": "flatfox.ch",
+    "url": "https://flatfox.ch/de/wohnung/4057-basel/86003974/",
+    "tram": [
+      "2",
+      "3"
+    ],
+    "tramPrimaryCount": 2,
+    "tramSecondaryCount": 0,
+    "tramPrimary": true,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": true,
+    "isStudent": false,
+    "summary": "Bright room available in a charming 120 m² maisonette located in Kleinbasel, between Claraplatz and Messeplatz.  \nThe apartment is spacious, warm, and full of character, featuring a large, bright living area with an open kitchen, as well as a cozy upstairs lounge with exposed wooden beams and a ston…",
+    "firstSeenBucket": "week",
+    "firstSeenAt": "2026-05-03T15:32:34+00:00",
+    "status": "neu",
+    "verifiedActive": true,
+    "s": {
+      "date": 7,
+      "roommates": 7,
+      "lang": 12,
+      "tram": 6,
+      "furn": 2,
+      "bath": 6,
+      "kitchen": 2,
+      "common": 2,
+      "quiet": 4,
+      "student": 2,
+      "balcony": 3,
+      "migros": 1,
+      "intheat": 1
+    },
+    "score": 55,
+    "_open": false
+  },
+  {
+    "id": "flatfox-85994909",
+    "rank": 14,
+    "title": "Kleinbasel · 900 CHF",
+    "location": "Bärenfeldserstrasse, 3, 4057 Basel",
+    "district": "Kleinbasel",
+    "price": 900,
+    "embeddedStatus": "neu",
+    "available": "?",
+    "availBucket": "flex_window",
+    "source": "flatfox",
+    "sourceLabel": "flatfox.ch",
+    "url": "https://flatfox.ch/de/wohnung/barenfeldserstrasse-3-4057-basel/85994909/",
+    "tram": [
+      "2",
+      "3"
+    ],
+    "tramPrimaryCount": 2,
+    "tramSecondaryCount": 0,
+    "tramPrimary": true,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": true,
+    "isStudent": false,
+    "summary": "Zimmer zur Miete in Basel an der Bärenfeldstrasse, verfügbar ab dem 01.05. Die Wohnung befindet sich in einer ruhigen Lage mit guter Anbindung an den öffentlichen Verkehr.  \n  \nDas Zimmer ist möbliert und verfügt über einen Kleiderschrank, ein Bett sowie einen Schreibtisch mit Stuhl – ideal für Stud…",
+    "firstSeenBucket": "week",
+    "firstSeenAt": "2026-04-30T21:31:43+00:00",
+    "status": "neu",
+    "verifiedActive": true,
+    "s": {
+      "date": 7,
+      "roommates": 7,
+      "lang": 4,
+      "tram": 6,
+      "furn": 4,
+      "bath": 6,
+      "kitchen": 2,
+      "common": 2,
+      "quiet": 4,
+      "student": 6,
+      "balcony": 3,
+      "migros": 1,
+      "intheat": 1
+    },
+    "score": 53,
+    "_open": false
+  },
+  {
+    "id": "flatfox-85976786",
+    "rank": 15,
+    "title": "Iselin · 890 CHF · 01.06",
+    "location": "4054 Basel",
+    "district": "Iselin",
+    "price": 890,
+    "embeddedStatus": "neu",
+    "available": "2026-06-01",
+    "availBucket": "jun_confirmed",
+    "source": "flatfox",
+    "sourceLabel": "flatfox.ch",
+    "url": "https://flatfox.ch/de/wohnung/4054-basel/85976786/",
+    "tram": [
+      "8",
+      "1"
+    ],
+    "tramPrimaryCount": 1,
+    "tramSecondaryCount": 0,
+    "tramPrimary": true,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": false,
+    "isStudent": false,
+    "summary": "Offering a room at an excellent location close to Schützenmattpark available from 01.07.2024.  \nThe owner is a very kind Swiss lady who is living on the 1st floor, and the room is on the 2nd. The floor is about 2 rooms and a bathroom, which would be shared with one guy.  \n  \nThe apartment has its ow…",
+    "firstSeenBucket": "week",
+    "firstSeenAt": "2026-04-30T21:31:43+00:00",
+    "status": "neu",
+    "verifiedActive": false,
+    "s": {
+      "date": 15,
+      "roommates": 7,
+      "lang": 12,
+      "tram": 3,
+      "furn": 2,
+      "bath": 2,
+      "kitchen": 2,
+      "common": 2,
+      "quiet": 2,
+      "student": 2,
+      "balcony": 0,
+      "migros": 1,
+      "intheat": 2
+    },
+    "score": 52,
+    "_open": false
+  },
+  {
+    "id": "weegee-HQ2C.z6Uo",
+    "rank": 16,
+    "title": "12m² WG-Zimmer möbliert, in Gellertstrasse, 34, 4052 Basel",
+    "location": "Gellertstrasse, 34, 4052 Basel",
+    "district": "Gundeli",
+    "price": 750,
+    "embeddedStatus": "neu",
+    "available": "2026-06-01",
+    "availBucket": "jun_confirmed",
+    "source": "weegee",
+    "sourceLabel": "weegee.ch",
+    "url": "https://weegee.ch/de/wg/gellertstrasse,-34-4052-basel/HQ2C.z6Uo",
+    "tram": [],
+    "tramPrimaryCount": 0,
+    "tramSecondaryCount": 0,
+    "tramPrimary": false,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": true,
+    "isStudent": false,
+    "summary": "Zur Wohnung: Die Wohnung liegt im ruhigen Gellertquartier mit viel Grün drum herum und wenig Lärm.",
+    "firstSeenBucket": "today",
+    "firstSeenAt": "2026-05-05T14:27:00+00:00",
+    "status": "neu",
+    "verifiedActive": true,
+    "s": {
+      "date": 15,
+      "roommates": 7,
+      "lang": 4,
+      "tram": 0,
+      "furn": 8,
+      "bath": 6,
+      "kitchen": 2,
+      "common": 2,
+      "quiet": 4,
+      "student": 2,
+      "balcony": 0,
+      "migros": 1,
+      "intheat": 1
+    },
+    "score": 52,
+    "_open": false
+  },
+  {
+    "id": "flatfox-85994847",
+    "rank": 17,
+    "title": "Kleinhüningen · 999 CHF · 01.06",
+    "location": "Klingental 20, 4058 Basel",
+    "district": "Kleinhüningen",
+    "price": 999,
+    "embeddedStatus": "neu",
+    "available": "2026-06-01",
+    "availBucket": "jun_confirmed",
+    "source": "flatfox",
+    "sourceLabel": "flatfox.ch",
+    "url": "https://flatfox.ch/de/wohnung/klingental-20-4058-basel/85994847/",
+    "tram": [
+      "2",
+      "14"
+    ],
+    "tramPrimaryCount": 1,
+    "tramSecondaryCount": 0,
+    "tramPrimary": true,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": false,
+    "isStudent": false,
+    "summary": "diese Bude ist mit ca.27m2 etwas grösser und hat ihr eigene Dusche/WC im Zimmer. Eine kleine Küche befindet sich auf der selben Etage und der grosse Aufenthaltsraum befindet sich im 4.OG für alle Bewohner.  \nWir vermieten unsere möblierten Buden **ausschliesslich** an Studenten oder Azubis, welche h…",
+    "firstSeenBucket": "week",
+    "firstSeenAt": "2026-04-30T21:31:43+00:00",
+    "status": "neu",
+    "verifiedActive": true,
+    "s": {
+      "date": 15,
+      "roommates": 7,
+      "lang": 4,
+      "tram": 3,
+      "furn": 2,
+      "bath": 6,
+      "kitchen": 2,
+      "common": 2,
+      "quiet": 2,
+      "student": 6,
+      "balcony": 0,
+      "migros": 1,
+      "intheat": 1
+    },
+    "score": 51,
+    "_open": false
+  },
+  {
+    "id": "flatfox-86008607",
+    "rank": 18,
+    "title": "St. Alban · 850 CHF",
+    "location": "4055 Basel",
+    "district": "St. Alban",
+    "price": 850,
+    "embeddedStatus": "neu",
+    "available": "?",
+    "availBucket": "flex_window",
+    "source": "flatfox",
+    "sourceLabel": "flatfox.ch",
+    "url": "https://flatfox.ch/de/wohnung/4055-basel/86008607/",
+    "tram": [
+      "3",
+      "10"
+    ],
+    "tramPrimaryCount": 1,
+    "tramSecondaryCount": 1,
+    "tramPrimary": true,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": true,
+    "isStudent": false,
+    "summary": "Ab sofort ist ein wunderschönes Zimmer (ca 16 m2) frei. Die Miete beträgt 700 Fr. zzgl. 150 Fr. Nebenkosten.   \n  \nWir bewohnen ein wunderschönes Altbauhaus mit grossem Garten in einem ruhigen Quartier in St. Louis nahe der Grenze gelegen10 Velo Minuten von der Basler Innenstadt entfernt. Die 3er Tr…",
+    "firstSeenBucket": "today",
+    "firstSeenAt": "2026-05-05T11:44:38+00:00",
+    "status": "neu",
+    "verifiedActive": true,
+    "s": {
+      "date": 7,
+      "roommates": 7,
+      "lang": 4,
+      "tram": 4,
+      "furn": 2,
+      "bath": 6,
+      "kitchen": 2,
+      "common": 3,
+      "quiet": 4,
+      "student": 6,
+      "balcony": 3,
+      "migros": 1,
+      "intheat": 2
+    },
+    "score": 51,
+    "_open": false
+  },
+  {
+    "id": "flatfox-85929381",
+    "rank": 19,
+    "title": "St. Alban · 810 CHF · Mai",
+    "location": "Missionstrasse 41, 4055 Basel",
+    "district": "St. Alban",
+    "price": 810,
+    "embeddedStatus": "neu",
+    "available": "2026-05-01",
+    "availBucket": "flex_window",
+    "source": "flatfox",
+    "sourceLabel": "flatfox.ch",
+    "url": "https://flatfox.ch/de/wohnung/missionstrasse-41-4055-basel/85929381/",
+    "tram": [],
+    "tramPrimaryCount": 0,
+    "tramSecondaryCount": 0,
+    "tramPrimary": false,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": false,
+    "isStudent": false,
+    "summary": "SHARED_FLAT · 1.0 Zimmer · 143 m² · möbliert. Bright room available immediately in a spacious 143 m apartment near Spalentor, featuring a quiet courtyard view,  \n  \n*   large balcony,\n*   two bathrooms (one mostly private for you)\n*   fully equip",
+    "firstSeenBucket": "older",
+    "firstSeenAt": "2026-04-11T01:17:11+00:00",
+    "status": "neu",
+    "verifiedActive": true,
+    "s": {
+      "date": 12,
+      "roommates": 7,
+      "lang": 10,
+      "tram": 0,
+      "furn": 4,
+      "bath": 2,
+      "kitchen": 2,
+      "common": 2,
+      "quiet": 4,
+      "student": 2,
+      "balcony": 3,
+      "migros": 1,
+      "intheat": 1
+    },
+    "score": 50,
+    "_open": false
+  },
+  {
+    "id": "flatfox-85931007",
+    "rank": 20,
+    "title": "St. Alban · 600 CHF · Mai",
+    "location": "Missionstrasse 41, 4055 Basilea",
+    "district": "St. Alban",
+    "price": 600,
+    "embeddedStatus": "neu",
+    "available": "2026-05-01",
+    "availBucket": "flex_window",
+    "source": "flatfox",
+    "sourceLabel": "flatfox.ch",
+    "url": "https://flatfox.ch/de/wohnung/missionstrasse-41-4055-basilea/85931007/",
+    "tram": [],
+    "tramPrimaryCount": 0,
+    "tramSecondaryCount": 0,
+    "tramPrimary": false,
+    "cookingCulture": false,
+    "veganSignal": "kein Signal",
+    "isQuiet": false,
+    "isStudent": false,
+    "summary": "SHARED_FLAT · 1.0 Zimmer · möbliert · Zwischenmiete. Bright room available immediately in a spacious 143 m apartment near Spalentor**, featuring a quiet courtyard view,  \n\n*   large balcony,\n*   two bathrooms (one mostly private for you)\n*   fully equip",
+    "firstSeenBucket": "older",
+    "firstSeenAt": "2026-04-11T01:17:11+00:00",
+    "status": "neu",
+    "verifiedActive": true,
+    "s": {
+      "date": 12,
+      "roommates": 7,
+      "lang": 10,
+      "tram": 0,
+      "furn": 4,
+      "bath": 2,
+      "kitchen": 2,
+      "common": 2,
+      "quiet": 4,
+      "student": 2,
+      "balcony": 3,
+      "migros": 1,
+      "intheat": 1
+    },
+    "score": 50,
     "_open": false
   }
 ]
