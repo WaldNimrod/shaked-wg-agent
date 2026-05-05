@@ -97,11 +97,8 @@ def test_rebuild_html_structure(tmp_path: Path) -> None:
     assert "<html" in content, "Missing <html> tag"
     assert "<head" in content, "Missing <head> tag"
     assert "<body" in content, "Missing <body> tag"
-    # Score table section
     assert "score-matrix-tbody" in content, "Missing score matrix table body"
-    # At least one listing card
     assert "data-listing-card" in content, "Missing listing card(s)"
-    # Check for the Hebrew header text
     assert "דירות לשקד" in content, "Missing Hebrew header content"
 
 
@@ -142,9 +139,10 @@ def test_rebuild_top_n_parameter(tmp_path: Path) -> None:
 
     html = build_html(listings, profile, city=None, top=5)
 
-    # Count <article tags — each listing card is one <article element
-    card_count = html.count("<article ")
-    assert card_count == 5, f"Expected 5 cards with top=5, got {card_count}"
+    # With Alpine.js, listings are embedded as JSON — verify count via data-listing-count
+    assert 'data-listing-count="5"' in html, (
+        f"Expected data-listing-count=5 for top=5, html snippet: {html[html.find('data-listing'):html.find('data-listing')+60]}"
+    )
 
 
 # ---------------------------------------------------------------------------
