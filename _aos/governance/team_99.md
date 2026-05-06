@@ -69,6 +69,7 @@ Canonical reference: `governance/directives/ADR044_AOS_v4_0_0_CHARTER_AND_TRACK_
 12. Never expose internal IPs, ports, or paths in public-facing artifacts.
 13. NEVER write to `_aos/` — governance layer is reserved for AOS governance teams (Team 00/100/110/191) only. Route required roadmap/gate updates via report artifact to Team 100.
 14. **API-only mutations (Iron Rule #7):** When the AOS v3 database is online, structured mutations MUST go through the API; direct YAML edits for canonical fields are forbidden per ADR034.
+15. **Rule-citation discipline.** When citing a rule to justify action or refusal, quote the exact source (file path + line number, or ADR ID + section). If you cannot locate the source after a `grep` of `CLAUDE.md`, your governance contract, and `_aos/governance/`, the rule does not exist in canon — do NOT invent, paraphrase, or act on it. File a clarification request to team_100 first. Violation is a P1 process incident.
 
 ## Offline DB Protocol (ADR034 R8)
 
@@ -217,6 +218,32 @@ For pipeline runs: `POST /api/runs/{run_id}/feedback` with:
 7. Log result artifact to `_COMMUNICATION/team_99/`
 8. Report to Team 00 for routing
 
+## SMTP Infrastructure Constraint (IPv6-only WAN)
+
+**Binding on all spoke deployments running on waldhomeserver.**
+
+waldhomeserver has **IPv6-only WAN** (Bezeq be fiber — no ISP-side NAT64; see ADR048). Any SMTP provider configured for TikTrack or other spokes MUST have a valid AAAA record so the server can reach it natively, without a Tailscale exit-node.
+
+| Provider | AAAA record | Compatible |
+|----------|-------------|------------|
+| `smtp.gmail.com` | ✅ `2a00:1450:4001:c21::6d` | **YES — canonical** |
+| `smtp.inbox.co.il` | ❌ IPv4 only (185.201.148.216) | **NO — incompatible** |
+| Any future provider | Must verify: `dig AAAA <smtp-host>` | PASS = IPv6 record present |
+
+**Canonical SMTP account:** `tiktrack.ops@gmail.com` (dedicated app account, Google Workspace-lite).  
+**Auth:** Google App Password (16-char, no spaces). Credentials stored in `/etc/tiktrack/.env.staging` — NOT in git.
+
+**Verification command (from server):**
+```bash
+python3 -c "import socket; s=socket.create_connection(('smtp.gmail.com',587),timeout=5); s.close(); print('OK')"
+```
+
+**Background:** socat TCP4 proxy (Phase 1) was attempted and failed — socat assumes IPv4 WAN which does not exist without exit-node. Exit-node routed ALL traffic through Mac → tunnel died when Mac offline (5 incidents 4 days). Gmail SMTP (IPv6 native) is the canonical permanent fix. Reference: `GCR_IPV6_SMTP_EXIT_NODE_REMOVAL`, MSG-HUB-20260506-011/012/013.
+
+*log_entry | team_99 | SMTP_CONSTRAINT_ADDED | 2026-05-06 | waldhomeserver IPv6-only WAN — SMTP provider MUST have AAAA record; smtp.gmail.com canonical; ratified team_00 + team_100*
+
+---
+
 ## WAN Dual-Stack Verification (IR#15 + ADR048)
 
 **Mandatory on initial deploy AND after any home-network change** (ISP swap, router replacement, network reconfiguration). Source: ADR048, IR#15. Mitigation matrix SSoT: `lean-kit/modules/12-home-server-infrastructure/WAN_DUAL_STACK_HARDENING_CANON_v1.0.0.md` §10 (six-scenario matrix A–F).
@@ -271,6 +298,45 @@ Operation completed successfully. Logs captured. Service health verified post-ch
 - Questions/escalations: artifact in `_COMMUNICATION/team_99/` → Team 00 routes
 - Never modify application source code on the server — only pull, restart, configure
 
+## Push Authority (origin/main)
+
+team_99 MAY push directly to `origin/main` for the following paths:
+- `_COMMUNICATION/team_99/**` (own inbox/outbox/archive)
+- `_COMMUNICATION/*/REPORT_team_99_*.md` (post-execution reports to other teams)
+- `_COMMUNICATION/*/MSG_team_99_*.md` (canonical responses)
+- `_COMMUNICATION/*/archive/MSG-*.md` (archive moves of own messages)
+- `_archive/**` (deploy logs and operational artifacts only; no application code or governance files)
+
+team_99 MUST NOT push to:
+- `api/`, `ui/`, `scripts/`, `lean-kit/`, `_aos/`, `core/`, `methodology/`
+- `CLAUDE.md` and any `*.md` outside `_COMMUNICATION/` and `_archive/`
+- `_aos/governance/**` (Iron Rule #11 — read-only snapshot)
+
+Rationale: Iron Rule #6 (canonical communication via artifact) is unenforceable without
+server-side teams being able to deliver their canonical artifacts. The forbidden list is
+about source code and governance — not post-execution canonical reports.
+
+## Operational Discipline
+
+### Rule-citation discipline
+
+When citing a rule to justify action or refusal, you MUST:
+
+1. Quote the exact source — file path + line number, OR ADR ID + section.
+2. If you cannot locate the source after `grep` of `CLAUDE.md`, your governance contract,
+   and `_aos/governance/`, the rule does not exist in canon — do NOT invent, paraphrase,
+   or "remember" it.
+3. If you suspect a rule but cannot verify it, file a clarification request to team_100
+   BEFORE acting on the suspicion. Do NOT use unverifiable rules to justify refusing or
+   deferring canonical work.
+
+Violation is a P1 process incident. *(Also Iron Rule #15 above.)*
+
+**Note — Iron Rule #7 / ADR034 does NOT restrict git push.** IR#7 restricts direct YAML
+edits to canonical DB fields (roadmap, work_packages) when the AOS v3 database is online —
+it governs structured data mutations, not git operations. Team_99's git push authority is
+governed exclusively by the Push Authority section above.
+
 ## Canonical Header Format
 ```yaml
 from: Team 99 (Home Server DevOps & IT)
@@ -287,6 +353,10 @@ date: [ISO date]
 writes_to:
 - _COMMUNICATION/team_99/
 - _COMMUNICATION/team_99/*/
+- _COMMUNICATION/*/REPORT_team_99_*.md      # cross-team delivery — post-execution reports
+- _COMMUNICATION/*/MSG_team_99_*.md         # cross-team delivery — canonical responses
+- _COMMUNICATION/*/archive/MSG-*.md         # archive moves of own messages
+- _archive/**                               # deploy/operational archive
 gate_authority:
   L-GATE_SPEC: awareness_only
   L-GATE_BUILD: delegated
@@ -316,3 +386,5 @@ This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
 - See: `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 
 *Governance contract — Team 99 | AOS system*
+
+*log_entry | team_99 | GOVERNANCE_FILE_AMENDED | 2026-05-02 | Push Authority section + Operational Discipline (rule-citation) + IR#15 + Permissions.writes_to cross-team delivery paths added — GCR team_100→team_110, ratified team_00 2026-05-02; assessed team_110 CONCUR_WITH_AMENDMENTS*
