@@ -3,6 +3,7 @@ adr_id: ADR-049
 title: Server-Side Team Push Authority
 status: ACCEPTED
 date: 2026-05-06
+amended: 2026-05-06
 supersedes: ~
 related: [ADR-043, ADR-040]
 authors: [team_110]
@@ -78,6 +79,8 @@ ADR-049 **explicitly excludes** procedural detail of **`POST /api/messaging/send
 | Version | Date | Notes |
 |---------|------|-------|
 | v1.0.0 | 2026-05-06 | Authored Team 110 per mandate **AOS-V4.1-WP-ADR049-SERVER-PUSH** (EXPRESS LOD400-only). |
+| v1.1.0 | 2026-05-06 | team_60 port-registry exception added — §1 carve-out + §3 subsection. (superseded by v1.2.0) |
+| v1.2.0 | 2026-05-07 | Reverted v1.1.0 exception. port-registry.yaml is a governance decision artifact — updated in cowork/IDE sessions (team_200), not server sessions. "SSoT owner" = approval authority, not commit obligation. Zero historical server-session commits to port-registry.yaml confirmed in git log. Approved: team_100 + team_00. |
 
 ## References
 
