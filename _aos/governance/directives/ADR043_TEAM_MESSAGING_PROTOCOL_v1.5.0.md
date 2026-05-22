@@ -1,19 +1,18 @@
 ---
 id: ADR043_TEAM_MESSAGING_PROTOCOL
 title: "ADR-043 — Hub Team Messaging Protocol (from_team / to_team)"
-version: "1.4.0"
-status: SUPERSEDED
-superseded_by: ADR043_TEAM_MESSAGING_PROTOCOL_v1.5.0
-author: Team 170 (Domain Architecture, advisory) / Team 20 (implementation) / Team 110 (v1.1, v1.2 amendments) / Team 100 (v1.3, v1.4 amendments)
+version: "1.5.0"
+status: APPROVED
+author: Team 170 (Domain Architecture, advisory) / Team 20 (implementation) / Team 110 (v1.1, v1.2 amendments) / Team 100 (v1.3, v1.4, v1.5 amendments)
 approved_by:
   - team_00
   - team_100
   - team_110
 approval_date: "2026-04-30"
-amended: "2026-05-03"
-supersedes: ADR043_TEAM_MESSAGING_PROTOCOL_v1.3.0
+amended: "2026-05-11"
+supersedes: ADR043_TEAM_MESSAGING_PROTOCOL_v1.4.0
 adr_ref: ADR-043
-wp_ref: AOS-V327-WP-TEAM-MESSAGING (v1.0.0) / AOS-MSG-BRANCH-INDEPENDENCE-WP001 (v1.1.0) / AOS-MSG-DOMAIN-ROUTING-FIX (v1.2.0 §6) / AOS-MSG-FOLLOWUPS-WP001 (v1.2.0 §6 + §7 archive) / AOS-V4-WP-CONTINUATION-AND-FANOUT (v1.3.0 §13) / AOS-V4.1-WP-MSG-INFRA-HARDENING (v1.4.0 §3 inbox design + §5 Rule 4 + §15 env reference)
+wp_ref: AOS-V327-WP-TEAM-MESSAGING (v1.0.0) / AOS-MSG-BRANCH-INDEPENDENCE-WP001 (v1.1.0) / AOS-MSG-DOMAIN-ROUTING-FIX (v1.2.0 §6) / AOS-MSG-FOLLOWUPS-WP001 (v1.2.0 §6 + §7 archive) / AOS-V4-WP-CONTINUATION-AND-FANOUT (v1.3.0 §13) / AOS-V4.1-WP-MSG-INFRA-HARDENING (v1.4.0 §3 inbox design + §5 Rule 4 + §15 env reference) / AOS-V4.2-WP-MSG-CANON-EXTENSIONS (v1.5.0 §6.1 cross-domain + §16 auth matrix + §5 Rule 5)
 ---
 
 # ADR-043 — Hub Team Messaging Protocol
@@ -87,6 +86,29 @@ The `_COMMUNICATION/team_[ID]/` directory **IS** the team's logical inbox. There
 
 **Canonical helper:** `lean-kit/modules/team-messaging/scripts/msg_preflight.sh` (sourced by commands; sets `API_ONLINE={0,1}` + `API_ERROR` on offline; implements Rule 4 explicitly since v1.4.0).
 
+**Rule 5 — Auth-class fallback (added in v1.5.0).**
+
+The following 4xx responses MUST trigger file-fallback delivery (with mandatory visible warning and audit log entry) rather than EXIT with error:
+- Error code `ACTOR_KEY_NOT_CONFIGURED`
+- HTTP 401 or 403
+
+All other 4xx codes (`UNKNOWN_PROJECT`, `INVALID_PAYLOAD`, `SCHEMA_VALIDATION_ERROR`) retain strict no-fallback semantics. These are programmer errors; silent fallback would mask them.
+
+**Mandatory visible warning (stderr, always):**
+```
+⚠ API auth unavailable (ACTOR_KEY_NOT_CONFIGURED) — falling back to file delivery.
+  Cause: server has no provisioned key for {team_id}.
+  Admin: provision via POST /api/admin/actors/{team_id}/issue-key (team_00 only).
+  MSG WILL be delivered to origin/main via file-fallback; no DB record created.
+```
+
+**Mandatory audit log entry** (JSONL, appended to `_COMMUNICATION/_log/messages.log`):
+```json
+{"ts":"...","op":"auth_fallback","code":"ACTOR_KEY_NOT_CONFIGURED","team_id":"...","api_path":"...","branch":"...","channel":"file_fallback"}
+```
+
+**Implementation:** `_emit_auth_fallback_warning` helper in `msg_preflight.sh` (v1.5.0+); `msg_curl` exit code 3 signals auth-class fallback to callers.
+
 ## 6. Multi-Domain Routing  *(added in v1.2.0)*
 
 **Motivation.** The hub FastAPI process serves all spoke domains from one binary. Prior to v1.2.0, the messaging API hardcoded write/read paths to the hub repo's `_COMMUNICATION/` regardless of the calling spoke session. This caused TikTrack-originated MSGs to land in agents-os; recipients scanning the spoke saw nothing (incident: `MSG-HUB-20260425-007/008/009` from TikTrack landed in agents-os, 2026-04-25).
@@ -108,6 +130,38 @@ The `_COMMUNICATION/team_[ID]/` directory **IS** the team's logical inbox. There
 **Audit affordance.** All multi-domain-aware endpoints MUST include the resolved `project_id` in their JSON response body (e.g. `{"project_id": "tiktrack", "absolute_target": "...", ...}`) so callers can verify routing without re-parsing the response file path.
 
 **Affected endpoints.** All of `/api/messaging/*` — `send`, `inbox`, `archive` (added in v1.2.0 §7) — honor §6.
+
+## 6.1 Cross-Domain File-Fallback Delivery  *(added in v1.5.0)*
+
+**Motivation.** ADR043 §6 defines multi-domain routing for the API path. For the file-fallback path (§4), there was no equivalent. When a spoke session needs to deliver a MSG to a different domain — the canonical example: a spoke filing a GCR to the hub's team_100 — with no API access, there was no canonical path. In practice, sessions manually wrote to the target domain's absolute local path, bypassing the canon entirely (observed in the GCR originating this WP, 2026-05-10).
+
+**Mechanism.** A new helper function `msg_deliver_file_cross_domain` in `msg_preflight.sh` implements the following 4-step flow:
+
+1. The caller writes the MSG file to its own repo at the canonical path:
+   `{spoke_repo_root}/_COMMUNICATION/{to_team}/MSG-HUB-{date}-{nnn}.md`
+2. The caller passes the absolute path of the spoke copy AND the absolute root of the target
+   domain's local clone to `msg_deliver_file_cross_domain`.
+3. The helper copies the MSG to the target domain at:
+   `{target_domain_root}/_COMMUNICATION/{to_team}/MSG-HUB-{date}-{nnn}.md`
+4. The helper invokes `msg_deliver_file` twice: once for the spoke copy (pushes spoke's
+   `origin/main`), and once inside the target domain's git context (pushes target's
+   `origin/main`). Both pushes MUST succeed.
+
+**Caveats and prerequisites:**
+- Both repos MUST be locally cloned and writable at call time.
+- Source repo: `git status --porcelain` MUST be empty (clean working tree) — excluding the new MSG file being delivered.
+- Target repo: `git status --porcelain` MUST be empty (clean working tree).
+- For sandbox environments where target repo is not locally cloned, caller MUST fall through to API path and fail loudly if API is also unavailable.
+
+**§13 update.** When the artifact referenced by `handoff_context_pointer` lives on a non-main branch, the new optional field `mandate_branch` MUST be set in the MSG frontmatter. Receiving sessions MUST `git fetch origin {mandate_branch}` before reading `handoff_context_pointer` when this field is present.
+
+**Canonical helper signature:**
+```bash
+msg_deliver_file_cross_domain <local_spoke_msg_path> <target_domain_root>
+```
+Defined in `lean-kit/modules/team-messaging/scripts/msg_preflight.sh` (v1.5.0+).
+
+**Exit codes:** 0=success, 2=arg/file error, 4=target not git repo, 5=target dirty, 6=copy failed, 7=spoke push failed, 8=target push failed.
 
 ## 7. Single-MSG Archive Endpoint  *(added in v1.2.0)*
 
@@ -183,6 +237,7 @@ Documentation, JSON schema, and helper scripts: `lean-kit/modules/team-messaging
 - **v1.2.0 (2026-04-25):** added formal §6 Multi-Domain Routing (text alignment to implementation shipped in AOS-MSG-DOMAIN-ROUTING-FIX); added §7 Single-MSG Archive Endpoint (`POST /api/messaging/archive`); renumbered prior §6→§8, §7→§9, §8→§10, §9→§11, §10→§12. WP: AOS-MSG-FOLLOWUPS-WP001. Approvers: team_00 + team_100 + team_110.
 - **v1.3.0 (2026-04-30):** added §13 Continuation Prompt Standard — `next_step:`, `handoff_to:`, `handoff_context_pointer:` fields REQUIRED in all formal artifact frontmatter. WP: AOS-V4-WP-CONTINUATION-AND-FANOUT. Approvers: team_00 + team_100.
 - **v1.4.0 (2026-05-03):** added §3.2 Inbox design (flat `team_[ID]/` IS the inbox; `inbox/` subdir rejected with rationale); §5 Rule 4 (HTTP 410 = Mac legacy stub redirect signal, NOT fallback trigger); §15 Environment Variable Reference (three-tier `AOS_API_BASE` resolution chain; per-context env table). WP: AOS-V4.1-WP-MSG-INFRA-HARDENING. Approvers: team_00 + team_100.
+- **v1.5.0 (2026-05-11):** added §6.1 Cross-Domain File-Fallback; added §16 Endpoint Auth Matrix; added §5 Rule 5 (auth-class fallback). §13 updated: `mandate_branch` added as OPTIONAL field on all formal artifacts. `MSG-HUB.template.md` + `HUB_MSG_SCHEMA.json` updated with `mandate_branch` + `artifact_paths` fields. `msg_preflight.sh` updated: R-MSG-02 auth-class fallback in `msg_curl`, 3-tier `msg_detect_project_id` (env / cache / /api/projects / static with smallfarmsagents + nimrod-bio), Tier-0 self-healing in `_probe_api`, `msg_deliver_file_cross_domain`, `msg_next_id`. `core/modules/management/dashboard_routes.py` + `prompts_activation.py` extended with 4 additive WP-overlay params. `AOS_SendMail.md` + `AOS_mail.md` updated. WP: AOS-V4.2-WP-MSG-CANON-EXTENSIONS. Approvers: team_00 + team_100.
 
 ## 13. Continuation Prompt Standard  *(added in v1.3.0)*
 
@@ -194,6 +249,9 @@ Documentation, JSON schema, and helper scripts: `lean-kit/modules/team-messaging
 next_step: "[imperative sentence describing what the receiving agent should do immediately]"
 handoff_to: team_NN   # canonical team identifier; use "team_00" to signal human decision gate
 handoff_context_pointer: path/to/most_critical_file.md  # single most important file to read after this artifact
+mandate_branch: ""    # OPTIONAL (v1.5.0): set when handoff_context_pointer or artifact_paths live on a non-main branch.
+                      # When non-empty, receiving session MUST: git fetch origin {mandate_branch} before access.
+artifact_paths: []    # OPTIONAL (v1.5.0): up to 5 additional paths on mandate_branch (spec, dispatch, etc.)
 ```
 
 ### 13.1 Field semantics
@@ -332,3 +390,25 @@ sudo systemctl is-enabled aos-api    # → "enabled"
 sudo systemctl status aos-api        # → "active (running)"
 # If not enabled: sudo systemctl enable aos-api && sudo systemctl daemon-reload
 ```
+
+## 16. Endpoint Auth Matrix  *(added in v1.5.0)*
+
+**Motivation.** ADR043 §9 lists the API surface but does not specify which headers are required per endpoint. Teams learned the auth model empirically by observing 4xx responses (F-MSG-04). This table is the authoritative reference for all `msg_preflight.sh` callers and AOS slash commands.
+
+**Auth model.** When the server has `AOS_V3_ACTOR_KEYS` set (all production environments), BOTH `X-Actor-Team-Id` AND `X-Actor-Api-Key` headers are required on authenticated endpoints. When `AOS_V3_TRUST_CLIENT_ACTOR=1` (local dev / test only), `X-Actor-Api-Key` is not enforced.
+
+| Endpoint | `X-Actor-Team-Id` | `X-Actor-Api-Key` | `X-Project-Id` | Notes |
+|----------|:-----------------:|:-----------------:|:--------------:|-------|
+| `GET /api/system/health` | — | — | — | Public probe, no auth. Canonical pre-flight probe target (§5). |
+| `GET /api/projects` | REQUIRED | optional | — | Public spoke registry. 200 without key in current implementation. |
+| `POST /api/messaging/send` | REQUIRED | **REQUIRED** | optional (default `agents-os`) | Multi-domain per §6. Missing key → `ACTOR_KEY_NOT_CONFIGURED` → Rule 5 fallback. |
+| `GET /api/messaging/inbox` | REQUIRED | **REQUIRED** | optional | Same auth model as send. |
+| `POST /api/messaging/archive` | REQUIRED | **REQUIRED** | optional | Per §7. |
+| `GET /api/messaging/template` | REQUIRED | optional | — | Read-only; no sensitive data. |
+| `POST /api/messaging/validate` | REQUIRED | optional | — | Dry-run schema check. |
+| `GET /api/prompts/generate` | REQUIRED | **NOT REQUIRED** (public-by-design — see §11 open item) | — | Onboarding prompts. Public-by-design for backward compatibility. |
+| `POST /api/governance/sync` | REQUIRED (`team_00` or `team_100` only) | REQUIRED | optional | Per ADR040 / IR#12. |
+| `POST /api/admin/actors/*` | REQUIRED (`team_00` only) | REQUIRED | — | Key provisioning. Delivered by AOS-V4.1-WP-ACTOR-KEY-PROCEDURE. |
+| `GET /api/events/stream` | REQUIRED | optional | — | SSE streaming for watch mode. |
+
+**Rule 5 cross-reference:** See §5 Rule 5 for the canonical behavior when `ACTOR_KEY_NOT_CONFIGURED` or HTTP 401/403 is returned from authenticated endpoints.
