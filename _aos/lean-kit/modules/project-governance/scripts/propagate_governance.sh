@@ -79,6 +79,8 @@ TARGETS=(
   "/Users/nimrod/Documents/israel Microgreens/IsraelMicrogreens-BlenderV2-Project/_aos/governance"
   "/Users/nimrod/Documents/HobbitHome/_aos/governance"
   "/Users/nimrod/Documents/nimrod-book/_aos/governance"
+  "/Users/nimrod/Documents/nimrod-bio/_aos/governance"
+  "/Users/nimrod/Documents/agros-insite/_aos/governance"
 )
 
 # Validation script path
