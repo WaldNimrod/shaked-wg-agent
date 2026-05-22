@@ -35,9 +35,9 @@
 #     qa slots are RESERVED via fixed offsets.
 # ================================================================
 
-registry_version: "2.4.0"
-previous_version: "2.3.0"
-last_updated: "2026-05-11"
+registry_version: "2.5.0"
+previous_version: "2.4.0"
+last_updated: "2026-05-23"
 owner: "team_60 (ops) + team_100 (arch) — joint authorship; team_00 sign-off for each revision"
 
 ssot_principle: >-
@@ -154,14 +154,13 @@ projects:
         status: ACTIVE
       - env: dev
         host: waldhomeserver
-        postgres: 5432
+        postgres: 5435    # host port override: container tiktrack-phoenix-postgres-dev binds 5435→5432; base_triplet=5432
         ui:       8080
-        api:      8082
+        api:      8082    # not yet active on server (nginx only; uvicorn/API pending)
         runtime_note: >-
-          nginx serving TikTrack UI at 8080 on waldhomeserver. TEAM_00 DECISION
-          2026-04-20 (revised in-session): keep 8080 as canonical dev port for
-          TikTrack on waldhomeserver — port is permanent, not to be retired.
-          API (8082) and Postgres (5432) not yet active on server.
+          nginx serving TikTrack UI at 8080 ACTIVE. TEAM_00 DECISION 2026-04-20: 8080 permanent.
+          Postgres: container tiktrack-phoenix-postgres-dev at host:5435→5432 ACTIVE (base_triplet=5432;
+          host port offset to 5435 — reality-diff 2026-05-23). API (8082) not yet active on server.
         status: ACTIVE
       - env: staging
         host: waldhomeserver
@@ -202,8 +201,7 @@ projects:
         dashboard: 8099
         runtime_note: >-
           Reality-diff 2026-04-20 confirmed ACTIVE (5434/8090/8099 all listening).
-          AOS-V321-WP-SERVER-GITOPS (planned start 2026-04-25) covers DB migration
-          hardening — not initial deployment, which already exists.
+          AOS-V321-WP-SERVER-GITOPS COMPLETE (LOD500_LOCKED) — DB migration hardening done.
         status: ACTIVE
       - env: staging
         host: waldhomeserver
@@ -316,8 +314,8 @@ projects:
         host: mac_local
         wordpress: 8085
         mysql:     3309
-        runtime_note: "WordPress + MySQL 8 — local dev. nimrod-bio/docker-compose.yml (TBD — WP2)."
-        status: ACTIVE      # approved Team 00 2026-05-09; docker-compose pending WP2
+        runtime_note: "WordPress + MySQL 8 — local dev. nimrod-bio/docker-compose.yml (NB-S001-P002-WP001 COMPLETE, LOD500_LOCKED). mac_local ONLY — port 8085 on waldhomeserver belongs to carpa-mio (per R10 v2.5.0 amendment)."
+        status: ACTIVE      # Team 00 sign-off 2026-05-09; NB-S001-P002-WP001 LOD500_LOCKED 2026-05-09
 
   - id: agros-insite
     name: "Agros Insite"
@@ -330,13 +328,14 @@ projects:
       - env: staging
         host: waldhomeserver
         api:      8184
-        postgres: 5536
+        postgres: 5536      # Phase B only — no DB listener in Phase A (not yet active)
         runtime_note: >-
-          FastAPI/uvicorn under systemd (agros-insite-api.service).
-          Docker postgres:16-alpine (Phase B only — no DB listener in Phase A).
+          FastAPI/uvicorn under systemd (agros-insite-api.service) ACTIVE at 127.0.0.1:8184.
+          Docker postgres:16-alpine (Phase B only — 5536 not yet active, Phase A has no DB listener).
           Cloudflare Tunnel → 127.0.0.1:8184.
           Deploy per agros-insite/_COMMUNICATION/team_110/DEPLOY-S001-P001-WP001/DEPLOY_SPEC_AGROS_v1.0.0.md.
-        status: RESERVED    # → ACTIVE after first successful staging deploy
+          Reality-diff 2026-05-23: api 8184 confirmed ACTIVE.
+        status: ACTIVE      # api ACTIVE (reality-diff 2026-05-23); postgres (5536) Phase B — pending
       - env: production
         host: waldhomeserver
         api:      8284
@@ -345,6 +344,34 @@ projects:
           Production. Cloudflare Tunnel (Agros.nimrod.bio) → 127.0.0.1:8284.
           Team 200 QA PASS required before activation.
         status: RESERVED    # → ACTIVE after Team 200 QA PASS + team_00 go/no-go
+
+  - id: carpa-mio
+    name: "Carpa Mio — Trip Log PWA (cm.nimrod.bio)"
+    ownership_team: "team_100 + team_60"
+    canonical_port_decision: >-
+      team_100 + team_00 in-session ratification 2026-05-23 (reality-diff audit).
+      Ratification artifact: _COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.5.0_2026-05-23.md.
+      Ports: site=8085 (nginx static PWA), api=8086 (FastAPI uvicorn — 127.0.0.1 only).
+      waldhomeserver ONLY — no mac_local instance.
+      NOTE: Port 8085 is also used by nimrod-bio on mac_local (WordPress dev sandbox, different host).
+      Per R10 v2.5.0 amendment, same-port cross-host is permitted when explicitly documented.
+      Host scope: site:8085 on waldhomeserver = carpa-mio. site:8085 on mac_local = nimrod-bio.
+    base_triplet:
+      site: 8085
+      api:  8086
+    reserved_offsets: [0]
+    instances:
+      - env: production      # single deployment environment — served via Cloudflare Tunnel, not offset-staged
+        host: waldhomeserver
+        site: 8085
+        api:  8086
+        runtime_note: >-
+          nginx static PWA (carpa-mio/site/) at 0.0.0.0:8085.
+          FastAPI uvicorn (carpa-mio/api/, systemd carpa-mio-api.service) at 127.0.0.1:8086.
+          Cloudflare Tunnel: cm.nimrod.bio → 127.0.0.1:8085.
+          cloudflared daemon at 127.0.0.1:20241 (system_ports, not project listener).
+          Reality-diff 2026-05-23: both ports confirmed ACTIVE.
+        status: ACTIVE
 
   # eyalamit.co.il-legacy: RETIRED 2026-04-20. Out-of-band ports 9090/9091/4444/4445 freed.
   # Containers stopped. Superseded by EyalAmit.co.il-2026 (wp:8088, redis:6380).
@@ -368,6 +395,8 @@ system_ports:
       reason: "System nginx/reverse proxy — registered separately if used for AOS; system otherwise"
     - port: 443
       reason: "System nginx/reverse proxy TLS"
+    - port: 20241
+      reason: "cloudflared daemon local API (Cloudflare Tunnel agent) — 127.0.0.1:20241; system infra service, not a project listener. PID 1116, managed by systemd."
 
 # ================================================================
 # Binding rules (v2.2.0)
@@ -382,7 +411,7 @@ binding_rules:
   R7: "No host runs an unregistered listener beyond one validate_aos cycle. Drift triggers either immediate registration or retirement."
   R8: "project_id (projects[].id) is the IMMUTABLE canonical identifier. Renaming a project requires a canon revision. Display names (name:) may change freely."
   R9: "Registry scope = listeners. Outbound-only clients are NOT registered."
-  R10: "Cross-environment reservation: once a port is assigned to any service of any project in any environment, it is RESERVED globally. No other project may bind that port on any host in any environment, even if the original project has no instance there."
+  R10: "Cross-host reservation: within a single host, once a port is assigned to any service of any project in any environment, it is RESERVED for that project on that host. No two projects may bind the same port on the same host in any environment. Cross-host reuse by different projects (e.g., mac_local vs waldhomeserver) is permitted when each assignment is explicitly documented with host scope noted in canonical_port_decision. Rationale: R10 prevents single-host collisions (original trigger: 2026-04-20 TikTrack staging incident). Extending globally to all hosts simultaneously creates false positives and prohibits legitimate multi-host deployments of distinct services. (Amended v2.5.0, 2026-05-23 — ratification: _COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.5.0_2026-05-23.md.)"
   R11: "Cross-host access: services on waldhomeserver are accessible from Mac and other Tailscale nodes via tailscale_addr (http://100.125.98.56:<port>). Services binding 0.0.0.0 are reachable via Tailscale. Services binding 127.0.0.1 are NOT externally reachable (use reverse proxy or SSH tunnel)."
 
 # ================================================================
@@ -425,7 +454,7 @@ metadata:
   arch_co_owner:         "team_100 (AOS HUB Chief System Architect)"
   principal_sign_off:    "team_00 (Nimrod) — 2026-04-20"
   governance_reference:  "lean-kit/modules/standards-conventions/MULTI_PROJECT_DOCKER_WORKSTATION_v1.0.0.md"
-  ratification_artifact: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.4.0_2026-05-11.md"
+  ratification_artifact: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.5.0_2026-05-23.md"
   ratification_artifact_v220: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.2.0_2026-04-20.md"
   ratification_artifact_v210: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.1.0_2026-04-20.md"
   ratification_artifact_v200: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.0.0_2026-04-20.md"
@@ -433,5 +462,5 @@ metadata:
   approval_artifact:     "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.2.0_2026-04-20.md"
   approval_artifact_v210: "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.1.0_2026-04-20.md"
   approval_artifact_v200: "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.0.0_2026-04-20.md"
-  last_updated:          "2026-05-11"
+  last_updated:          "2026-05-23"
   update_protocol:       "Joint team_60 + team_100 authorship + team_00 sign-off required for any edit"
