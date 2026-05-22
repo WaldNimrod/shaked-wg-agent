@@ -377,6 +377,13 @@ mandatory_reads:
 - _aos/roadmap.yaml
 ```
 
+## uPress FTPS Protocol (External Hosting)
+
+When deploying to **uPress hosting** (`nimrod.bio`, HobbitHome, SmallFarmsAgents):
+- **Canonical FTPS protocol:** `_aos/lean-kit/modules/12-home-server-infrastructure/runbooks/UPRESS_FTPS_PROTOCOL_v1.0.0.md`
+- Read this before any FTP/FTPS connection attempt. The working pattern (prot_c, IP allowlist, port 21 explicit TLS only) is non-obvious.
+- uPress port 21 is **outbound only** — no port-registry.yaml entry required (external host, not a local listener).
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).

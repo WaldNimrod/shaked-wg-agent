@@ -194,6 +194,12 @@ mandatory_reads:
 - _COMMUNICATION/agents_os/pipeline_state.json
 ```
 
+## External Hosting — Infrastructure Runbooks
+
+When deploying to **uPress hosting** (`nimrod.bio` — SmallFarmsAgents, HobbitHome, nimrod-bio):
+- **Canonical FTPS protocol:** `_aos/lean-kit/modules/12-home-server-infrastructure/runbooks/UPRESS_FTPS_PROTOCOL_v1.0.0.md`
+- Read this before any FTP/FTPS connection attempt. The working pattern is non-obvious (prot_c, IP allowlist, port 21 explicit TLS only).
+
 ## Governance Change Requests
 
 This contract is managed by Team 00 + Team 100 in `core/governance/` (SSoT).
