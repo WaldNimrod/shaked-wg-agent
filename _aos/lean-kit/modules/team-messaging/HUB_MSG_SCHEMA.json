@@ -81,6 +81,17 @@
         { "type": "string" },
         { "type": "array", "items": { "type": "string" }, "minItems": 1, "maxItems": 3 }
       ]
+    },
+    "mandate_branch": {
+      "type": "string",
+      "description": "Optional. Git branch where handoff_context_pointer and artifact_paths live. OMIT or empty when artifacts on main. When non-empty, receiving session MUST run 'git fetch origin {mandate_branch}' before access. ADR043 v1.5.0 §6.1."
+    },
+    "artifact_paths": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 0,
+      "maxItems": 5,
+      "description": "Optional. Up to 5 additional file paths on mandate_branch (spec, dispatch, build report, etc.). Only meaningful when mandate_branch is set. ADR043 v1.5.0 §6.1."
     }
   },
   "if": {

@@ -35,9 +35,9 @@
 #     qa slots are RESERVED via fixed offsets.
 # ================================================================
 
-registry_version: "2.3.0"
-previous_version: "2.2.0"
-last_updated: "2026-04-23"
+registry_version: "2.4.0"
+previous_version: "2.3.0"
+last_updated: "2026-05-11"
 owner: "team_60 (ops) + team_100 (arch) — joint authorship; team_00 sign-off for each revision"
 
 ssot_principle: >-
@@ -103,6 +103,7 @@ hosts:
     dns: "waldhomeserver.home-nimrod.ts.net"
     lan: "10.100.102.2"
     tailscale: "100.125.98.56"
+    tailscale_addr: "http://100.125.98.56"
     ssh_user: "nimrodw"           # waldhomeserver Linux user (differs from Mac user nimrod)
     reality_diff: true            # SSH + ss -tlnp on CI (controlled by CHECK_24_REALITY_DIFF)
 
@@ -299,6 +300,25 @@ projects:
         runtime_note: "Isolated WP dev sandbox — /Users/nimrod/Documents/wordpress-dev/docker-compose.yml"
         status: ACTIVE
 
+  - id: nimrod-bio
+    name: nimrod.bio — Personal Site (WordPress)
+    ownership_team: "team_100 + team_60"
+    canonical_port_decision: >-
+      Team 100 + Team 60 joint authorship 2026-05-09. Team 00 sign-off required.
+      Ratification artifact: _COMMUNICATION/team_100/RATIFICATION_PORT_NIMRODBIO_v1.0.0.md.
+      Ports: wordpress=8085 (next free after 8083/8084), mysql=3309 (next free after 3308).
+    base_triplet:
+      wordpress: 8085
+      mysql:     3309
+    reserved_offsets: [0]
+    instances:
+      - env: dev
+        host: mac_local
+        wordpress: 8085
+        mysql:     3309
+        runtime_note: "WordPress + MySQL 8 — local dev. nimrod-bio/docker-compose.yml (TBD — WP2)."
+        status: ACTIVE      # approved Team 00 2026-05-09; docker-compose pending WP2
+
   - id: agros-insite
     name: "Agros Insite"
     ownership_team: "team_110 + team_100"
@@ -363,6 +383,7 @@ binding_rules:
   R8: "project_id (projects[].id) is the IMMUTABLE canonical identifier. Renaming a project requires a canon revision. Display names (name:) may change freely."
   R9: "Registry scope = listeners. Outbound-only clients are NOT registered."
   R10: "Cross-environment reservation: once a port is assigned to any service of any project in any environment, it is RESERVED globally. No other project may bind that port on any host in any environment, even if the original project has no instance there."
+  R11: "Cross-host access: services on waldhomeserver are accessible from Mac and other Tailscale nodes via tailscale_addr (http://100.125.98.56:<port>). Services binding 0.0.0.0 are reachable via Tailscale. Services binding 127.0.0.1 are NOT externally reachable (use reverse proxy or SSH tunnel)."
 
 # ================================================================
 # Validation
@@ -404,7 +425,7 @@ metadata:
   arch_co_owner:         "team_100 (AOS HUB Chief System Architect)"
   principal_sign_off:    "team_00 (Nimrod) — 2026-04-20"
   governance_reference:  "lean-kit/modules/standards-conventions/MULTI_PROJECT_DOCKER_WORKSTATION_v1.0.0.md"
-  ratification_artifact: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.3.0_2026-04-23.md"
+  ratification_artifact: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.4.0_2026-05-11.md"
   ratification_artifact_v220: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.2.0_2026-04-20.md"
   ratification_artifact_v210: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.1.0_2026-04-20.md"
   ratification_artifact_v200: "_COMMUNICATION/team_100/RATIFICATION_PORT_CANON_v2.0.0_2026-04-20.md"
@@ -412,5 +433,5 @@ metadata:
   approval_artifact:     "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.2.0_2026-04-20.md"
   approval_artifact_v210: "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.1.0_2026-04-20.md"
   approval_artifact_v200: "_COMMUNICATION/team_00/APPROVAL_PORT_CANON_V2.0.0_2026-04-20.md"
-  last_updated:          "2026-04-23"
+  last_updated:          "2026-05-11"
   update_protocol:       "Joint team_60 + team_100 authorship + team_00 sign-off required for any edit"

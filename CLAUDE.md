@@ -20,7 +20,7 @@ You are working inside an **AOS spoke** — repo `shaked-wg-agent`, profile `L0`
 - **Path:** `/Users/nimrod/Documents/shaked-wg-agent`
 - **Profile:** `L0`
 - **AOS hub:** `/Users/nimrod/Documents/agents-os`
-- **Domain:** `shaked-wg`
+- **Domain:** `shaked-wg-agent`
 
 ## Mandatory session startup (canonical — uniform across all AOS domains)
 

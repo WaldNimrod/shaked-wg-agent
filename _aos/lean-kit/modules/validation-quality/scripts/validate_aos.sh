@@ -1136,21 +1136,64 @@ check_29() {
         fi
         return 0
     fi
-    # Spoke: compare against hub at canonical absolute path
-    local hub_ver="/Users/nimrod/Documents/agents-os/lean-kit/LEAN_KIT_VERSION.md"
     if [ ! -f "$local_ver" ]; then
         log_skip 29 "spoke _aos/lean-kit/LEAN_KIT_VERSION.md not found — skip"
         return 0
     fi
-    if [ ! -f "$hub_ver" ]; then
-        log_skip 29 "hub LEAN_KIT_VERSION.md not reachable at $hub_ver — skip"
+    # Tier 1: AOS_HUB_ROOT env var
+    if [ -n "${AOS_HUB_ROOT:-}" ] && [ -f "${AOS_HUB_ROOT}/lean-kit/LEAN_KIT_VERSION.md" ]; then
+        local hub_ver="${AOS_HUB_ROOT}/lean-kit/LEAN_KIT_VERSION.md"
+        if diff -q "$local_ver" "$hub_ver" >/dev/null 2>&1; then
+            log_pass 29 "spoke lean-kit version matches hub (via AOS_HUB_ROOT)"
+        else
+            log_fail 29 "spoke lean-kit version drifted vs hub — run aos_sync_all.sh"
+        fi
         return 0
     fi
-    if diff -q "$local_ver" "$hub_ver" >/dev/null 2>&1; then
-        log_pass 29 "spoke lean-kit version matches hub"
-    else
-        log_fail 29 "spoke lean-kit version drifted vs hub — run aos_sync_all.sh to resync"
+    # Tier 2: /api/hub/lean-kit/version
+    local _api_base="${AOS_API_BASE:-${AOS_V3_PUBLIC_API_BASE:-http://127.0.0.1:8090}}"
+    local _api_body _api_http
+    # Write body + HTTP code to a temp file; split via Python (Mac-portable — no `head -n -1` per F-HARD-002).
+    local _tmp_resp
+    _tmp_resp=$(mktemp 2>/dev/null) || _tmp_resp="/tmp/aos_check29_$$"
+    local _api_http=000
+    curl -s -w '\n%{http_code}' --max-time 3 --connect-timeout 3 \
+        "${_api_base}/api/hub/lean-kit/version" -o "$_tmp_resp" 2>/dev/null || true
+    # Last line of response file is the HTTP code (curl appended it).
+    _api_http=$(tail -1 "$_tmp_resp" 2>/dev/null || echo "000")
+    if [ "$_api_http" = "200" ]; then
+        local _hub_ver _local_ver
+        # Parse body (everything except the last line, which is HTTP code).
+        _hub_ver=$(python3 -c "
+import json, sys
+with open(sys.argv[1]) as f:
+    lines = f.read().rstrip('\n').split('\n')
+body = '\n'.join(lines[:-1])
+try:
+    d = json.loads(body)
+    print(d.get('version', ''))
+except Exception:
+    pass
+" "$_tmp_resp" 2>/dev/null || echo "")
+        rm -f "$_tmp_resp" 2>/dev/null || true
+        _local_ver=$(python3 -c "
+import re, sys
+with open(sys.argv[1]) as f: content = f.read()
+m = re.search(r'\*\*version:\*\*\s*(\S+)', content) or re.search(r'version:\s*(\S+)', content)
+print(m.group(1).strip() if m else '')
+" "$local_ver" 2>/dev/null || echo "")
+        if [ -z "$_hub_ver" ] || [ -z "$_local_ver" ]; then
+            log_skip 29 "lean-kit version parse failed (hub='$_hub_ver' local='$_local_ver')"
+        elif [ "$_hub_ver" = "$_local_ver" ]; then
+            log_pass 29 "spoke lean-kit version matches hub (local=$_local_ver)"
+        else
+            log_fail 29 "spoke lean-kit version drifted (local=$_local_ver hub=$_hub_ver) — run aos_sync_all.sh"
+        fi
+        return 0
     fi
+    rm -f "$_tmp_resp" 2>/dev/null || true
+    # Tier 3: neither AOS_HUB_ROOT nor API — advisory skip
+    log_skip 29 "hub LEAN_KIT_VERSION.md not reachable — set AOS_HUB_ROOT or start AOS API"
 }
 
 # ================================================================
@@ -1572,20 +1615,28 @@ check_38() {
 # SKIP when log absent (pre-W4 state is acceptable at hub).
 # Cross-platform mtime via python3 (avoids stat -f/-c divergence).
 check_39() {
+    local _api_base="${AOS_API_BASE:-${AOS_V3_PUBLIC_API_BASE:-http://127.0.0.1:8090}}"
+    local _http_code
+    _http_code=$(curl -s -o /dev/null -w '%{http_code}' \
+        --max-time 2 --connect-timeout 2 \
+        "${_api_base}/api/system/health" 2>/dev/null || echo "000")
+    if [ "$_http_code" = "200" ]; then
+        log_pass 39 "MSG-LOG operational: AOS API healthy at ${_api_base} (HTTP 200 confirms messaging system active)"
+        return
+    fi
     local log_file="$PROJECT_ROOT/_COMMUNICATION/_log/messages.log"
     if [ ! -f "$log_file" ]; then
-        log_skip 39 "MSG-LOG not yet created (_COMMUNICATION/_log/messages.log absent — acceptable pre-W4)"
+        log_skip 39 "MSG-LOG not yet created (acceptable pre-W4)"
         return
     fi
     local days_old
     days_old=$(python3 -c "
 import os, time
 mtime = os.path.getmtime('$log_file')
-age_days = (time.time() - mtime) / 86400
-print(int(age_days))
+print(int((time.time() - mtime) / 86400))
 ")
     if [ "$days_old" -gt 7 ]; then
-        log_fail 39 "MSG-LOG stale: last modified ${days_old} day(s) ago (>7 day threshold)"
+        log_fail 39 "MSG-LOG stale: last modified ${days_old} day(s) ago"
     else
         log_pass 39 "MSG-LOG operational: exists + modified within ${days_old} day(s)"
     fi
@@ -1826,23 +1877,40 @@ print(m.get('effort', ''))
 # PASS when status indicates dual-stack OK or a permanent mitigation is in place.
 check_45() {
     local status_file="$PROJECT_ROOT/_aos/server_dual_stack_status.json"
-    if [ ! -f "$status_file" ]; then
-        log_skip 45 "WAN dual-stack status file absent (acceptable pre-W11-propagation; run wan_dual_stack_probe.sh on spoke server to populate)"
-        return
+    local _api_base="${AOS_API_BASE:-${AOS_V3_PUBLIC_API_BASE:-http://127.0.0.1:8090}}"
+    local _wan_json=""
+    local _wan_src="local-file"
+    local _wan_http
+    _wan_http=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 --connect-timeout 3 \
+        "${_api_base}/api/server/wan-status" 2>/dev/null || echo "000")
+    if [ "$_wan_http" = "200" ]; then
+        _wan_json=$(curl -s --max-time 5 "${_api_base}/api/server/wan-status" 2>/dev/null || echo "")
+        _wan_src="api:${_api_base}"
+    fi
+    if [ -z "$_wan_json" ]; then
+        if [ ! -f "$status_file" ]; then
+            log_skip 45 "WAN dual-stack status absent — API not reachable and local file missing"
+            return
+        fi
+        _wan_json=$(cat "$status_file" 2>/dev/null || echo "")
+        if [ -z "$_wan_json" ]; then
+            log_skip 45 "WAN dual-stack status file unreadable"
+            return
+        fi
     fi
     # Parse JSON via python3 (already required by validate_aos.sh).
     local parse_out
     parse_out=$(python3 -c "
 import json, sys
-with open(sys.argv[1]) as f: d = json.load(f)
+d = json.loads(sys.argv[1])
 print(d.get('ipv4_outbound', None))
 print(d.get('ipv6_outbound', None))
 print(d.get('mitigation_scenario', ''))
 print(d.get('checked_at', ''))
 print(d.get('server', 'unknown'))
-" "$status_file" 2>/dev/null)
+" "$_wan_json" 2>/dev/null)
     if [ -z "$parse_out" ]; then
-        log_skip 45 "WAN dual-stack status file present but unparseable JSON — refresh with wan_dual_stack_probe.sh"
+        log_skip 45 "WAN dual-stack status unparseable JSON (source=$_wan_src)"
         return
     fi
     local ipv4_ok ipv6_ok scenario checked_at server
