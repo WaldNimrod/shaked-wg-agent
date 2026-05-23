@@ -342,11 +342,23 @@ MUST be consistent with this table.
 |------|:-------------------:|:---------------------:|:----------------:|:------------------:|:-----------------:|
 | team_00 | W | W | R | W (via hub) | W |
 | team_100 | W | W | R | R | W (own dir) |
-| team_110 | — | W (mandated) | R | R | W (own dir) |
+| team_110 | W (exec API)¹ | W (exec mandate) | R | R | W (own dir + exec routing)² |
 | team_191 | mandate only | mandate only | R | propagation | W (own dir) |
 | team_10/20/30/40/50/60/70/80/90/99/170/190 | — | — | R | R | W (own dir) |
 
 **W** = write authorized. **R** = read only. **—** = forbidden (no writes without explicit Team 00 mandate).
+
+> ¹ **team_110 exec API:** When holding a mandate with `execution_authority: full` (ADR045),
+> team_110 MAY issue `POST /api/work-packages/{wp_id}` for `status`, `lod_status`,
+> `current_lean_gate` fields only. All other `_aos/roadmap.yaml` mutations remain team_100-only.
+>
+> ² **team_110 exec routing:** When holding a mandate with `execution_authority: full` (ADR045),
+> team_110 MAY deliver mandates and verdict artifacts to `_COMMUNICATION/team_90/`,
+> `_COMMUNICATION/team_190/`, `_COMMUNICATION/team_191/`. This is inter-team inbox delivery
+> per the Inbox delivery exception below — not a broad `_COMMUNICATION/` write grant.
+> All other non-own-dir artifact types in `_COMMUNICATION/` remain forbidden.
+>
+> Reference: `governance/directives/ADR045_TEAM_110_AUTONOMOUS_EXECUTION_v1.0.0.md`
 
 **Inbox delivery exception (all teams):** Any team may write `MSG-*.md`, `*-RESPONSE.md`, mandate, and verdict artifacts to **any** `_COMMUNICATION/team_[ID]/` folder for inter-team message delivery. This is the only cross-team write permitted in `_COMMUNICATION/`. Receiving team folders are publicly writable for these inter-team artifact types only. All other artifact types remain own-dir-only.
 

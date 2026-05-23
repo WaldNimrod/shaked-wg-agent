@@ -12,7 +12,7 @@
 - Delegated GATE_2 approval authority for AOS domain (when team_110 is designated).
 - System fallback approver for either domain when the domain architect is inactive.
 - GATE_4 Phase 4.2 co-owner for AOS domain (architectural sign-off on completed implementation). (GATE_6 = retired alias for this phase.)
-- Coordinates domain IDE architects (team_110, team_110) and execution teams (team_60, team_50).
+- Coordinates domain IDE architects (team_110) and execution teams (team_60, team_50). When team_110 holds an active `execution_authority: full` mandate (ADR045), team_100 performs administrative visibility only and receives a COMPLETION_REPORT upon closure — no mid-execution approvals required from team_100.
 
 ## Track Model Authority (v4.0.0 — ADR044)
 
@@ -100,6 +100,13 @@ Applies only when working in the **TikTrack** product domain. Full rules: `_aos/
 
 ## WP Closure Protocol (mandatory after L-GATE_VALIDATE PASS)
 
+**Delegation when team_110 holds active execution mandate (`execution_authority: full` — ADR045):**
+If the closing WP was executed under an `execution_authority: full` mandate held by team_110,
+team_110 owns all three closure steps per ADR045 R2. team_100 receives the COMPLETION_REPORT
+only. Fallback to team_100-owned closure: (a) team_110 session ended without LOD500_LOCKED,
+or (b) team_00 issues explicit override.
+
+**Default (no active team_110 execution mandate):**
 When Team 190 issues an L-GATE_VALIDATE PASS verdict, team_100 MUST execute all three steps before a WP is considered closed. **Partial execution = WP is NOT closed.**
 
 | Step | Action | Reference |
