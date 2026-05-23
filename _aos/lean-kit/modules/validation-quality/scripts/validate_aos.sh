@@ -1614,7 +1614,13 @@ check_38() {
 # Verify _COMMUNICATION/_log/messages.log exists and was modified within 7 days.
 # SKIP when log absent (pre-W4 state is acceptable at hub).
 # Cross-platform mtime via python3 (avoids stat -f/-c divergence).
+#
+# 2026-05-23 (AOS-V4.3-WP-CHECK39-MAC-TAILSCALE-FALLBACK):
+#   On HTTP 410 from a NON-canonical endpoint (Mac legacy-stub signal per ADR043 v1.5.0
+#   §5 Rule 4), retry once against the canonical waldhomeserver Tailscale URL before
+#   falling through to the file-mtime path. Surfaces an actionable advisory either way.
 check_39() {
+    local _canonical_api="http://100.125.98.56:8090"   # waldhomeserver Tailscale (ADR043 v1.5.0 §15.4)
     local _api_base="${AOS_API_BASE:-${AOS_V3_PUBLIC_API_BASE:-http://127.0.0.1:8090}}"
     local _http_code
     _http_code=$(curl -s -o /dev/null -w '%{http_code}' \
@@ -1623,6 +1629,20 @@ check_39() {
     if [ "$_http_code" = "200" ]; then
         log_pass 39 "MSG-LOG operational: AOS API healthy at ${_api_base} (HTTP 200 confirms messaging system active)"
         return
+    fi
+    # ADR043 v1.5.0 §5 Rule 4: HTTP 410 = Mac legacy-stub signal, not silent fallback.
+    # Retry against canonical Tailscale URL when initial endpoint differs.
+    if [ "$_http_code" = "410" ] && [ "$_api_base" != "$_canonical_api" ]; then
+        local _retry_code
+        _retry_code=$(curl -s -o /dev/null -w '%{http_code}' \
+            --max-time 2 --connect-timeout 2 \
+            "${_canonical_api}/api/system/health" 2>/dev/null || echo "000")
+        if [ "$_retry_code" = "200" ]; then
+            log_pass 39 "MSG-LOG operational: AOS API healthy at ${_canonical_api} (initial ${_api_base} returned HTTP 410 = Mac legacy stub; canonical Tailscale endpoint responded). Advisory: export AOS_API_BASE=${_canonical_api} in your shell profile to skip the retry (ADR043 v1.5.0 §15.4)."
+            return
+        fi
+        # Retry failed too → fall through to file path with full advisory below.
+        printf '  [INFO 39] %s\n' "ADR043 §5 Rule 4: initial ${_api_base} HTTP 410 (Mac legacy stub); canonical ${_canonical_api} HTTP ${_retry_code}. Proceeding to file fallback. Set AOS_API_BASE=${_canonical_api} when Tailscale is reachable." >&2
     fi
     local log_file="$PROJECT_ROOT/_COMMUNICATION/_log/messages.log"
     if [ ! -f "$log_file" ]; then

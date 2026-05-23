@@ -1,0 +1,81 @@
+---
+# MANDATE TEMPLATE — Team 110 WP Execution (ADR045)
+# Usage: copy this file, fill placeholders, deliver to _COMMUNICATION/team_110/
+# Trigger: presence of execution_authority: full activates team_110 autonomous execution mode
+
+id: MANDATE_{WP_ID}_TEAM110_EXECUTION_v1.0.0
+from: team_100 | team_00          # issuing team
+to: team_110                       # AOS Domain Architect
+date: "{YYYY-MM-DD}"
+type: EXECUTION_MANDATE
+wp: "{WP_ID}"
+project: agents-os
+branch: "{BRANCH_NAME}"
+execution_authority: full          # ← REQUIRED field — activates ADR045 autonomous mode
+status: ACTIVE
+spec_ref: "{LOD200_OR_LOD400_PATH}"
+---
+
+# Execution Mandate — {WP_ID}
+
+> **execution_authority: full** — team_110 is the primary WP executor for this mandate.
+> team_100 will receive COMPLETION_REPORT upon LOD500_LOCKED. No mid-execution approvals needed.
+> Reference: `governance/directives/ADR045_TEAM_110_AUTONOMOUS_EXECUTION_v1.0.0.md`
+
+---
+
+## §1 Scope
+
+{Brief description of what the WP implements and why.}
+
+---
+
+## §2 Spec Reference
+
+Read before beginning:
+- `{LOD200_OR_LOD400_PATH}` — implementation spec
+- `{ANY_ADDITIONAL_CONTEXT_DOCS}`
+
+---
+
+## §3 Acceptance Criteria (summary)
+
+{List ACs from LOD400 — brief, one line each. Full detail in spec_ref.}
+
+- AC-1: {description}
+- AC-2: {description}
+- ...
+
+---
+
+## §4 Execution sequence
+
+team_110 executes in order:
+1. Implement all ACs per spec
+2. Route L-GATE_BUILD mandate → team_90 (`_COMMUNICATION/team_90/MANDATE_{WP_ID}_L-GATE_BUILD_v1.0.0.md`)
+3. On team_90 PASS/PASS_WITH_FINDINGS: route L-GATE_VALIDATE mandate → team_190
+4. On team_190 PASS/PASS_WITH_FINDINGS: execute ADR042 3-step closure
+   - Step 1: Write `_archive/{WP_ID}/ARCHIVE_MANIFEST.md`
+   - Step 2: `POST /api/work-packages/{WP_ID}` → `status: COMPLETE, lod_status: LOD500_LOCKED`
+     (or file-canonical per ADR034 R10 if hub-native WP)
+   - Step 3: If `core/governance/` modified → `bash scripts/aos_sync_all.sh --all`
+5. File COMPLETION_REPORT → `_COMMUNICATION/team_110/{WP_ID}/COMPLETION_REPORT_{WP_ID}_v1.0.0.md`
+
+---
+
+## §5 Completion criteria
+
+WP is complete when:
+- [ ] All ACs verified
+- [ ] team_90 L-GATE_BUILD: PASS or PASS_WITH_FINDINGS (0 blockers)
+- [ ] team_190 L-GATE_VALIDATE: PASS or PASS_WITH_FINDINGS (0 blockers)
+- [ ] `_archive/{WP_ID}/ARCHIVE_MANIFEST.md` exists
+- [ ] `metadata.yaml` → `status: COMPLETE, lod_status: LOD500_LOCKED`
+- [ ] `_aos/roadmap.yaml` WP entry updated (closed_at, COMPLETE status)
+- [ ] `validate_aos.sh` Check 32 PASS
+- [ ] COMPLETION_REPORT filed to team_00 + team_100
+- [ ] Merged to main + pushed to origin
+
+---
+
+*MANDATE_TEMPLATE | TEAM_110_WP_EXECUTION | ADR045 | generated {DATE}*
