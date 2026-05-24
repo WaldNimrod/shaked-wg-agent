@@ -1972,10 +1972,34 @@ except Exception:
     log_pass 45 "WAN dual-stack — server='$server' ipv4=$ipv4_ok ipv6=$ipv6_ok scenario='$scenario' (checked $checked_at)"
 }
 
+# Check 46: Registry SSoT drift — `_aos/projects.yaml` is the canonical project
+# registry; derived surfaces (currently: msg_preflight.sh Tier 3 case block)
+# MUST match a fresh derivation. Drift = FAIL.
+# Authority: ADR049 Registry SSoT Lockdown.
+# Hub-only. SKIP on spokes (they don't carry projects.yaml or the derived files).
+check_46() {
+    # Spoke shortcut: spokes have no _aos/projects.yaml and no derived surfaces.
+    if [ ! -f "$PROJECT_ROOT/_aos/projects.yaml" ]; then
+        log_skip 46 "not hub — _aos/projects.yaml absent (spokes skip registry SSoT drift check)"
+        return
+    fi
+    local sync_script="$PROJECT_ROOT/scripts/sync_derived_registries.sh"
+    if [ ! -x "$sync_script" ]; then
+        log_skip 46 "sync_derived_registries.sh not found or not executable (pre-ADR049 hub)"
+        return
+    fi
+    local out
+    if out=$(bash "$sync_script" --check 2>&1); then
+        log_pass 46 "Registry SSoT — derived surfaces in sync with _aos/projects.yaml (ADR049)"
+    else
+        log_fail 46 "Registry SSoT DRIFT — derived surface(s) do not match _aos/projects.yaml. Fix: bash scripts/sync_derived_registries.sh. Detail: $out"
+    fi
+}
+
 # ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 45 checks on $AOS_DIR (active_modules: $ACTIVE_MODULES_MODE, context: ${CONTEXT:-?})"
+echo "validate_aos.sh — running up to 46 checks on $AOS_DIR (active_modules: $ACTIVE_MODULES_MODE, context: ${CONTEXT:-?})"
 echo "================================================="
 
 check_1
@@ -2023,6 +2047,7 @@ check_42
 check_43
 check_44
 check_45
+check_46
 
 echo ""
 echo "================================================="

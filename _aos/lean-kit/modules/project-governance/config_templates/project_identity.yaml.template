@@ -14,7 +14,10 @@ profile: "{{profile}}"                    # L0 | L2 | L2.5 | L3
 
 # Hub-spoke topology
 is_hub: {{is_hub}}                        # true only for agents-os
-managed_projects: {{managed_projects}}    # list of project_ids this hub manages (empty for spokes)
+# managed_projects field DEPRECATED 2026-05-25 (ADR049 Registry SSoT Lockdown).
+# Canonical project registry is `_aos/projects.yaml` (hub-only). New projects
+# created via /AOS_project-init are appended there. No code reads
+# `managed_projects` — do NOT reintroduce this field in spokes or the hub.
 
 # Boundary enforcement
 boundaries:

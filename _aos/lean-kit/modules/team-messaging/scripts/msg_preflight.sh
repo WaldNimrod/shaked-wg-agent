@@ -322,18 +322,29 @@ PYEOF
     fi
   fi
 
-  # Tier 3: static fallback (includes all registered spokes as of 2026-05-11).
+  # Tier 3: static fallback.
+  # The following case block is AUTO-GENERATED from _aos/projects.yaml by
+  # scripts/sync_derived_registries.sh. Do not edit by hand — drift is enforced
+  # by validate_aos.sh Check 46. Add new spokes by running /AOS_project-init
+  # (which appends to projects.yaml), then re-run sync_derived_registries.sh.
+  # Authority: ADR049 Registry SSoT Lockdown.
+# BEGIN GENERATED FROM _aos/projects.yaml — DO NOT EDIT BY HAND
+  # Regenerate via: bash scripts/sync_derived_registries.sh
+  # Validate via: validate_aos.sh Check 46 (drift = FAIL)
   case "$remote_url" in
-    *agents-os*)                           printf 'agents-os\n' ;;
+    *agents-os*) printf 'agents-os\n' ;;
+    *agros-insite*) printf 'agros-insite\n' ;;
+    *AOS-Sandbox-Full*|*aos-sandbox-full*) printf 'aos-sandbox-full\n' ;;
+    *AOS-Sandbox-Lean*|*aos-sandbox-lean*) printf 'aos-sandbox-lean\n' ;;
+    *Capra*Mio*|*carpa-mio*) printf 'carpa-mio\n' ;;
+    *EyalAmit*|*EyalAmit.co.il-2026*|*eyalamit*) printf 'eyalamit\n' ;;
+    *HobbitHome*|*hobbithome*) printf 'hobbithome\n' ;;
+    *IsraelMicrogreens-BlenderV2-Project*|*microgreens*) printf 'microgreens\n' ;;
+    *nimrod-bio*|*nimrod.bio*) printf 'nimrod-bio\n' ;;
+    *nimrod-book*) printf 'nimrod-book\n' ;;
+    *shaked-wg-agent*) printf 'shaked-wg-agent\n' ;;
     *SmallFarmsAgents*|*smallfarmsagents*) printf 'smallfarmsagents\n' ;;
-    *nimrod-bio*|*NimrodBio*)              printf 'nimrod-bio\n' ;;
-    *TikTrack*|*tiktrack*)                 printf 'tiktrack\n' ;;
-    *EyalAmit*|*eyalamit*)                 printf 'eyalamit\n' ;;
-    *HobbitHome*|*hobbithome*)             printf 'hobbithome\n' ;;
-    *Microgreens*|*microgreens*)           printf 'microgreens\n' ;;
-    *AOS-Sandbox-Lean*)                    printf 'aos-sandbox-lean\n' ;;
-    *AOS-Sandbox-Full*)                    printf 'aos-sandbox-full\n' ;;
-    *agros-insite*)                        printf 'agros-insite\n' ;;
+    *TikTrack-Phoenix_AOSProject*|*tiktrack*|*tiktrack-phoenix_aosproject*) printf 'tiktrack\n' ;;
     *)
       printf 'agents-os\n'
       if [ "${_MSG_PREFLIGHT_VERBOSE:-0}" -eq 1 ]; then
@@ -343,6 +354,7 @@ PYEOF
       fi
       ;;
   esac
+# END GENERATED FROM _aos/projects.yaml
 }
 
 # --- Internal helper — emit auth-class warning + append JSONL audit log -----
