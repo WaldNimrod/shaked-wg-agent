@@ -336,7 +336,7 @@ PYEOF
     *agros-insite*) printf 'agros-insite\n' ;;
     *AOS-Sandbox-Full*|*aos-sandbox-full*) printf 'aos-sandbox-full\n' ;;
     *AOS-Sandbox-Lean*|*aos-sandbox-lean*) printf 'aos-sandbox-lean\n' ;;
-    *Capra*Mio*|*carpa-mio*) printf 'carpa-mio\n' ;;
+    *Capra*Mio*|*capra-mio*) printf 'capra-mio\n' ;;
     *EyalAmit*|*EyalAmit.co.il-2026*|*eyalamit*) printf 'eyalamit\n' ;;
     *HobbitHome*|*hobbithome*) printf 'hobbithome\n' ;;
     *IsraelMicrogreens-BlenderV2-Project*|*microgreens*) printf 'microgreens\n' ;;
