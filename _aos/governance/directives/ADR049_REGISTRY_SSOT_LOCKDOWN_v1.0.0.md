@@ -83,20 +83,19 @@ Output sorted: hub entry (type `aos_project`) first, then alphabetical by id. Th
 | Phase 2 | `scripts/sync_derived_registries.sh` (idempotent; `--check` mode for CI) | ✅ |
 | Phase 2 | `msg_preflight.sh` Tier 3 wrapped in BEGIN/END markers, regenerated from projects.yaml | ✅ |
 | Phase 3 | `validate_aos.sh` Check 46 — hub-only drift gate | ✅ |
+| Phase 4 | Auto-trigger wired in `project_create.py` (post-creation, non-blocking) + `aos_sync_all.sh` Phase 0.6 (pre-flight; `--check` on `--dry-run`) — delivered via AOS-V4.4-WP-TAILS-CLEANUP item B1, 2026-05-25 | ✅ |
 | Phase 5 | This ADR | ✅ |
 
-## 5. Deferred (follow-up)
+## 5. Status & follow-up
 
-**Phase 4 (auto-trigger)** — explicitly deferred to a follow-up WP. Risk-weighted decision: wiring `project_create.py` (the POST /api/projects/create handler) to run `sync_derived_registries.sh` as a subprocess after every successful project creation adds a surface that could regress request handling. Without Phase 4, a human runs `/AOS_project-init` → adds spoke to `projects.yaml` → must remember to run `sync_derived_registries.sh`. If they forget, the very next `validate_aos.sh` (mandatory hub startup step) FAILs Check 46 and prints the fix command. Drift cannot reach commit. Acceptable trade — Check 46 is the safety net.
-
-Follow-up WP (`AOS-V4.x-WP-REGISTRY-SYNC-AUTOTRIGGER`) should:
-- Wire `project_create.py` to call sync script post-creation.
-- Wire `aos_sync_all.sh` phase 0.4 pre-flight to call sync script.
-- Document in `/AOS_project-init` skill output.
+Phase 4 (auto-trigger) — **delivered 2026-05-25** under AOS-V4.4-WP-TAILS-CLEANUP item B1:
+- `core/modules/management/project_create.py` calls `sync_derived_registries.sh` post-creation (non-blocking subprocess, logs warning on non-zero).
+- `scripts/aos_sync_all.sh` runs `sync_derived_registries.sh` as Phase 0.6 pre-flight (uses `--check` under `--dry-run`).
+- Check 46 remains as the safety net for code paths that bypass these triggers.
 
 ## 6. Out of scope
 
-- **Team definition drift** (hub `core/definition.yaml` vs spoke `_aos/definition.yaml` snapshots) — same problem class, different solution path. Separate WP.
+- **Team definition drift** (hub `core/definition.yaml` vs spoke `_aos/definition.yaml` snapshots) — same problem class, addressed by ADR050 (Definition Snapshot Lockdown, 2026-05-25 companion ADR).
 - **Per-spoke `forbidden_patterns` drift** — per-spoke config, not registry SSoT.
 - **DB↔projects.yaml** — already governed by ADR034 R7.
 
