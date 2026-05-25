@@ -87,10 +87,10 @@ For each enabled spoke in `_aos/projects.yaml` that carries `_aos/definition.yam
 
 ## 5. Out of scope (explicit non-goals)
 
-- **Auto-fix mechanism.** Regenerating spoke `_aos/definition.yaml` from hub is a *separate decision* requiring team_00 + team_100 sign-off per spoke. Reasons: (a) spoke definition.yaml may legitimately deviate in *which teams it carries* (subset), and an auto-fix tool risks accidentally adding teams not assigned to that spoke; (b) the act of bringing a spoke into sync is itself a governance event (a spoke gets new iron rules, new gate authority text, etc.) that should be reviewed not rubber-stamped. Future WP candidate: `AOS-V4.x-WP-DEFINITION-SNAPSHOT-REMEDIATION`.
+- ~~**Auto-fix mechanism.**~~ **DELIVERED 2026-05-25** under [`AOS-V4.5-WP-DEFINITION-SNAPSHOT-REMEDIATION`](../../_aos/work_packages/AOS-V4.5-WP-DEFINITION-SNAPSHOT-REMEDIATION/) via `scripts/sync_definition_snapshots.sh` (option 2.C — fix + future protection). Original deferral concerns addressed as follows: (a) "spoke may carry subset of teams" — the script processes only team_XX blocks **already present** in the spoke and skips ghost teams (warn-no-delete; Check 13 owns ghost validation); (b) "governance event review" — the act is auditable per-spoke commit `gov(def-sync): propagate hub def blocks for active teams (AOS-V4.5-WP-DEFINITION-SNAPSHOT-REMEDIATION)` and is *only* invocable by team_00/team_100 (via `aos_sync_all.sh` Step 1b) or by explicit hub-side script run.
 - **Spokes that do not carry `_aos/definition.yaml`.** Out of scope here. Some lifecycle archetypes (e.g., CONTENT_SUBSTRATE, certain L0 spokes) may not materialize the snapshot; Check 47 SKIPs them.
-- **Drift remediation.** Manual, per-spoke, with team_00 + team_100 approval. Tracked in the follow-up WP above.
-- **Auto-trigger after hub team_block edits.** Same reasoning as ADR049 §5 deferral of auto-trigger for sync_derived_registries.sh — Check 47 is the safety net; the editor of `core/definition.yaml` sees the FAIL on the next `validate_aos.sh` run.
+- ~~**Drift remediation.**~~ **DELIVERED 2026-05-25** — see above. First remediation run: 110 team blocks across 12 spokes synced verbatim from hub `core/definition.yaml`; Check 47 PASS post-run; idempotent (second run = 0 changes / 110 already OK).
+- ~~**Auto-trigger after hub team_block edits.**~~ **DELIVERED 2026-05-25** — `aos_sync_all.sh` Step 1b now invokes `sync_definition_snapshots.sh --all` after governance propagation, before lean-kit. Any future hub `core/definition.yaml` team-block edit propagates on the next `aos_sync_all.sh --all` invocation by team_00 / team_100 (Iron Rule #11: hub → snapshot only).
 
 ## 6. References
 
