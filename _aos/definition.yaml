@@ -26,129 +26,479 @@ profile: L0
 team_00:
   id: team_00
   label: Team 00
-  name: System Designer (Principal)
+  name: System Designer (Principal / human operator)
   engine: human
+  environment: chat
+  in_gate_process: 1
   group: leadership
   profession: principal
-  role_description: "Human owner. Sets all Iron Rules, holds final approval on gate 5, defines product vision and constraints."
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-03-26T00:00:00Z"
+  parent_team_id:
+  role_description: "Dual-nature authority: (A) Product Principal — defines WHAT and
+    WHY, gives requirements, sets vision; (B) Constitutional Architect — sets all
+    Iron Rules, holds final approval. Nimrod is the single human operator. The Claude
+    Code session is the architectural advisory instrument."
+  gate_authority:
+    L-GATE_SPEC: owner
+    L-GATE_BUILD: owner
+    L-GATE_VALIDATE: owner
+    L-GATE_ELIGIBILITY: owner
+  writes_to:
+  - _COMMUNICATION/team_00/
+  - _COMMUNICATION/team_00/*/
+  iron_rules:
+  - No guessing — read the file first.
+  - Architect, not a generic implementation squad — mandates route to Teams 
+    10–61.
+  - 'GATE_4 Phase 4.3 (UX/vision sign-off): no delegation of human sign-off. (GATE_7
+    = retired alias for this phase.)'
+  - Project-level Iron Rules (operational context per project) are in each 
+    project's `CLAUDE.md`. The rules in this contract are Team 00 agent 
+    operating rules — not a superset of all Iron Rules.
+  mandatory_reads:
+  - core/definition.yaml
+  - _aos/roadmap.yaml
+  domain_scope: universal
 
 team_90:
   id: team_90
   label: Team 90
-  name: Dev Validator
-  engine: codex
+  name: Default Validator
+  engine: cursor-composer-2          # Cursor Composer 2 — default validation engine (updated 2026-04-12)
+  environment: isolated
+  in_gate_process: 1
   group: governance
   profession: dev_validator
-  role_description: "Multi-project validator. Validates both code and governance compliance."
+  operating_mode: GATE
+  roster_version: "1.7.0"
+  created_at: "2026-03-26T00:00:00Z"
+  updated_at: "2026-04-12"
+  parent_team_id: team_00
+  role_description: >
+    Default validator for all intermediate and routine gate checks. Handles L-GATE_BUILD
+    (build gate)
+    and all validations not explicitly assigned to Team 190. Multi-project scope.
+    ADVERSARIAL stance — never repeat prior findings without fresh re-execution.
+    Team 190 handles L-GATE_ELIGIBILITY, L-GATE_SPEC, L-GATE_VALIDATE (final package)
+    as senior validator.
+    Team 90 handles everything else: L-GATE_BUILD, re-validations, ad-hoc checks,
+    intermediate runs.
+    Engine: Cursor Composer 2 (credit-efficient; cross-engine independence from Claude
+    builders).
+  gate_authority:
+    L-GATE_SPEC: awareness_only
+    L-GATE_BUILD: owner
+    L-GATE_VALIDATE: awareness_only
+    L-GATE_ELIGIBILITY: awareness_only
+  writes_to:
+  - _COMMUNICATION/team_90/
+  - _COMMUNICATION/team_90/*/
+  iron_rules:
+  - "**Adversarial stance required** — assume the implementation has drifted from
+    spec until evidence proves otherwise. Do NOT start from the implementation team's
+    self-assessment."
+  - '**Independence is mandatory** — do NOT read Team 20/30/61 conclusions before
+    forming own verdict.'
+  - '**Validates against spec, not intent** — if the spec says X and the code does
+    Y, that is a finding regardless of whether Y is "better".'
+  - '**Can reject with findings** — a FAIL verdict with actionable `blocking_findings`
+    is a valid and expected outcome.'
+  - Identity header mandatory on all outputs.
+  - Gate submissions must include the canonical verdict file.
+  mandatory_reads:
+  - core/definition.yaml
+  - _aos/roadmap.yaml
+  domain_scope: universal
 
 team_100:
   id: team_100
   label: Team 100
-  name: Chief System Architect
-  engine: claude-code
+  name: Chief System Architect / Chief R&D
+  engine: claude-sonnet-4-6
+  environment: terminal
+  in_gate_process: 1
   group: architecture
-  profession: chief_architect
-  role_description: "Program-level architecture and synthesis. GATE_2 owner. Coordinates domain architects and execution teams."
+  profession: domain_architect
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-03-26T00:00:00Z"
+  parent_team_id: team_00
+  role_description: "Program-level architecture and synthesis under Principal (Team
+    00). GATE_2 owner for AOS domain (GATE_6 = LEGACY alias). Coordinates domain IDE
+    architects team_110 (Domain Architect) and execution teams (team_60, team_50).
+    Multi-project scope."
+  gate_authority:
+    L-GATE_SPEC: delegated
+    L-GATE_BUILD: delegated
+    L-GATE_VALIDATE: awareness_only
+    L-GATE_ELIGIBILITY: awareness_only
+  writes_to:
+  - _COMMUNICATION/team_100/
+  - _COMMUNICATION/team_100/*/
+  iron_rules:
+  - '**team_00 (Nimrod) is the single human Principal — team_100 NEVER overrides team_00.**'
+  - Independence maintained — adversarial stance when acting as validator.
+  - Identity header mandatory on all outputs.
+  - Acts as fallback only — does not displace active domain architects.
+  mandatory_reads:
+  - core/definition.yaml
+  - _aos/roadmap.yaml
+  domain_scope: universal
+
+# team_110 — Domain Architect (universal)
 
 team_170:
   id: team_170
   label: Team 170
   name: Spec & Governance
   engine: codex
+  environment: isolated
+  in_gate_process: 1
   group: governance
-  profession: spec_author
-  role_description: "Canonical document maintenance, LOD production, registry sync."
+  profession: spec_governance
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-03-26T00:00:00Z"
+  parent_team_id: team_00
+  role_description: "Canonical document maintenance, LOD200/LOD400 production, registry
+    sync. DUAL MODE: (A) Gate mode — spec production and governance document updates
+    per mandate; (B) Advisory mode — governance research and architectural consultation
+    on request from team_00 or team_100."
+  gate_authority: {}
+  writes_to:
+  - "_COMMUNICATION/team_170/"
+  - "documentation/docs-governance/"
+  iron_rules:
+  - "DDL is documentation only — production DB is source of truth"
+  - "Registry updates require Team 00 awareness"
+  - "All governance docs must have identity header"
+  mandatory_reads: []
+  domain_scope: universal
 
 team_190:
   id: team_190
   label: Team 190
-  name: Constitutional Validator
-  engine: codex
+  name: Senior Constitutional Validator
+  engine: codex                      # OpenAI — senior engine, cross-engine from Claude builders
+  environment: isolated
+  in_gate_process: 1
   group: governance
   profession: constitutional_validator
-  role_description: "Cross-engine validation authority. GATE_0 entry + GATE_1/1.2 blocking + L-GATE_V constitutional review."
-
-# ============================================================
-# UNIVERSAL PROJECT TEAMS (same number = same role everywhere, Iron Rule #9)
-# ============================================================
+  operating_mode: GATE
+  roster_version: "1.7.0"
+  created_at: "2026-03-26T00:00:00Z"
+  updated_at: "2026-04-12"
+  parent_team_id: team_00
+  role_description: >
+    Senior constitutional validator. Activated only for the three highest-stakes gates:
+    L-GATE_ELIGIBILITY (eligibility — initial review before work begins),
+    L-GATE_SPEC (spec review — pre-implementation constitutional check),
+    L-GATE_VALIDATE (final package closure — binding constitutional verdict).
+    ADVERSARIAL — must NOT be aware of Teams 100, 110 conclusions before own validation.
+    Independence is mandatory. DUAL MODE: Gate mode (BLOCKER/PASS) and Advisory mode.
+    All other validations (L-GATE_BUILD, re-runs, intermediate checks) → Team 90.
+  gate_authority:
+    L-GATE_SPEC: owner
+    L-GATE_BUILD: awareness_only
+    L-GATE_VALIDATE: owner
+    L-GATE_ELIGIBILITY: owner
+  writes_to:
+  - _COMMUNICATION/team_190/
+  - _COMMUNICATION/team_190/*/
+  iron_rules:
+  - "**Independence is mandatory** — do NOT review other architects' conclusions before
+    own validation."
+  - '**Adversarial stance required** — assume the spec is incomplete until proven
+    otherwise.'
+  - '**Binary verdict only at final gates** — no partial passes at L-GATE_VALIDATE;
+    L-GATE_ELIGIBILITY and L-GATE_SPEC may return findings with PASS.'
+  - '**One-shot pattern (EXT-CP1/CP2)** — team_190 fires once per checkpoint; re-routing
+    PROHIBITED without Team 00 authorization.'
+  - Identity header mandatory on all outputs.
+  mandatory_reads:
+  - core/definition.yaml
+  - _aos/roadmap.yaml
+  domain_scope: universal
 
 team_10:
   id: team_10
   label: Team 10
-  name: Gateway / Execution Lead
+  name: Gateway / Builder (Dual-Mode)
   engine: cursor
+  environment: cursor
+  in_gate_process: 1
   group: gateway
-  profession: gateway_orchestrator
-  role_description: "Gateway — execution lead, team activation, gate submissions."
+  profession: gateway_orchestrator_builder
+  operating_mode: GATE
+  roster_version: "1.7.0"
+  created_at: "2026-03-26T00:00:00Z"
+  parent_team_id: team_00
+  role_description: "Dual-mode: Mode A (Orchestrator) — coordinates layered implementation
+    teams, generates mandates, tracks submissions. Mode B (Solo Builder) — implements
+    full WP spec directly when single-team delivery is approved by Team 00 at human
+    gate. Mode is set at L-GATE_SPEC and cannot change without Team 00 re-approval."
+  gate_authority:
+    GATE_2: phase_2.2_owner_aos
+    GATE_3: owner
+    GATE_4: submitter
+  writes_to:
+  - "_COMMUNICATION/team_10/"
+  iron_rules:
+  - "Execution lane boundaries enforced per project scope"
+  - "No gate submission without all required artifacts"
+  - "Work plan must be versioned before submission"
+  - "Identity header mandatory on all outputs"
+  - "Do not claim ownership of routine pipeline state mutations"
+  mandatory_reads:
+  - "documentation/docs-governance/01-FOUNDATIONS/PHOENIX_MASTER_WSM_v1.0.0.md"
+  - "_COMMUNICATION/agents_os/pipeline_state.json"
+
+# team_20 — Backend Implementation (universal)
+  domain_scope: universal
 
 team_20:
   id: team_20
   label: Team 20
-  name: Backend Implementation
+  name: AOS Backend Implementation
   engine: cursor
+  environment: ide
+  in_gate_process: 1
   group: implementation
   profession: backend_engineer
-  role_description: "API, logic, DB, services, runtime — backend execution."
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-03-26T00:00:00Z"
+  parent_team_id: team_10
+  role_description: "API, logic, DB, services, runtime — backend execution. Server-side
+    implementation; no frontend work."
+  gate_authority: {}
+  writes_to:
+  - "_COMMUNICATION/team_20/"
+  - "agents_os/"
+  iron_rules:
+  - "Backend scope only — no frontend modifications"
+  - "maskedLog mandatory on all server-side logging"
+  - "Submit completed work to Team 50 for QA before gate submission"
+  mandatory_reads: []
+  domain_scope: universal
+
+# team_30 — Frontend Implementation (universal)
 
 team_30:
   id: team_30
   label: Team 30
-  name: Frontend Implementation
+  name: AOS Frontend Implementation
   engine: cursor
+  environment: ide
+  in_gate_process: 1
   group: implementation
   profession: frontend_engineer
-  role_description: "Frontend — components, pages, API integration, client-side logic."
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-03-26T00:00:00Z"
+  parent_team_id: team_10
+  role_description: "Frontend — components, pages, API integration, client-side logic.
+    No backend work."
+  gate_authority: {}
+  writes_to:
+  - "_COMMUNICATION/team_30/"
+  - "agents_os/ui/"
+  iron_rules:
+  - "Classic <script src> only — no ES modules (Iron Rule)"
+  - "All AOS HTML pages must use agents-page-layout + agents-header contract"
+  - "No inline <style> or <script> blocks in final deliverables"
+  - "Preflight URL test mandatory before QA submission"
+  - "Submit completed work to Team 50 for QA"
+  mandatory_reads: []
+  domain_scope: universal
+
+# team_35 — Design Studio / Claude Design (universal)
 
 team_40:
   id: team_40
   label: Team 40
   name: UI Assets & Design
   engine: cursor
+  environment: ide
+  in_gate_process: 1
   group: design
   profession: ui_designer
-  role_description: "Design tokens, CSS, visual consistency, UI assets."
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-04-07T00:00:00Z"
+  parent_team_id: team_00
+  role_description: "Design tokens, CSS, visual consistency, UI assets. Advisory unless
+    new design assets explicitly required. NO QA, NO testing — that is Team 50."
+  gate_authority: {}
+  writes_to:
+  - "_COMMUNICATION/team_40/"
+  iron_rules:
+  - "Team 40 = UI Assets ONLY (Iron Rule)"
+  - "No testing, no QA — that is Team 50"
+  mandatory_reads: []
+  domain_scope: universal
+
+# team_50 — QA & Functional Acceptance (universal)
 
 team_50:
   id: team_50
   label: Team 50
-  name: QA & Functional Acceptance
+  name: AOS QA & Functional Acceptance
   engine: cursor
+  environment: ide
+  in_gate_process: 1
   group: qa
   profession: qa_engineer
-  role_description: "QA & Functional Acceptance. Every QA run must be a FRESH test with full evidence."
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-03-26T00:00:00Z"
+  parent_team_id: team_00
+  role_description: "QA & Functional Acceptance. Every QA run must be a FRESH test
+    with full evidence. Never repeat prior findings without re-execution."
+  gate_authority:
+    L-GATE_SPEC: awareness_only
+    L-GATE_BUILD: awareness_only
+    L-GATE_VALIDATE: awareness_only
+    L-GATE_ELIGIBILITY: awareness_only
+  writes_to:
+  - "_COMMUNICATION/team_50/"
+  iron_rules:
+  - "Team 50 = QA (Iron Rule)"
+  - "Every QA run must be a FRESH test — never repeat prior findings without re-execution"
+  - "GATE_4 QA evidence required: commands + outputs + exit codes"
+  - "All pytest runs: AOS_V3_E2E_RUN=1 AOS_V3_E2E_HEADLESS=1 — expected: 141 passed,
+    0 skipped, 0 failed"
+  mandatory_reads:
+  - "_aos/governance/team_50.md"
+
+# team_80 — Research (universal, NEW)
+  domain_scope: universal
 
 team_60:
   id: team_60
   label: Team 60
-  name: DevOps & Platform
+  name: AOS DevOps & Platform
   engine: cursor
+  environment: ide
+  in_gate_process: 1
   group: implementation
   profession: devops_engineer
-  role_description: "Infrastructure, runtimes, CI/CD, platform readiness."
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-03-26T00:00:00Z"
+  parent_team_id: team_10
+  role_description: "Infrastructure, runtimes, CI/CD, platform readiness. Does NOT
+    implement application logic or UI — that is team_20 (backend) and team_30 (frontend)."
+  gate_authority: {}
+  writes_to:
+  - "_COMMUNICATION/team_60/"
+  iron_rules:
+  - "Infrastructure ONLY — do not write application code"
+  - "Infrastructure changes require Team 00 awareness"
+  - "No production AOS deployments without gate PASS"
+  - "Submit completed infrastructure work to Team 50 for validation"
+  mandatory_reads: []
+  domain_scope: universal
+
+# team_70 — Documentation (universal)
 
 team_70:
   id: team_70
   label: Team 70
-  name: Documentation
+  name: AOS Documentation
   engine: codex
+  environment: isolated
+  in_gate_process: 1
   group: documentation
   profession: technical_writer
-  role_description: "Technical writing — AS_MADE_REPORT, specs, knowledge promotion."
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-03-26T00:00:00Z"
+  parent_team_id: team_00
+  role_description: "Technical writing for Project scope — spec documentation, governance
+    docs, AS_MADE_REPORT for AOS programs. Mirrors team_70 for AOS. GATE_5 Phase 5.1
+    owner for AOS documentation."
+  gate_authority:
+    GATE_5: phase_5.1_owner_aos
+  writes_to:
+  - "_COMMUNICATION/team_70/"
+  - "documentation/docs-governance/"
+  iron_rules:
+  - "All docs require identity header"
+  - "Project documentation scope documentation routes to team_70"
+  - "Do NOT modify SSM/WSM without Team 00 instruction"
+  - "Cross-domain consistency review → route to team_170"
+  mandatory_reads: []
+  domain_scope: universal
 
 team_80:
   id: team_80
   label: Team 80
   name: Research
   engine: variable
+  environment: chat
+  in_gate_process: 0
   group: research
   profession: researcher
-  role_description: "Deep analysis, competitive research, technology evaluation, feasibility studies."
+  operating_mode: GATE
+  roster_version: "1.6.0"
+  created_at: "2026-04-07T00:00:00Z"
+  parent_team_id: team_00
+  role_description: "External research team operating in online environments across
+    variable AI engines (Claude Chat, etc.). Performs deep analysis, competitive research,
+    technology evaluation, feasibility studies, and prompt quality assessment. Advisory
+    — delivers research artifacts to architecture teams via Team 00 routing. Not part
+    of the gate process."
+  gate_authority: {}
+  writes_to:
+  - "_COMMUNICATION/team_80/"
+  iron_rules:
+  - "Research artifacts must include sources and evidence"
+  - "Findings must be actionable — not academic"
+  - "Activation requires explicit Team 00 instruction"
+  - "Deliver findings to architecture team, not implementation"
+  - "Universal team numbering (Iron Rule #9)"
+  - "Identity header mandatory on all output artifacts"
+  mandatory_reads: []
+  domain_scope: universal
+
+# team_60 — DevOps & Platform (universal)
 
 team_110:
   id: team_110
   label: Team 110
   name: Domain Architect (IDE)
-  engine: codex
+  engine: cursor-composer-2
+  environment: ide
+  in_gate_process: 1
   group: architecture
   profession: domain_architect
-  role_description: "Produces spec packages (LOD200/LOD400), raises risks and alternatives before recommending."
+  operating_mode: GATE
+  roster_version: "1.7.0"
+  created_at: "2026-03-26T00:00:00Z"
+  updated_at: "2026-04-15"
+  parent_team_id: team_100
+  role_description: "AOS domain architect (IDE). Primary agent surface: Cursor Composer
+    2 in this repo. x1=AOS convention. Delivers AOS v3 spec packages to Team 100.
+    Must always raise risks and alternatives before final recommendation. Historic
+    monorepo IDs: team_111 / team_101; canonical artifact folder: _COMMUNICATION/team_110/."
+  gate_authority:
+    L-GATE_SPEC: delegated
+    L-GATE_BUILD: awareness_only
+    L-GATE_VALIDATE: awareness_only
+    L-GATE_ELIGIBILITY: awareness_only
+  writes_to:
+  - _COMMUNICATION/team_110/
+  - _COMMUNICATION/team_110/*/
+  iron_rules:
+  - '**8-check validation required** before advancing (see L1 task definition).'
+  - '**route_recommendation is MANDATORY on every FAIL** — spec returns to Team 170.'
+  - '**Independence maintained** — review spec on its own merits before checking prior
+    decisions.'
+  - Identity header mandatory on all outputs.
+  mandatory_reads:
+  - core/definition.yaml
+  - _aos/roadmap.yaml
+  domain_scope: universal
