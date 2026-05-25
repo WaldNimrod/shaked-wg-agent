@@ -1996,10 +1996,42 @@ check_46() {
     fi
 }
 
+# ----------------------------------------------------------------
+# Check 47 — Definition Snapshot Lockdown (ADR050, hub-only)
+# Verifies every enabled spoke _aos/definition.yaml contains
+# team_NN: blocks that are verbatim slices of hub core/definition.yaml.
+# Auto-fix is OUT OF SCOPE (ADR050 §5) — surface drift to team_00.
+# ----------------------------------------------------------------
+check_47() {
+    # Hub-only: spokes lack _aos/projects.yaml and have nothing to enforce against.
+    if [ ! -f "$PROJECT_ROOT/_aos/projects.yaml" ]; then
+        log_skip 47 "not hub — _aos/projects.yaml absent (spokes skip definition snapshot drift check)"
+        return
+    fi
+    local def_script="$PROJECT_ROOT/scripts/check_definition_snapshot_consistency.sh"
+    if [ ! -f "$def_script" ]; then
+        log_skip 47 "check_definition_snapshot_consistency.sh not found (pre-ADR050 hub)"
+        return
+    fi
+    local out drift_count summary
+    if out=$(bash "$def_script" --quiet 2>&1); then
+        log_pass 47 "definition snapshot consistency OK (ADR050)"
+    else
+        # Extract drift count from stderr/stdout if present; fall back to raw output.
+        drift_count=$(echo "$out" | sed -n 's/.*drift=\([0-9]\+\).*/\1/p' | head -1)
+        if [ -n "$drift_count" ]; then
+            summary="$drift_count drift record(s)"
+        else
+            summary="$out"
+        fi
+        log_fail 47 "definition snapshot DRIFT — $summary; review hub core/definition.yaml vs spoke _aos/definition.yaml; auto-fix is out of scope (see ADR050 §5). Detail: bash scripts/check_definition_snapshot_consistency.sh"
+    fi
+}
+
 # ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 46 checks on $AOS_DIR (active_modules: $ACTIVE_MODULES_MODE, context: ${CONTEXT:-?})"
+echo "validate_aos.sh — running up to 47 checks on $AOS_DIR (active_modules: $ACTIVE_MODULES_MODE, context: ${CONTEXT:-?})"
 echo "================================================="
 
 check_1
@@ -2048,6 +2080,7 @@ check_43
 check_44
 check_45
 check_46
+check_47
 
 echo ""
 echo "================================================="
