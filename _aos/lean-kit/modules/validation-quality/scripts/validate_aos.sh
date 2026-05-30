@@ -508,11 +508,37 @@ except Exception as e:
         return
     fi
 
-    # 12c: Scan tracked source files for forbidden patterns
+    # 12c: Parse optional per-file allowlist (boundaries.forbidden_patterns_allowlist).
+    # Each entry: {path: <relpath>, patterns: [<pattern>,...] | omitted = all, reason: <text>}.
+    # Emits "relpath<TAB><pattern>" (or "relpath<TAB>*" when patterns omitted) — a documented,
+    # legitimate cross-reference exception (e.g. a portfolio/bio domain that intentionally
+    # showcases sibling project names). Empty/absent → no exceptions (behavior unchanged).
+    local allowlist
+    allowlist=$(python3 -c "
+import yaml
+b = (yaml.safe_load(open('$id_file')) or {}).get('boundaries', {}) or {}
+for e in (b.get('forbidden_patterns_allowlist', []) or []):
+    path = e.get('path')
+    if not path:
+        continue
+    pats = e.get('patterns')
+    if not pats:
+        print(f'{path}\t*')
+    else:
+        for p in pats:
+            print(f'{path}\t{p}')
+" 2>/dev/null)
+
+    # 12d: Scan tracked source files for forbidden patterns (excluding allowlisted file/pattern pairs)
     local violations=0
     local violation_details=""
     while IFS= read -r pattern; do
         [ -z "$pattern" ] && continue
+        # Pattern globally exempt for this project (allowlist entry with path: "*") —
+        # e.g. a portfolio/bio domain that showcases a sibling project pervasively.
+        if printf '%s\n' "$allowlist" | grep -qxF "*"$'\t'"$pattern"; then
+            continue
+        fi
         # Search in common source dirs, skip _aos/ itself and .git/
         local matches
         matches=$(grep -Frl --include="*.py" --include="*.js" --include="*.ts" --include="*.md" \
@@ -521,11 +547,24 @@ except Exception as e:
             --exclude-dir="_archive" \
             --exclude="CHANGELOG.md" --exclude="*.template" \
             --exclude="CLAUDE.md" --exclude=".cursorrules" \
-            "$pattern" "$PROJECT_ROOT" 2>/dev/null | head -5)
-        if [ -n "$matches" ]; then
+            "$pattern" "$PROJECT_ROOT" 2>/dev/null | head -20)
+        [ -z "$matches" ] && continue
+        # Drop allowlisted (relpath, pattern) pairs — exact "<relpath>\t<pattern>" or "<relpath>\t*"
+        local unallowed=""
+        while IFS= read -r mfile; do
+            [ -z "$mfile" ] && continue
+            local rel="${mfile#$PROJECT_ROOT/}"
+            if printf '%s\n' "$allowlist" | grep -qxF "$rel"$'\t'"$pattern" \
+               || printf '%s\n' "$allowlist" | grep -qxF "$rel"$'\t*'; then
+                continue
+            fi
+            unallowed="${unallowed}${mfile}"$'\n'
+        done <<< "$matches"
+        unallowed=$(printf '%s' "$unallowed" | sed '/^[[:space:]]*$/d')
+        if [ -n "$unallowed" ]; then
             ((violations++)) || true
             local first_match
-            first_match=$(echo "$matches" | head -1)
+            first_match=$(printf '%s\n' "$unallowed" | head -1)
             violation_details="${violation_details}  pattern='$pattern' found in: $first_match"$'\n'
         fi
     done <<< "$patterns"
