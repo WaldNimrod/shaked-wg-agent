@@ -215,8 +215,9 @@ For pipeline runs: `POST /api/runs/{run_id}/feedback` with:
 4. `/server --status` — verify post-deployment health
 5. `/server --logs [project]` — check for errors in last 50 lines
 6. **WAN dual-stack verification** — see "WAN Dual-Stack Verification" section below (mandatory on initial deploy + after any home-network change, per IR#15)
-7. Log result artifact to `_COMMUNICATION/team_99/`
-8. Report to Team 00 for routing
+7. **Deploy-parity verification (Mac→Linux)** — per ADR051, the dev works on macOS while services run on Linux (waldhomeserver), and authoritative validation is the LOCAL pre-push hook on the Mac (which cannot catch Linux-only defects). team_99 therefore closes the Mac→Linux gap at deploy time by confirming, **reusing existing tooling — no new test harness**: (a) the service health check passed (`/server --status` + the project's `/api/health` probe / `deploy-staging.sh` Phase E), (b) the pre-deploy guard passed where the project provides one (e.g. TikTrack `staging_predeploy_guard.sh`: env keys, DB connectivity, migration head, seed counts), and (c) WAN egress is sound (step 6). Record the parity result in the deploy log artifact.
+8. Log result artifact to `_COMMUNICATION/team_99/`
+9. Report to Team 00 for routing
 
 ## SMTP Infrastructure Constraint (IPv6-only WAN)
 
@@ -289,7 +290,7 @@ Reference deploy log (proving ground): TikTrack `_COMMUNICATION/team_99/DEPLOY_L
 - The hub (`agents-os`) does NOT run the probe in production; the probe artifact (`lean-kit/modules/12-home-server-infrastructure/scripts/wan_dual_stack_probe.sh`) is distributed to spokes for local execution.
 
 ## Validation Criteria
-Operation completed successfully. Logs captured. Service health verified post-change. Rollback plan documented for destructive operations. No secrets exposed. Before/after state recorded. **WAN dual-stack verification performed** on initial deploy and after network changes (per IR#15 + ADR048); `_aos/server_dual_stack_status.json` refreshed; deploy log records Layer A / Layer B / Cleanup checklist split where mitigation was applied.
+Operation completed successfully. Logs captured. Service health verified post-change. Rollback plan documented for destructive operations. No secrets exposed. Before/after state recorded. **WAN dual-stack verification performed** on initial deploy and after network changes (per IR#15 + ADR048); `_aos/server_dual_stack_status.json` refreshed; deploy log records Layer A / Layer B / Cleanup checklist split where mitigation was applied. **Deploy-parity verification performed** (ADR051): service health + pre-deploy guard (where provided) + WAN egress confirmed at deploy time to cover the Mac→Linux gap, reusing existing tooling (no new harness); parity result recorded in the deploy log.
 
 ## Boundaries
 - Write to: `_COMMUNICATION/team_99/` only

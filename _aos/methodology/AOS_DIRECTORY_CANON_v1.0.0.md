@@ -114,8 +114,8 @@ Every AOS-managed project MUST have this structure at its root:
 │── .cursorrules                       # ENGINE CONTEXT: Cursor (required)
 │── CLAUDE.md                          # ENGINE CONTEXT: Claude Code (required)
 │── AGENTS.md                          # ENGINE CONTEXT: Codex/Generic agents (required)
-│── .github/workflows/
-│   └── aos-governance-integrity.yml   # REQUIRED CI module: run validate_aos.sh on push/PR
+│── .github/workflows/                 # OPTIONAL (ADR051): present only on Linux-deploy repos
+│   └── aos-ci-minimal.yml             # Free-tier validate_aos.sh PR-to-main parity check (Linux-deploy repos). Authoritative gate = LOCAL pre-push hook (scripts/install_hooks.sh). Non-deploy repos: no workflow. (Supersedes aos-governance-integrity.yml per ADR051.)
 │── .claude/
 │   └── settings.json                  # ENGINE SETTINGS: Claude Code (required)
 │

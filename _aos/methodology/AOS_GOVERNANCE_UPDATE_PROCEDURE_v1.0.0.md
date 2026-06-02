@@ -168,9 +168,9 @@ After propagation verification, maintain a runtime matrix artifact that document
 2. Which checks/routes run in each environment.
 3. Explicit skip/fallback policy that prevents false PASS.
 
-### Phase 5d: CI governance integrity module (mandatory)
+### Phase 5d: Validation gate (local-first per ADR051)
 
-Each canonical project must run `.github/workflows/aos-governance-integrity.yml` on push/PR. A project is not closure-ready if this workflow is missing or failing.
+Each canonical project's **authoritative pre-merge gate is the LOCAL `pre-push` hook** running `validate_aos.sh` (ADR051 — Local-first, Minimal-cloud, Zero-pay; install via `scripts/install_hooks.sh`). Cloud CI is **OPTIONAL**: repos that deploy to the Linux home server carry a minimal free-tier `.github/workflows/aos-ci-minimal.yml` (PR-to-main, validate-only) as a Mac→Linux parity check; doc/content/non-deploy repos carry **no** workflow. A project is **not closure-ready if local `validate_aos.sh` fails**. The legacy `aos-governance-integrity.yml` push/PR requirement is **superseded by ADR051**.
 
 ### Phase 5e: DB-first checker evidence (mandatory when DB policy is relevant)
 
