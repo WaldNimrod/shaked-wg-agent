@@ -368,9 +368,25 @@ _emit_auth_fallback_warning() {
   local branch
   branch=$(git branch --show-current 2>/dev/null) || branch="unknown"
   # Mandatory visible warning on stderr — NOT gated by verbose flag.
+  # Cause/remedy are code-specific: INVALID_ACTOR_KEY and ACTOR_KEY_NOT_CONFIGURED
+  # mean OPPOSITE things (authority.py get_actor_team_id). Do NOT conflate them.
   printf '⚠ API auth unavailable (%s) — falling back to file delivery.\n' "$code" >&2
-  printf '  Cause: server has no provisioned key for %s.\n' "$team_id" >&2
-  printf '  Admin: provision via POST /api/admin/actors/%s/issue-key (team_00 only).\n' "$team_id" >&2
+  case "$code" in
+    INVALID_ACTOR_KEY)
+      # Server HAS a provisioned key for this team; the client key is missing/stale.
+      printf '  Cause: AOS_ACTOR_API_KEY for %s is unset or stale in THIS session (the server key IS provisioned).\n' "$team_id" >&2
+      printf '  Fix:   export the %s secret from AOS_V3_ACTOR_KEYS per ADR043 §15.4, then re-source msg_preflight.sh.\n' "$team_id" >&2
+      ;;
+    ACTOR_KEY_NOT_CONFIGURED)
+      # Server keystore genuinely lacks an entry for this team.
+      printf '  Cause: server AOS_V3_ACTOR_KEYS has no entry for %s.\n' "$team_id" >&2
+      printf '  Fix:   team_00 adds %s to AOS_V3_ACTOR_KEYS on waldhomeserver core/.env, then restart aos-api (ADR043 §15.4 / §16).\n' "$team_id" >&2
+      ;;
+    *)
+      printf '  Cause: auth-class failure (%s) for %s.\n' "$code" "$team_id" >&2
+      printf '  Fix:   verify AOS_ACTOR_TEAM_ID + AOS_ACTOR_API_KEY for %s per ADR043 §15.4 / §16.\n' "$team_id" >&2
+      ;;
+  esac
   printf '  MSG WILL be delivered to origin/main via file-fallback; no DB record created.\n' >&2
   # Mandatory JSONL audit entry.
   local ts
