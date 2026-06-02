@@ -94,11 +94,24 @@ The following 4xx responses MUST trigger file-fallback delivery (with mandatory 
 
 All other 4xx codes (`UNKNOWN_PROJECT`, `INVALID_PAYLOAD`, `SCHEMA_VALIDATION_ERROR`) retain strict no-fallback semantics. These are programmer errors; silent fallback would mask them.
 
-**Mandatory visible warning (stderr, always):**
+**Mandatory visible warning (stderr, always).** The cause/fix lines are **code-specific** —
+`INVALID_ACTOR_KEY` and `ACTOR_KEY_NOT_CONFIGURED` mean opposite things (see `authority.py`
+`get_actor_team_id`); the wrapper MUST NOT conflate them (corrected 2026-06-02 — see Errata):
+
+`ACTOR_KEY_NOT_CONFIGURED` (team genuinely absent from the server keystore):
 ```
 ⚠ API auth unavailable (ACTOR_KEY_NOT_CONFIGURED) — falling back to file delivery.
-  Cause: server has no provisioned key for {team_id}.
-  Admin: provision via POST /api/admin/actors/{team_id}/issue-key (team_00 only).
+  Cause: server AOS_V3_ACTOR_KEYS has no entry for {team_id}.
+  Fix:   team_00/team_99 provisions {team_id} via scripts/issue_actor_key.sh on waldhomeserver
+         (methodology/AOS_ACTOR_KEY_PROCEDURE_v1.0.0.md §3), then aos-api restarts.
+  MSG WILL be delivered to origin/main via file-fallback; no DB record created.
+```
+
+`INVALID_ACTOR_KEY` (team IS provisioned; the client key is missing/stale):
+```
+⚠ API auth unavailable (INVALID_ACTOR_KEY) — falling back to file delivery.
+  Cause: AOS_ACTOR_API_KEY for {team_id} is unset or stale in THIS session (the server key IS provisioned).
+  Fix:   export the {team_id} secret per §15.4 (delivered via scripts/retrieve_actor_key.sh), then re-source msg_preflight.sh.
   MSG WILL be delivered to origin/main via file-fallback; no DB record created.
 ```
 
@@ -232,6 +245,7 @@ Documentation, JSON schema, and helper scripts: `lean-kit/modules/team-messaging
 
 ## 12. Changelog
 
+- **Errata (2026-06-02):** doc-vs-implementation corrections (no protocol change). (a) §16 row `POST /api/admin/actors/*` previously claimed an HTTP key-provisioning endpoint "Delivered by AOS-V4.1-WP-ACTOR-KEY-PROCEDURE" — no such endpoint exists; that WP delivered server-side scripts (`issue_actor_key.sh` / `rotate_actor_key.sh` / `revoke_actor_key.sh`) per `methodology/AOS_ACTOR_KEY_PROCEDURE_v1.0.0.md`. Row corrected to NOT IMPLEMENTED + script pointer. (b) §5 Rule 5 mandatory-warning example was single-code and conflated `INVALID_ACTOR_KEY` (client key missing/stale; server key IS provisioned) with `ACTOR_KEY_NOT_CONFIGURED` (team absent from keystore); split into two code-specific blocks matching the corrected `_emit_auth_fallback_warning` in `msg_preflight.sh`. Origin: MSG-HUB-20260602-901 (SmallFarmsAgents team_100 actor-key diagnosis). Approvers: team_00 + team_100.
 - **v1.0.0 (2026-04-21):** initial approval.
 - **v1.1.0 (2026-04-25):** added §4 Branch Independence, §5 API-First Pre-flight; added `/api/system/health` to API surface. WP: AOS-MSG-BRANCH-INDEPENDENCE-WP001.
 - **v1.2.0 (2026-04-25):** added formal §6 Multi-Domain Routing (text alignment to implementation shipped in AOS-MSG-DOMAIN-ROUTING-FIX); added §7 Single-MSG Archive Endpoint (`POST /api/messaging/archive`); renumbered prior §6→§8, §7→§9, §8→§10, §9→§11, §10→§12. WP: AOS-MSG-FOLLOWUPS-WP001. Approvers: team_00 + team_100 + team_110.
@@ -408,7 +422,7 @@ sudo systemctl status aos-api        # → "active (running)"
 | `POST /api/messaging/validate` | REQUIRED | optional | — | Dry-run schema check. |
 | `GET /api/prompts/generate` | REQUIRED | **NOT REQUIRED** (public-by-design — see §11 open item) | — | Onboarding prompts. Public-by-design for backward compatibility. |
 | `POST /api/governance/sync` | REQUIRED (`team_00` or `team_100` only) | REQUIRED | optional | Per ADR040 / IR#12. |
-| `POST /api/admin/actors/*` | REQUIRED (`team_00` only) | REQUIRED | — | Key provisioning. Delivered by AOS-V4.1-WP-ACTOR-KEY-PROCEDURE. |
+| `POST /api/admin/actors/*` | — | — | — | **NOT IMPLEMENTED.** No HTTP key-provisioning endpoint exists. Actor-key issue/rotate/revoke is done by server-side scripts on waldhomeserver (`scripts/issue_actor_key.sh` / `rotate_actor_key.sh` / `revoke_actor_key.sh`, run by `team_00`/`team_99`/`team_100` per ADR040) — see `methodology/AOS_ACTOR_KEY_PROCEDURE_v1.0.0.md`. The AOS-V4.1-WP-ACTOR-KEY-PROCEDURE deliverable is those scripts, not an API route. (Corrected 2026-06-02 — see Errata.) |
 | `GET /api/events/stream` | REQUIRED | optional | — | SSE streaming for watch mode. |
 
 **Rule 5 cross-reference:** See §5 Rule 5 for the canonical behavior when `ACTOR_KEY_NOT_CONFIGURED` or HTTP 401/403 is returned from authenticated endpoints.

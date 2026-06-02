@@ -4,7 +4,7 @@
 **Governance:** ADR040 (Authority Lockdown) + ADR034 (DB SSoT)
 **Version:** 1.0.0 | **Date:** 2026-05-11
 **WP:** AOS-V4.1-WP-ACTOR-KEY-PROCEDURE
-**Propagated to spokes via:** /AOS_gov-update
+**Propagated to spokes via:** /AOS_gov-sync (supersedes the deprecated /AOS_gov-update)
 
 ---
 
