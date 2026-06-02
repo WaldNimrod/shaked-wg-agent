@@ -42,6 +42,8 @@ Spoke projects may run a **subset** of checks depending on `active_modules` in `
 | `docs/WP_DB_CANONICAL_TRACK_LOD_v1.0.0.md` | Hub DB: `POST /api/work-packages` must map `track`/`lod_status` to canonical columns (`work_packages.track`, `lod_status`) — anti-regression note for migration 010 + ADR034 |
 | `docs/AOS_GATE_MANDATE_CANON_v1.0.0.md` | LOCKED `/AOS_gate-mandate` procedure — policy **v1.0.2** in frontmatter (hub + spokes; Phase 3.5 remediation before resubmission; `governance/directives/ADR036_AOS_GATE_MANDATE_CANON_HUB_AND_SPOKES_v1.0.0.md`) |
 | `scripts/db/check_db_connectivity.py` (hub) | Unified DB-first connectivity checker used by CI and manual exception flow |
+| `scripts/qa/qa_probe.mjs` | dependency-free CDP browser-QA runner — overflow + forbidden-term + screenshots; exit 0/1 |
+| `docs/BROWSER_QA_HARNESS_CANON_v1.0.0.md` | curl-vs-CDP-vs-Lighthouse discipline; dev-TLS-by-design |
 
 ## Data authority (V320+)
 

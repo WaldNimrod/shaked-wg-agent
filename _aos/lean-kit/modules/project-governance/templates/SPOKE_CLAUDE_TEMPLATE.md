@@ -61,6 +61,13 @@ You are working inside an **AOS spoke** — repo `{{REPO_NAME}}`, profile `{{PRO
 - Any direct edit will be reverted on next `aos_sync_all.sh` run
 - Validated by hub `validate_aos.sh` Checks 27–29
 - Change-request workflow: GCR artifact → team_100 → Team 00 approval → hub edit + sync
+
+## Dev/Staging TLS & Browser-QA Discipline (uniform)
+
+- **Dev/staging TLS is often invalid BY DESIGN** — many hosts issue a valid certificate only on the primary/production domain. A cert error on a **dev/staging** URL is **expected** and is NOT a defect to fix; a cert error on **production** IS a real defect.
+- **Cert-bypass flags are DEV-ONLY:** `curl -k` · chrome `--ignore-certificate-errors` · `requests verify=False`. Never use them in production QA.
+- **Never use `curl` alone to validate layout** — curl sees only HTML, never the rendered box model, so horizontal-overflow / RTL / responsive bugs pass curl and ship. For any layout/overflow/visual check, run the dependency-free browser-QA runner: `_aos/lean-kit/modules/validation-quality/scripts/qa/qa_probe.mjs` (Node 18+, no pip/npm). Discipline + curl-vs-CDP-vs-Lighthouse guidance: `_aos/lean-kit/modules/validation-quality/docs/BROWSER_QA_HARNESS_CANON_v1.0.0.md`.
+- Dev SEO/Performance scores (noindex edge headers, cache misses) are **artifacts** — re-measure on the production domain.
 <!-- aos:canonical:end -->
 
 <!-- aos:project-specific:start -->
