@@ -2089,6 +2089,38 @@ check_48() {
     fi
 }
 
+check_49() {
+    # ADR053 — decisive-gate validation tier matches track. Advisory in v1 (D4); legacy-tolerant.
+    local wp_dir="$PROJECT_ROOT/_aos/work_packages"
+    [ -d "$wp_dir" ] || { log_skip 49 "ADR053 tier check — no _aos/work_packages (spoke or pre-program)"; return; }
+    local flagged=0 checked=0 md
+    for md in "$wp_dir"/*/metadata.yaml; do
+        [ -f "$md" ] || continue
+        local track; track=$(grep -E '^track:' "$md" | head -1 | awk '{print $2}' | tr -d '"')
+        case "$track" in STANDARD|MANAGED|CONTENT|HOTFIX) ;; *) continue ;; esac
+        grep -q '^validation_tiering:' "$md" || continue   # legacy tolerance: no block → skip WP
+        checked=$((checked+1))
+        local wp; wp=$(basename "$(dirname "$md")")
+        local builder; builder=$(grep -E '^assigned_builder:' "$md" | head -1)
+        local dgline; dgline=$(grep -E 'L-GATE_(VALIDATE|DELIVER):' "$md" | head -1)
+        if [ -z "$dgline" ] || echo "$dgline" | grep -q 'engine: TBD'; then
+            echo "  [WARN] Check 49: $wp decisive-gate engine not yet set (TBD) — Tier-2 attestation pending (ADR053 §4)"
+            flagged=$((flagged+1))
+        elif echo "$dgline" | grep -q 'canonical_cross_engine: true'; then
+            local eng; eng=$(echo "$dgline" | sed -E 's/.*engine:[[:space:]]*([^,}]+).*/\1/' | tr -d ' ')
+            if [ -n "$eng" ] && [ "$eng" != "TBD" ] && echo "$builder" | grep -qi "$eng"; then
+                echo "  [WARN] Check 49: $wp decisive gate claims cross-engine but engine '$eng' matches builder — possible IR#1 Tier-2 gap (ADR053 §4.2)"
+                flagged=$((flagged+1))
+            fi
+        fi
+    done
+    if [ "$checked" -eq 0 ]; then
+        log_skip 49 "ADR053 tier check — no Tier-2-track WPs carry a validation_tiering block yet (legacy-tolerant)"
+    else
+        log_pass 49 "ADR053 decisive-gate tier — $checked WP(s) checked, $flagged advisory flag(s) (non-blocking, D4 advisory phase)"
+    fi
+}
+
 # ================================================================
 # Execute All Checks
 # ================================================================
@@ -2143,6 +2175,7 @@ check_45
 check_46
 check_47
 check_48
+check_49
 
 echo ""
 echo "================================================="
