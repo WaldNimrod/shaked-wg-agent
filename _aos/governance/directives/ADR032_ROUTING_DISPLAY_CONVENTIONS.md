@@ -44,6 +44,8 @@ This convention applies to all AOS output operations that produce a routing prom
 
 **All routing prompts and activation blocks are ALWAYS displayed inline as a fenced copy-paste block, regardless of line count.**
 
+> **see_also ADR053 (tiered validation):** **Tier-2 (decisive) gates MUST present this canonical fenced routing block to a *different engine*** (Cursor/Codex). **Intermediate Tier-1 gates may be sub-agent-attested inline** without a cross-engine routing block (ADR053 §3–§4).
+
 The prior 30-line gate (§3.1/§3.2) is retired. The principal's workflow requires zero file-hops — every routing prompt must be immediately copy-paste ready in the chat.
 
 ```

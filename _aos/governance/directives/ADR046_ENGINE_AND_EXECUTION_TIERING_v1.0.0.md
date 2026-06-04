@@ -130,6 +130,8 @@ ADR046 covers: engine identity (matrix entries), tier classification, per-team a
 
 ### 2.5 IR#1 Enforcement at Engine Level (model provenance)
 
+> **see_also ADR053:** This §2.5 vendor/model_family distinctness check is the **Tier-2** test; ADR053 §4 specifies **which gates per track** require it (decisive gates), vs gates that may run Tier-1 functional (sub-agent) independence.
+
 > **Iron Rule #1:** builder engine ≠ validator engine. Per Decision M-2 C24:
 
 The check must compare **vendor + model_family**, not just `engine_id`. Both Cursor and Claude Code may use Sonnet underneath — same vendor + same model = IR#1 violation if used as builder/validator pair.

@@ -179,11 +179,11 @@ Every AOS domain retains L0 as a valid operating mode regardless of installed ti
 
 These rules are constitutional. They apply at every level and cannot be overridden.
 
-1. **Cross-engine validation:** The builder engine must differ from the validator engine
+1. **Cross-engine validation (tiered — ADR053):** The builder engine must differ from the validator engine **at the decisive validation gate(s) per the WP's track**. Intermediate gates require at-minimum Tier-1 functional independence (fresh-context adversarial sub-agent). Decisive-gate cross-engine (Tier-2, different vendor/model_family) is non-negotiable for STANDARD/MANAGED/CONTENT/HOTFIX; EXPRESS/OPS floor per ADR053 §6.
 2. **Physical lean-kit:** `_aos/lean-kit/` is always a physical copy, never a symlink
 3. **Repo-internal references:** `spec_ref` paths never point outside the repository
 4. **Single-writer roadmap:** One agent holds write authority over roadmap.yaml at a time
-5. **L-GATE_VALIDATE independence:** Always Team 190, constitutional, cross-engine, immutable
+5. **L-GATE_VALIDATE independence:** Always Team 190, constitutional, cross-engine (Tier-2, ADR053), immutable
 6. **Artifact communication:** Inter-team communication via file in `_COMMUNICATION/`, not chat
 7. **Data authority — API-only mutations:** When a database is available, it is the single source of truth for all structured data **it represents**. Files are read-only deployed snapshots produced by `deploy_cascade`. ALL mutations to structured data (WP status, gate, lod_status, team engine/environment, project metadata) MUST go through the API for hub-native WPs (AOS-V* format, L0). Direct file edits to `roadmap.yaml`, `definition.yaml`, or `projects.yaml` for these fields are FORBIDDEN when the DB is running. **L2 spoke WP exception (ADR034 R9):** For spoke-native WPs (SNNN-PNNN-WPNNN format) with no hub DB row, the spoke `_aos/roadmap.yaml` is the file-based SSoT; spoke team_100 may edit operational state directly; git commit = audit record. This exception applies only where no hub DB row exists. Offline work is permitted only on an isolated git branch; the merge-back must go through the API or a reconciliation script that writes to DB first.
 
@@ -267,8 +267,11 @@ repo commits do not trigger this rule — it applies only to code merges.
 
 ### Why these teams cannot self-validate
 
-Iron Rule #1 (cross-engine validation) requires builder engine ≠ validator engine.
-The three out-of-gate teams cannot satisfy this because:
+Iron Rule #1 (cross-engine validation) requires builder engine ≠ validator engine
+**at the decisive validation gate (Tier-2, ADR053)**. Intermediate gates may be satisfied at
+Tier-1 functional independence (a fresh-context adversarial sub-agent) — self-tests by the
+out-of-gate team are still pre-validation, not a substitute for the decisive Tier-2 gate.
+The three out-of-gate teams cannot satisfy the decisive Tier-2 gate because:
 - Each session is independent; there is no way to hand work off to a different
   engine within the same session.
 - The tests they run are self-tests (unit/integration), not cross-engine

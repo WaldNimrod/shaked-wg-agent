@@ -92,6 +92,8 @@ The following 15 criteria must ALL pass before v4.0.0 is marked GA. Team_190 val
 
 ## §1 — Track Model
 
+> **`validation_tier` (see_also ADR053):** ADR044 sets the **gates per track** (below); **ADR053 §4 sets which gate requires which independence tier** (Tier-1 functional sub-agent vs Tier-2 cross-engine). Decisive gate is Tier-2 for STANDARD/MANAGED/CONTENT/HOTFIX; EXPRESS/OPS may terminate Tier-1 (ADR053 §6). `L-GATE_COMPLETE_QA`/`COMPLETE` are closure gates, not validation gates — no tier.
+
 ### §1.1 Overview
 
 The Track Model is the **primary WP classifier** in AOS v4.0.0. It replaces the v3 practice of using L-tier (L0/L2/L3) as a WP property. Tracks describe the **nature and shape of work**; L-tiers describe the **AOS installation capability** of a domain. These are orthogonal concepts.

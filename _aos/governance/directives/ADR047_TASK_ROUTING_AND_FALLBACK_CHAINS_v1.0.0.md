@@ -35,6 +35,8 @@ ADR047 covers: task class catalog, default routing matrix (per Q/C/S dominant ax
 
 ### 2.1 Task Class Catalog (TC-1 through TC-12 + TC-12 sub-classes)
 
+> **see_also ADR053:** **TC-7** (first-pass review) maps to **Tier-1** functional independence; **TC-8** (final/constitutional, cross-vendor required) maps to **Tier-2** cross-engine. ADR053 lifts this task-class distinction to **gate × track** doctrine.
+
 Working set v0.1 — per Claude Chat M-2 REVISED §2 + M-3 §2 sub-class refinement. team_100 confirms completeness/granularity.
 
 | ID | Task Class | Typical AOS context | Stakes | Context size | Dominant axis |
