@@ -1,5 +1,5 @@
 #!/bin/bash
-# validate_aos.sh — Universal _aos/ Validation (45 Checks)
+# validate_aos.sh — Universal _aos/ Validation (48 Checks)
 # =========================================================
 # L-GATE_BUILD exit criterion: MUST return exit code 0 (no FAIL; SKIP is allowed).
 #
@@ -2067,10 +2067,32 @@ check_47() {
     fi
 }
 
+# ----------------------------------------------------------------
+# Check 48 — Orphan / stale worktrees (AOS-V4.5-WP-SESSION-W2, advisory)
+# Flags worktrees with no live session lock; never FAIL (Phase-1 non-silent).
+# ----------------------------------------------------------------
+check_48() {
+    local reap_script="$PROJECT_ROOT/scripts/session_reap.sh"
+    if [ ! -x "$reap_script" ]; then
+        log_skip 48 "session_reap.sh not found (pre-W2 hub)"
+        return
+    fi
+    local out stale_count
+    out=$(bash "$reap_script" 2>&1 || true)
+    stale_count=$(echo "$out" | grep -cE '^\[(stale-worktree|stale-lock)\]' 2>/dev/null || echo 0)
+    if [ "$stale_count" -gt 0 ]; then
+        echo "  [WARN] Check 48: $stale_count stale worktree/lock candidate(s) (advisory — run: bash scripts/session_reap.sh)"
+        echo "$out" | grep -E '^\[(stale-worktree|stale-lock|orphan-branch-hint)\]' | sed 's/^/    /' || true
+        log_pass 48 "orphan worktree check — $stale_count advisory flag(s) (non-blocking)"
+    else
+        log_pass 48 "orphan worktree check — no stale worktrees/locks flagged"
+    fi
+}
+
 # ================================================================
 # Execute All Checks
 # ================================================================
-echo "validate_aos.sh — running up to 47 checks on $AOS_DIR (active_modules: $ACTIVE_MODULES_MODE, context: ${CONTEXT:-?})"
+echo "validate_aos.sh — running up to 48 checks on $AOS_DIR (active_modules: $ACTIVE_MODULES_MODE, context: ${CONTEXT:-?})"
 echo "================================================="
 
 check_1
@@ -2120,6 +2142,7 @@ check_44
 check_45
 check_46
 check_47
+check_48
 
 echo ""
 echo "================================================="

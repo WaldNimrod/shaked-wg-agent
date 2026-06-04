@@ -35,7 +35,7 @@ if [[ "${AOS_SKIP_AUTHORITY_CHECK:-0}" != "1" ]]; then
     echo "⛔ FATAL (ADR040 / Iron Rule #12): AOS_ACTOR_TEAM_ID env var not set." >&2
     echo "   Authorized teams: team_00, team_100." >&2
     echo "   Example: AOS_ACTOR_TEAM_ID=team_100 $0 --all" >&2
-    echo "   Non-AOS teams must file GOVERNANCE_CHANGE_REQUEST — see methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.1.0.md" >&2
+    echo "   Non-AOS teams must file GOVERNANCE_CHANGE_REQUEST — see methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md" >&2
     exit 10
   fi
   case "$ACTOR" in
@@ -106,6 +106,13 @@ md5_hash() {
 MODE="legacy"          # legacy | all
 DRY_RUN=false
 SHOW_DIFF=false
+# NO_PUSH: commit propagated snapshots locally but never `git push`.
+# Default ON for the single-dev/one-machine model (git = backup/deploy, not dev-sync;
+# ADR052). Honors env override AOS_SYNC_NO_PUSH=0 to re-enable push, or --push flag.
+NO_PUSH="${AOS_SYNC_NO_PUSH:-1}"
+# GIT_NET_TIMEOUT: hard cap (seconds) on every network git op so a credential prompt
+# or stalled remote can NEVER hang propagation again (root cause of the 3× hang).
+GIT_NET_TIMEOUT="${AOS_GIT_NET_TIMEOUT:-30}"
 REPORT_FILE=""
 LEGACY_AOS=""
 LEGACY_SPOKE=""
@@ -126,9 +133,11 @@ while [[ $# -gt 0 ]]; do
     --all)       MODE="all"; shift ;;
     --dry-run)   DRY_RUN=true; shift ;;
     --diff)      SHOW_DIFF=true; shift ;;
+    --no-push)   NO_PUSH=1; shift ;;
+    --push)      NO_PUSH=0; shift ;;
     --report)    REPORT_FILE="${2:?--report requires a file path}"; shift 2 ;;
     --help|-h)
-      echo "Usage: propagate_governance.sh [--all] [--diff] [--dry-run] [--report FILE]"
+      echo "Usage: propagate_governance.sh [--all] [--diff] [--dry-run] [--no-push|--push] [--report FILE]"
       echo "       propagate_governance.sh <aos_project_path> <spoke_project_path>"
       exit 0
       ;;
@@ -485,6 +494,14 @@ git_commit_push_target() {
     return 1
   fi
 
+  # NO_PUSH mode: commit locally, never push (single-dev/one-machine default, ADR052).
+  # Push is a deliberate backup/deploy action, decoupled from propagation.
+  if [ "${NO_PUSH:-1}" = "1" ]; then
+    log "  Git commit: $name — committed locally (no-push mode; push deferred)"
+    report "| $name | committed (local, no-push) |"
+    return 0
+  fi
+
   # Check if any remote exists before attempting push
   local has_remote
   has_remote=$(cd "$git_root" && git remote 2>/dev/null | head -1)
@@ -494,19 +511,34 @@ git_commit_push_target() {
     return 0
   fi
 
-  # Push — with fetch+rebase retry on non-fast-forward
+  # All network git ops are wrapped in `timeout` + GIT_TERMINAL_PROMPT=0 so a stalled
+  # remote or credential prompt can never hang propagation (root cause of the 3× hang).
+  local T="$GIT_NET_TIMEOUT"
   local push_out push_rc
-  push_out=$(cd "$git_root" && git push origin HEAD 2>&1)
+  push_out=$(cd "$git_root" && GIT_TERMINAL_PROMPT=0 timeout "$T" git push origin HEAD 2>&1)
   push_rc=$?
 
+  if [ $push_rc -eq 124 ]; then
+    fail "  Git push TIMED OUT (${T}s) in $name — push deferred, snapshot is committed locally"
+    report "| $name | committed (push timeout — deferred) |"
+    return 0  # not fatal: the snapshot is safely committed; push can be retried manually
+  fi
+
   if [ $push_rc -ne 0 ]; then
-    # Retry: fetch + rebase onto remote branch, then push
-    warn "  Git push rejected in $name — retrying with fetch+rebase"
+    # Retry: fetch + rebase onto remote branch, then push — each time-bounded.
+    warn "  Git push rejected in $name — retrying with fetch+rebase (≤${T}s each)"
     local current_branch
     current_branch=$(cd "$git_root" && git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
-    (cd "$git_root" && git fetch origin && git rebase "origin/$current_branch" 2>/dev/null) || true
-    push_out=$(cd "$git_root" && git push origin HEAD 2>&1)
+    (cd "$git_root" && GIT_TERMINAL_PROMPT=0 timeout "$T" git fetch origin \
+        && GIT_TERMINAL_PROMPT=0 timeout "$T" git rebase "origin/$current_branch") >/dev/null 2>&1 || true
+    push_out=$(cd "$git_root" && GIT_TERMINAL_PROMPT=0 timeout "$T" git push origin HEAD 2>&1)
     push_rc=$?
+  fi
+
+  if [ $push_rc -eq 124 ]; then
+    fail "  Git push TIMED OUT (${T}s, retry) in $name — push deferred, committed locally"
+    report "| $name | committed (push timeout — deferred) |"
+    return 0
   fi
 
   if [ $push_rc -ne 0 ]; then

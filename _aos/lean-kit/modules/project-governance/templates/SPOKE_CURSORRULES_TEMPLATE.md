@@ -42,7 +42,7 @@ You are working inside an **AOS spoke** (`{{REPO_NAME}}`, profile `{{PROFILE}}`)
 - `_aos/governance/team_*.md` are READ-ONLY snapshots propagated from hub
 - NEVER edit these files directly — they are overwritten on every `aos_sync_all.sh` run
 - To request governance changes: file `GOVERNANCE_CHANGE_REQUEST` in `_COMMUNICATION/team_XX/`, route to `team_100`
-- See: `{{HUB_PATH}}/methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.1.0.md`
+- See: `{{HUB_PATH}}/methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md`
 
 ## §BOUNDARY — Cross-Project Isolation (IMMUTABLE)
 
