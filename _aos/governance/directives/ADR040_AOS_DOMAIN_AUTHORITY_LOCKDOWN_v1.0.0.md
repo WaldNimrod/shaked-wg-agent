@@ -107,7 +107,7 @@ This eliminates drift: any future edit to the canonical section happens once in 
 ## References
 
 - `methodology/AOS_IDENTITY_ONBOARDING_v1.0.0.md`
-- `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.1.0.md` (bumped by this ADR)
+- `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md` (bumped by this ADR)
 - `lean-kit/modules/project-governance/templates/SPOKE_CLAUDE_TEMPLATE.md`
 - `lean-kit/modules/project-governance/templates/SPOKE_CURSORRULES_TEMPLATE.md`
 - `lean-kit/modules/project-governance/scripts/propagate_governance.sh` (authority gate added)

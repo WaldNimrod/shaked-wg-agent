@@ -80,7 +80,7 @@ If you are **not** team_00 or team_100 and you need a change to `_aos/` content:
 
 - `methodology/AOS_CONCEPT_AND_PRINCIPLES.md` — full principles + Iron Rules list
 - `methodology/AOS_DIRECTORY_CANON_v1.0.0.md` — directory structure canon
-- `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.1.0.md` — full gov-update procedure
+- `methodology/AOS_GOVERNANCE_UPDATE_PROCEDURE_v1.0.0.md` — full gov-update procedure
 - `governance/directives/ADR034_*.md` — data authority (DB-first, API-only)
 - `governance/directives/ADR039_AOS_DOMAIN_AUTHORITY_LOCKDOWN_v1.0.0.md` — authority lockdown (Iron Rule #12)
 
