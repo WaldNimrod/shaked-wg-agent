@@ -79,6 +79,7 @@ The following commands are Claude Code infrastructure or hub-only operations and
 | `/AOS_decide` | Decision Brief generator — Tier 2 classification; cross-engine upgrade path open if needed. |
 | `/AOS_help` | Static command reference — Claude Code native display. Cursor/Codex environments use `.cursorrules` §AOS Gate Operations as their reference. |
 | `/AOS_session` | Session worktree isolation (ADR052 W2) — delegates to `scripts/start_worktree.sh` + pre-flight/reaper; hub local-mac OPS only until W3 register. |
+| `/AOS_onboard` | Activation/onboarding prompt generator — thin over `GET /api/prompts/generate?type=onboard_agent` (default team_100). Ends manual prompt-writing; team_100 then spawns the rest. |
 
 ## 7. Amendment Rules
 
