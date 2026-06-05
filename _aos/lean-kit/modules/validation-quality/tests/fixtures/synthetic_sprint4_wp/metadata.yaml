@@ -1,9 +1,0 @@
-# Test fixture — AC-14: Check 42 FAIL case
-# This WP has sprint_count: 4 (exceeds 3-sprint cap) and status: ACTIVE.
-# DO NOT place inside _aos/work_packages/ — it would trigger a real Check 42 FAIL.
-# Use for local AC verification only (create in _aos/work_packages/SYNTHETIC_TEST/ temporarily).
-wp_id: SYNTHETIC_TEST_SPRINT4
-track: STANDARD
-effort: NORMAL
-sprint_count: 4
-status: ACTIVE
