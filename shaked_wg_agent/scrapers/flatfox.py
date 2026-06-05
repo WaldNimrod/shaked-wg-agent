@@ -196,6 +196,9 @@ class FlatfoxScraper(BaseScraper):
             # Falls back to summary when description is empty.
             full_description = description if description else summary
 
+            published_raw = lst.get("published") or lst.get("created")
+            posted_date: str | None = published_raw[:10] if published_raw else None
+
             return ScrapedListing(
                 source=self.source_id,
                 source_listing_id=pk,
@@ -205,6 +208,7 @@ class FlatfoxScraper(BaseScraper):
                 currency=self.city.currency,
                 country=self.city.country,
                 available_from=str(available_from) if available_from else None,
+                posted_date=posted_date,
                 location_text=location_text,
                 district=district,
                 transit_match_lines=line_ids,

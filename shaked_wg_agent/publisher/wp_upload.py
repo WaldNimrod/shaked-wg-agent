@@ -3,10 +3,10 @@
 Usage:
     from shaked_wg_agent.publisher.wp_upload import upload_html
     media_id, url = upload_html(Path("data/shaked_curated_2026-05-06.html"))
+    media_id, url = upload_html(Path("data/shaked_aug.html"), canonical_filename="shaked-aug.html")
 
-The canonical remote filename is always ``shaked-top10.html``.
-The previous media_id is stored in ``data/.wp_media_id`` and deleted before each upload
-so the URL never gets a numeric suffix (e.g. -1, -2 …).
+The canonical remote filename stays fixed so the URL never gets a numeric suffix (-1, -2 …).
+The previous media_id is stored in ``data/.wp_media_id_<slug>`` and deleted before each upload.
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from pathlib import Path
 import requests
 
 _CANONICAL_FILENAME = "shaked-top10.html"
-_MEDIA_ID_FILE = Path("data/.wp_media_id")
+_CANONICAL_FILENAME_AUG = "shaked-aug.html"
 
 
 def _token() -> str:
@@ -30,27 +30,42 @@ def _rest_base() -> str:
     return os.environ.get("UPRESS_WP_REST_BASE", "https://www.nimrod.bio/wp-json")
 
 
-def upload_html(html_path: Path) -> tuple[int, str]:
-    """Delete previous media entry (if any) then upload html_path as shaked-top10.html.
+def _media_id_file(canonical_filename: str) -> Path:
+    """Derive a local media-ID tracking file from the canonical filename."""
+    slug = canonical_filename.replace(".", "_").replace("-", "_")
+    return Path(f"data/.wp_media_id_{slug}")
+
+
+def upload_html(html_path: Path, canonical_filename: str = _CANONICAL_FILENAME) -> tuple[int, str]:
+    """Delete previous media entry (if any) then upload html_path under canonical_filename.
 
     Returns (media_id, public_url).
     """
     headers_auth = {"Authorization": f"Basic {_token()}"}
     base = _rest_base()
+    id_file = _media_id_file(canonical_filename)
 
-    # Delete previous version
-    if _MEDIA_ID_FILE.exists():
-        old_id = _MEDIA_ID_FILE.read_text().strip()
+    # Migrate legacy data/.wp_media_id → new per-file naming for the default page
+    legacy = Path("data/.wp_media_id")
+    if canonical_filename == _CANONICAL_FILENAME and legacy.exists() and not id_file.exists():
+        id_file.write_text(legacy.read_text())
+
+    # Delete previous version so the URL stays clean (no -1 / -2 suffix)
+    if id_file.exists():
+        old_id = id_file.read_text().strip()
         if old_id:
-            requests.delete(f"{base}/wp/v2/media/{old_id}?force=1",
-                            headers=headers_auth, timeout=15)
+            requests.delete(
+                f"{base}/wp/v2/media/{old_id}?force=1",
+                headers=headers_auth,
+                timeout=15,
+            )
 
     # Upload new version
     resp = requests.post(
         f"{base}/wp/v2/media",
         headers={
             **headers_auth,
-            "Content-Disposition": f'attachment; filename="{_CANONICAL_FILENAME}"',
+            "Content-Disposition": f'attachment; filename="{canonical_filename}"',
             "Content-Type": "text/html",
         },
         data=html_path.read_bytes(),
@@ -61,5 +76,5 @@ def upload_html(html_path: Path) -> tuple[int, str]:
     media_id: int = j["id"]
     url: str = j["source_url"]
 
-    _MEDIA_ID_FILE.write_text(str(media_id))
+    id_file.write_text(str(media_id))
     return media_id, url

@@ -17,6 +17,7 @@ import json
 import logging
 import re
 import time
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from shaked_wg_agent.scrapers.base import BaseScraper, ScrapedListing
@@ -192,6 +193,15 @@ class WeegeeScraper(BaseScraper):
             full_description = description
             summary = description[:300]
 
+            created_raw: dict = raw.get("created_raw") or {}
+            posted_date: str | None = None
+            cr_unit = created_raw.get("unit", "")
+            cr_value = created_raw.get("value", 0)
+            if cr_unit in ("hour", "hours"):
+                posted_date = (datetime.now(UTC) - timedelta(hours=int(cr_value))).date().isoformat()
+            elif cr_unit in ("day", "days"):
+                posted_date = (datetime.now(UTC) - timedelta(days=int(cr_value))).date().isoformat()
+
             # Detect vegan signal from description
             lower_desc = description.lower()
             vegan_signal = "kein Signal"
@@ -207,6 +217,7 @@ class WeegeeScraper(BaseScraper):
                 title=title[:100],
                 price=price,
                 available_from=available_from,
+                posted_date=posted_date,
                 location_text=location_text,
                 district=district,
                 currency="CHF",

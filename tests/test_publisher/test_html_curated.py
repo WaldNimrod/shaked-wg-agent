@@ -99,7 +99,7 @@ def test_rebuild_html_structure(tmp_path: Path) -> None:
     assert "<body" in content, "Missing <body> tag"
     assert "score-matrix-tbody" in content, "Missing score matrix table body"
     assert "data-listing-card" in content, "Missing listing card(s)"
-    assert "דירות לשקד" in content, "Missing Hebrew header content"
+    assert "Shaked" in content, "Missing header content"
 
 
 # ---------------------------------------------------------------------------

@@ -190,21 +190,28 @@ def cmd_rebuild_html(args: argparse.Namespace) -> None:
     from shaked_wg_agent.publisher.wp_upload import upload_html
 
     extra = getattr(args, "extra_listings", None)
+    canonical = getattr(args, "canonical_filename", None) or "shaked-top10.html"
     out_path = rebuild_html(
         profile_id=args.profile,
         top=args.top,
         out=args.out,
         extra_listings_path=extra,
+        avail_from=getattr(args, "avail_from", None),
+        avail_to=getattr(args, "avail_to", None),
+        color_theme=getattr(args, "color", "blue") or "blue",
+        peer_url=getattr(args, "peer_url", "") or "",
+        peer_label=getattr(args, "peer_label", "") or "",
     )
     console.print(f"[bold green]✅ HTML rebuilt:[/bold green] {out_path}")
-    console.print(f"   Top N  : {args.top}")
-    console.print(f"   Profile: {args.profile or '(default)'}")
+    console.print(f"   Top N    : {args.top}")
+    console.print(f"   Profile  : {args.profile or '(default)'}")
+    console.print(f"   Filename : {canonical}")
     if extra:
-        console.print(f"   Extra  : {extra}")
+        console.print(f"   Extra    : {extra}")
 
     if not getattr(args, "no_upload", False):
         try:
-            media_id, url = upload_html(out_path)
+            media_id, url = upload_html(out_path, canonical_filename=canonical)
             console.print(f"   [bold green]🌐 URL      : {url}[/bold green]")
             console.print(f"   Media ID   : {media_id}")
         except Exception as exc:
@@ -325,6 +332,18 @@ def main() -> None:
                            help="path to JSON file with additional listings to merge (e.g. manual_finds)")
     p_rebuild.add_argument("--no-upload", action="store_true", default=False,
                            help="skip WordPress upload (local build only)")
+    p_rebuild.add_argument("--avail-from", type=str, default=None, dest="avail_from",
+                           help="filter listings: available_from >= YYYY-MM-DD")
+    p_rebuild.add_argument("--avail-to", type=str, default=None, dest="avail_to",
+                           help="filter listings: available_from <= YYYY-MM-DD")
+    p_rebuild.add_argument("--color", type=str, default="blue", choices=["blue", "orange"],
+                           help="page color theme (default: blue)")
+    p_rebuild.add_argument("--canonical-filename", type=str, default="shaked-top10.html",
+                           dest="canonical_filename", help="WP upload filename (default: shaked-top10.html)")
+    p_rebuild.add_argument("--peer-url", type=str, default="", dest="peer_url",
+                           help="URL of the peer page to link in header")
+    p_rebuild.add_argument("--peer-label", type=str, default="", dest="peer_label",
+                           help="Label for the peer page link")
     p_rebuild.set_defaults(func=cmd_rebuild_html)
 
     args = parser.parse_args()
