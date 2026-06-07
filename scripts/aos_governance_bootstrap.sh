@@ -67,15 +67,31 @@ hydrate() {
     if is_url "$hub"; then
       local ref="${AOS_HUB_REF:-main}"
       git archive --remote="$hub" "$ref" "_aos/$d" 2>/dev/null | tar -x -C "$REPO" || return 1
-    else
-      [ -d "$hub/_aos/$d" ] || { echo "[aos-bootstrap] FATAL: hub missing _aos/$d at $hub" >&2; return 1; }
+    elif [ -d "$hub/_aos/$d" ] && [ -n "$(ls -A "$hub/_aos/$d" 2>/dev/null)" ]; then
+      # Normal case (spoke / worktree): hub's rendered snapshot is present → copy it.
       mkdir -p "$REPO/_aos/$d"
       rsync -a --delete "$hub/_aos/$d/" "$REPO/_aos/$d/" || return 1
+    elif [ "$d" = "lean-kit" ] && [ -d "$hub/lean-kit" ]; then
+      # Hub self-hydrate: _aos/lean-kit is a clean 1:1 mirror of the source lean-kit/.
+      mkdir -p "$REPO/_aos/$d"
+      rsync -a --delete --exclude=.git --exclude=.DS_Store --exclude=__pycache__ "$hub/lean-kit/" "$REPO/_aos/$d/" || return 1
+    else
+      # _aos/governance and _aos/methodology are COMPOSITE renders (core/governance team contracts +
+      # governance/directives/ ADRs; curated methodology) — they cannot be self-hydrated by a single
+      # rsync on a cold HUB. Warn + continue (non-fatal). validate_aos.sh tolerates the absent cache
+      # (cold-checkout) and advises bootstrap; the proper render is scripts/aos_sync_all.sh.
+      echo "[aos-bootstrap] WARN: _aos/$d unavailable at $hub and not self-renderable — run scripts/aos_sync_all.sh (hub render) or pass --hub <hydrated source> (spoke)." >&2
+      HYDRATE_INCOMPLETE=1
     fi
   done
 }
 
+HYDRATE_INCOMPLETE=0
 hydrate "$HUB_SRC" || { echo "[aos-bootstrap] FATAL: hydrate failed from $HUB_SRC" >&2; exit 4; }
 write_gov_stamp "$REPO" "$HUB_SRC" "${ACTOR:-bootstrap}"
+if [ "${HYDRATE_INCOMPLETE:-0}" -eq 1 ]; then
+  echo "[aos-bootstrap] PARTIAL: hydrated what was available from ${HUB_SRC} → ${REPO}/_aos/ (+ stamp). Composite caches (governance/methodology) need scripts/aos_sync_all.sh or a hydrated --hub."
+  exit 0
+fi
 echo "[aos-bootstrap] hydrated Tier-A governance cache from ${HUB_SRC} → ${REPO}/_aos/ (+ stamp)"
 exit 0

@@ -24,6 +24,14 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$REPO_ROOT"
 
+# Git env hygiene: when invoked as a git hook, git exports GIT_DIR / GIT_WORK_TREE /
+# GIT_INDEX_FILE pointing at THIS repo. Child processes (validate_aos.sh, the pytest suite)
+# inherit them, so their git subcommands operate on this repo instead of their own fixtures —
+# e.g. tests doing `git init` / `git worktree add` in a tmp dir leaked 'init' commits and
+# stray worktrees onto the working branch. Unset so children resolve git from their own cwd.
+# (AOS-V4.5 — root cause of pre-push branch pollution.)
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_PREFIX GIT_OBJECT_DIRECTORY 2>/dev/null || true
+
 log() { printf '[pre-push] %s\n' "$1" >&2; }
 
 # ── 1. Governance validation — locate validate_aos.sh ─────────────────────────
