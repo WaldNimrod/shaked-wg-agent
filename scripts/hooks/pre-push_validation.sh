@@ -8,10 +8,10 @@
 # Prerequisites: bash, git, python3; invoked from within an AOS repo (hub or spoke).
 # Env vars:
 #   AOS_SKIP_TESTS=1         → run validate_aos.sh only; skip the repo test suite.
-#   AOS_PREPUSH_TESTS=strict → repo-test failures BLOCK the push. Default is advisory:
-#                              validate_aos.sh is the HARD gate; repo-test failures only WARN
-#                              (non-blocking) so pre-existing test debt cannot wedge every push
-#                              or break propagation tooling. (Deviation D-S1-002.)
+#   AOS_PREPUSH_TESTS=advisory → repo-test failures only WARN (non-blocking). Default is now
+#                              STRICT: repo-test failures BLOCK the push. Flipped 2026-06-16 once
+#                              the v5 suite reached green + deterministic (471/0); was advisory
+#                              under D-S1-002 only while pre-existing test debt could wedge pushes.
 # Ports: none — this script opens no listeners (CS-5: prerequisites/env/ports stated).
 # Contract: exit 0 = allow push; non-zero = block push.
 # Bypass: `git push --no-verify` skips the hook natively (single disciplined operator).
@@ -80,7 +80,7 @@ if _run_repo_tests; then
   log "OK — push allowed."
 else
   trc=$?
-  if [ "${AOS_PREPUSH_TESTS:-advisory}" = "strict" ]; then
+  if [ "${AOS_PREPUSH_TESTS:-strict}" = "strict" ]; then
     log "repo tests FAILED (rc=$trc) and AOS_PREPUSH_TESTS=strict — push blocked."
     exit 1
   fi
