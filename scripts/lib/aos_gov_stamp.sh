@@ -1,15 +1,77 @@
 #!/usr/bin/env bash
-# aos_gov_stamp.sh — write _aos/AOS_GOVERNANCE_VERSION.yaml (Model B / ADR054).
+# aos_gov_stamp.sh — write the Model-B governance audit anchors (ADR054).
 #
 # The version stamp is the ONLY governance artifact that remains TRACKED in a
 # domain's git history under Model B. It answers "which governance version does
 # this domain hold?" at any past commit. Generated, never hand-edited (CS-6).
 #
+# Two TRACKED stamp files are co-written so they can NEVER disagree (R3 / Check 66):
+#   - _aos/AOS_GOVERNANCE_VERSION.yaml  (full audit anchor + cache_file_count)
+#   - _aos/last_gov_sync.yaml           (delta-display tracking; short hub_sha)
+# Both carry the SAME hub_sha + timestamp from a single write_gov_stamp() call.
+#
+# The Tier-A cache (_aos/{governance,methodology,lean-kit}) is git-ignored
+# (ADR054 Model B), so adding/removing canon files produces NO tracked diff.
+# write_gov_stamp() therefore counts the cache at WRITE time (call it AFTER all
+# copy phases land), and gov_stamp_needs_restamp() lets a caller detect an
+# on-disk count that has drifted away from the stamped count even when git
+# shows no tracked change (R2 / Check 65).
+#
 # Prereqs: git, find, date. Env: ACTOR (optional, recorded as synced_by),
 #   AOS_HUB_SHA / AOS_HUB_REF (optional fallback when hub_root is a remote URL).
 # Ports: none.
 #
-# Usage: write_gov_stamp <target_repo> <hub_root|hub_url> [synced_by]
+# Usage:
+#   write_gov_stamp <target_repo> <hub_root|hub_url> [synced_by]
+#   gov_stamp_count <target_repo>            # echo current on-disk Tier-A file count
+#   gov_stamp_stamped_count <target_repo>    # echo cache_file_count from the stamp ("" if none)
+#   gov_stamp_needs_restamp <target_repo>    # exit 0 if on-disk count != stamped count
+
+# Cache dirs that make up the Tier-A governance snapshot (single source of the list).
+AOS_GOV_CACHE_DIRS="governance methodology lean-kit"
+
+# Count files across the Tier-A cache dirs of <target_repo>. Mirrors validate_aos.sh
+# Check 65 (C-MB5) EXACTLY: sum `find -type f` over existing cache dirs.
+gov_stamp_count() {
+  local target_repo="$1" count=0 d
+  for d in $AOS_GOV_CACHE_DIRS; do
+    if [ -d "$target_repo/_aos/$d" ]; then
+      count=$(( count + $(find "$target_repo/_aos/$d" -type f 2>/dev/null | wc -l | tr -d ' ') ))
+    fi
+  done
+  echo "$count"
+}
+
+# Echo the cache_file_count recorded in the stamp (empty string if no/blank stamp).
+gov_stamp_stamped_count() {
+  local stamp="$1/_aos/AOS_GOVERNANCE_VERSION.yaml"
+  [ -f "$stamp" ] || { echo ""; return 0; }
+  awk '/^cache_file_count:/{print $2; exit}' "$stamp" | tr -d ' '
+}
+
+# Return 0 (true) when a re-stamp is required: the on-disk Tier-A count differs
+# from the count recorded in the stamp (or there is no/malformed stamp). This is
+# the guard aos_sync_all uses so a git-ignored cache growth (no tracked diff)
+# still triggers a re-stamp (R2). Skips when the cache is not hydrated at all
+# (cold checkout) — a missing cache is a bootstrap concern, not a stamp drift.
+gov_stamp_needs_restamp() {
+  local target_repo="$1"
+  [ -d "$target_repo/_aos" ] || return 1
+  # Cache absent entirely (cold clone) → not a re-stamp trigger.
+  local any=0 d
+  for d in $AOS_GOV_CACHE_DIRS; do
+    [ -d "$target_repo/_aos/$d" ] && any=1
+  done
+  [ "$any" -eq 1 ] || return 1
+  local want got
+  want="$(gov_stamp_stamped_count "$target_repo")"
+  got="$(gov_stamp_count "$target_repo")"
+  # No stamp, or non-numeric stamped count, or count mismatch → needs re-stamp.
+  if [ -z "$want" ] || ! [ "$want" -eq "$want" ] 2>/dev/null; then
+    return 0
+  fi
+  [ "$got" -ne "$want" ]
+}
 
 write_gov_stamp() {
   local target_repo="$1"
@@ -17,7 +79,7 @@ write_gov_stamp() {
   local synced_by="${3:-${ACTOR:-unknown}}"
   [ -d "$target_repo/_aos" ] || return 0
 
-  local hub_sha hub_short hub_ref ts count d tmp
+  local hub_sha hub_short hub_ref ts count tmp
   if git -C "$hub_root" rev-parse HEAD >/dev/null 2>&1; then
     hub_sha="$(git -C "$hub_root" rev-parse HEAD)"
     hub_short="$(git -C "$hub_root" rev-parse --short=12 HEAD)"
@@ -30,13 +92,15 @@ write_gov_stamp() {
   fi
   ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
-  count=0
-  for d in governance methodology lean-kit; do
-    if [ -d "$target_repo/_aos/$d" ]; then
-      count=$(( count + $(find "$target_repo/_aos/$d" -type f 2>/dev/null | wc -l | tr -d ' ') ))
-    fi
-  done
+  # Count the Tier-A cache AT WRITE TIME. Callers MUST invoke write_gov_stamp
+  # AFTER all copy phases (governance + methodology + lean-kit) have landed so
+  # this count reflects the final on-disk state (R2 / Check 65).
+  count="$(gov_stamp_count "$target_repo")"
 
+  # ── Co-write BOTH tracked stamp files atomically (R3 / Check 66) ──
+  # Same hub_sha + timestamp in one step → the two stamps can never SPLIT.
+
+  # 1. AOS_GOVERNANCE_VERSION.yaml — full audit anchor (stores the FULL 40-char sha).
   tmp="$target_repo/_aos/.AOS_GOVERNANCE_VERSION.yaml.tmp"
   cat > "$tmp" <<EOF
 # _aos/AOS_GOVERNANCE_VERSION.yaml — TRACKED governance audit anchor (Model B / ADR054).
@@ -52,4 +116,20 @@ cache_paths: [_aos/governance/, _aos/methodology/, _aos/lean-kit/]
 cache_file_count: ${count}
 EOF
   mv -f "$tmp" "$target_repo/_aos/AOS_GOVERNANCE_VERSION.yaml"
+
+  # 2. last_gov_sync.yaml — delta-display tracking (stores the SHORT hub_sha;
+  #    Check 66 compares prefix-aware). Written here so the two anchors are
+  #    co-written from the SAME hub_sha/timestamp and never disagree (R3).
+  #    The hub itself is the governance SOURCE and does not record last_gov_sync
+  #    (it knows its own sha via git) — skip it to preserve prior behavior.
+  if [ "${AOS_GOV_STAMP_WRITE_LAST_SYNC:-1}" = "1" ] && [ "$target_repo" != "$hub_root" ]; then
+    tmp="$target_repo/_aos/.last_gov_sync.yaml.tmp"
+    cat > "$tmp" <<EOF
+hub_sha: ${hub_short}
+sync_ts: ${ts}
+scope: full
+synced_by: ${synced_by}
+EOF
+    mv -f "$tmp" "$target_repo/_aos/last_gov_sync.yaml"
+  fi
 }
