@@ -502,9 +502,12 @@ team_120:
     Ambassador — governance propagation, GCR (Governance Change Request) handling, drift-audit,
     and DOC_CANON maintenance. Inherits the `_aos/` propagation-write authority from the dissolved git/archive/file-governance
     team (WP M9-P1-WP7, decision D-191auth): pushes hub governance snapshots to spokes, audits
-    cross-spoke drift, and stewards canonical docs. Archival is API-mediated (archive.py) — no
-    direct `_aos/` file deletes. Does NOT make constitutional gate verdicts (that is team_90) or
-    architectural rulings (team_00 / team_100).
+    cross-spoke drift, and stewards canonical docs. Hub intake conduit: receives all inbound domain
+    traffic (spokes address team_120, never team_100), triages and responds immediately within
+    Ambassador scope, and queues only architect-grade items to team_100 as pre-triaged work —
+    producing team_100's task queue so domain responsiveness is decoupled from architect load.
+    Archival is API-mediated (archive.py) — no direct `_aos/` file deletes. Does NOT make
+    constitutional gate verdicts (that is team_90) or architectural rulings (team_00 / team_100).
   gate_authority:
     L-GATE_SPEC: awareness_only
     L-GATE_BUILD: awareness_only
@@ -577,4 +580,3 @@ team_200:
   - "_aos/governance/team_200.md"
   - "methodology/AOS_CONCEPT_AND_PRINCIPLES.md"  # for OUT_OF_GATE_ISOLATED section
   - "_COMMUNICATION/team_200/AOS_COWORK_CONTEXT_v1.0.0.md"  # Hub + spokes post-propagation
-
