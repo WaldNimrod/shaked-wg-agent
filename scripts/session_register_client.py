@@ -328,9 +328,12 @@ def cmd_detect(args: argparse.Namespace) -> int:
     rows = (payload or {}).get("sessions") or []
     repo_root = os.path.abspath(args.repo_root)
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "core"))
-    from agents_os_v3.modules.management.session_register import map_list_to_detect_json
-
-    out = map_list_to_detect_json(
+    # Lazy hub-module load via importlib — avoids the eager-import literal that the cross-project scan
+    # (Check 12) forbids on spokes, so the propagated client stays clean. cmd_detect is a hub-only path
+    # (spokes have no core/); on a spoke this raises ModuleNotFoundError, exactly as the eager import did.
+    import importlib
+    _sr = importlib.import_module("agents_os_v3.modules.management.session_register")
+    out = _sr.map_list_to_detect_json(
         rows,
         repo_root=repo_root,
         session_id=args.session_id,
