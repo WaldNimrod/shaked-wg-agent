@@ -16,11 +16,11 @@ Collect and confirm: `project_id` (lowercase), `display_name`, `profile` (L0/L2/
 
 ```bash
 # dry run — review planned_files
-curl -s -X POST "${AOS_V3_PUBLIC_API_BASE:-http://localhost:8090}/api/projects/create" \
+curl -s -X POST "${AOS_V3_PUBLIC_API_BASE:-http://localhost:8092}/api/projects/create" \
   -H "Content-Type: application/json" -H "X-Actor-Team-Id: team_00" \
   -d '{"project_id":"[project_id]","profile":"[profile]","path":"[local_path]","dry_run":true}'
 # execute
-curl -s -X POST "${AOS_V3_PUBLIC_API_BASE:-http://localhost:8090}/api/projects/create" \
+curl -s -X POST "${AOS_V3_PUBLIC_API_BASE:-http://localhost:8092}/api/projects/create" \
   -H "Content-Type: application/json" -H "X-Actor-Team-Id: team_00" \
   -d '{"project_id":"[project_id]","profile":"[profile]","path":"[local_path]"}'
 ```

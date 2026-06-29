@@ -139,4 +139,4 @@ Exit. No blocking wait.
 | HTTP 422 from cross-engine exec | Print IR#1 / mandate error — stop |
 | HTTP 503 (`no_headless_cli`) | Fall back to Phase 2b paste block |
 | Response JSON missing `msg_id` / `activation_hint` (paste path) | Re-fetch or surface parse error; do not fabricate |
-| API unreachable | Same as HTTP error; user may start `AOS` API on `127.0.0.1:8090` |
+| API unreachable | Same as HTTP error; user may start `AOS` API on `127.0.0.1:8092` |
