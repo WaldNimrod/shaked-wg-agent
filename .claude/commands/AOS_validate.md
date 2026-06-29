@@ -5,7 +5,7 @@ category: gate
 
 ## API Base Resolution
 
-API base resolves via three tiers (ADR043 §15.4 + §16): (1) `AOS_API_BASE` env var — highest priority; (2) `AOS_V3_PUBLIC_API_BASE` from `core/.env` — waldhomeserver canonical (`http://100.125.98.56:8090`); (3) `http://127.0.0.1:8090` — localhost fallback (correct on waldhomeserver; returns HTTP 410 on Mac unless legacy stub is running). Set `AOS_ACTOR_API_KEY` for server auth when `AOS_V3_ACTOR_KEYS` is enforced. Reference: ADR043 §15.4 (key retrieval) + §16 (auth matrix per team). **Front door (shell execution):** when running these calls from a shell, the canonical boilerplate front door is `scripts/aos_api_server_call.sh <team_id> <METHOD> <path> [curl_args]` (W5 W-S1) — it applies this same three-tier base resolution + actor headers in one place, so callers no longer hand-roll the curl/auth block.
+API base resolves via three tiers (ADR043 §15.4 + §16): (1) `AOS_API_BASE` env var — highest priority; (2) `AOS_V3_PUBLIC_API_BASE` from `core/.env` — waldhomeserver canonical (`http://100.125.98.56:8092`); (3) `http://127.0.0.1:8092` — localhost fallback (correct on waldhomeserver; returns HTTP 410 on Mac unless legacy stub is running). Set `AOS_ACTOR_API_KEY` for server auth when `AOS_V3_ACTOR_KEYS` is enforced. Reference: ADR043 §15.4 (key retrieval) + §16 (auth matrix per team). **Front door (shell execution):** when running these calls from a shell, the canonical boilerplate front door is `scripts/aos_api_server_call.sh <team_id> <METHOD> <path> [curl_args]` (W5 W-S1) — it applies this same three-tier base resolution + actor headers in one place, so callers no longer hand-roll the curl/auth block.
 
 Execute a canonical constitutional or technical validation against a gate mandate.
 
@@ -14,7 +14,7 @@ Execute a canonical constitutional or technical validation against a gate mandat
 > **Info-barrier:** At L-GATE_VALIDATE with `existing_qa_verdict`, QA rationale/findings are redacted — only verdict flag passes through.
 
 API endpoint: `POST {HUB_API_BASE}/api/verdicts/validate`  
-(`HUB_API_BASE` defaults to `http://127.0.0.1:8090`; override via `AOS_API_BASE` env)
+(`HUB_API_BASE` defaults to `http://127.0.0.1:8092`; override via `AOS_API_BASE` env)
 
 **Invocation:** `/AOS_validate <mandate-path> [--qa-verdict <qa-verdict-path>]`
 

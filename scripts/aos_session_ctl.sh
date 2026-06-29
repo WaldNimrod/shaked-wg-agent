@@ -169,6 +169,15 @@ aos_session_register() {
     bash "${SCRIPT_DIR}/aos_governance_bootstrap.sh" --repo "$REPO_ROOT" >/dev/null 2>&1 \
       || echo "[aos] governance cache bootstrap skipped (run scripts/aos_governance_bootstrap.sh manually)" >&2
   fi
+  echo "ℹ clobber guard: alias git='bash ${SCRIPT_DIR}/aos_git.sh' (recommended for ADR052 W2 enforcement)" >&2
+}
+
+aos_session_owner() {
+  local path="${1:-$REPO_ROOT}"
+  python3 "$CLIENT" owners --worktree-path "$path" --exclude-session-id "$(aos_session_id)" 2>/dev/null \
+    | python3 -m json.tool 2>/dev/null \
+    || python3 "$CLIENT" owners --worktree-path "$path" --exclude-session-id "$(aos_session_id)" 2>/dev/null \
+    || echo '{"owners":[]}'
 }
 
 aos_session_heartbeat() {
@@ -294,5 +303,6 @@ case "${1:-}" in
   resolve-orchestrator) aos_resolve_orchestrator "${2:-}" ;;
   # CTX-06 (v5 ENV): surface the resolved session team + run the allow-list identity guard (/AOS_session --status).
   identity) echo "session_team=$(aos_session_team)  repo=$(basename "$REPO_ROOT")"; bash "${SCRIPT_DIR}/aos_identity_guard.sh" "$REPO_ROOT" || true ;;
-  *) echo "Usage: aos_session_ctl.sh {start|register|heartbeat|close|list|list-json|session-id|advance|capture|inbox-check|resolve-orchestrator|identity} [args]" >&2; exit 2 ;;
+  owner|owners) aos_session_owner "${2:-}" ;;
+  *) echo "Usage: aos_session_ctl.sh {start|register|heartbeat|close|list|list-json|session-id|advance|capture|inbox-check|resolve-orchestrator|identity|owner} [args]" >&2; exit 2 ;;
 esac

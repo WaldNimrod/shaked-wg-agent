@@ -319,6 +319,40 @@ def cmd_advance(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_owners(args: argparse.Namespace) -> int:
+    """List live sessions on a worktree path (W2 enforcement / C3)."""
+    code, payload = _request("GET", "/api/sessions/list?live=true", timeout=float(args.timeout))
+    if code != 200:
+        print(json.dumps({"owners": [], "degrade": True, "code": code}))
+        return 2
+    rows = (payload or {}).get("sessions") or []
+    target = os.path.normpath(os.path.abspath(args.worktree_path))
+    exclude = (args.exclude_session_id or "").strip()
+    owners = []
+    for row in rows:
+        if row.get("environment") != "local-mac":
+            continue
+        if row.get("status") not in ("RUNNING", "IDLE"):
+            continue
+        wt = (row.get("worktree_path") or "").strip()
+        if not wt or os.path.normpath(wt) != target:
+            continue
+        sid = row.get("session_id")
+        if exclude and sid == exclude:
+            continue
+        owners.append(
+            {
+                "session_id": sid,
+                "team_id": row.get("team_id"),
+                "wp_id": row.get("wp_id"),
+                "branch": row.get("branch"),
+                "worktree_path": wt,
+            }
+        )
+    print(json.dumps({"owners": owners, "worktree_path": target}))
+    return 0
+
+
 def cmd_detect(args: argparse.Namespace) -> int:
     """Map live register rows → frozen detect_concurrency JSON (register backend)."""
     code, payload = _request("GET", "/api/sessions/list?live=true", timeout=float(args.timeout))
@@ -382,6 +416,11 @@ def main() -> int:
     p_det.add_argument("--wp-hint", default="")
     p_det.add_argument("--timeout", default="3")
 
+    p_own = sub.add_parser("owners")
+    p_own.add_argument("--worktree-path", required=True)
+    p_own.add_argument("--exclude-session-id", default="")
+    p_own.add_argument("--timeout", default="3")
+
     p_cap = sub.add_parser("capture")
     p_cap.add_argument("--sender", default=None)
     p_cap.add_argument("--recipient", required=True)
@@ -419,6 +458,7 @@ def main() -> int:
         "heartbeat": cmd_heartbeat,
         "close": cmd_close,
         "list": cmd_list,
+        "owners": cmd_owners,
         "detect": cmd_detect,
         "wp-run": cmd_wp_run,
         "advance": cmd_advance,
