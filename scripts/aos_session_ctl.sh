@@ -2,7 +2,7 @@
 # aos_session_ctl.sh — W3 session register CLI (register/heartbeat/close/list/render)
 # WP: AOS-V4.5-WP-SESSION-W3-DB-REGISTER
 #
-# Prerequisites: python3, curl optional; env AOS_API_BASE, AOS_SESSION_ENV, AOS_V3_TRUST_CLIENT_ACTOR=1 (local)
+# Prerequisites: python3, curl optional; env AOS_API_BASE, AOS_SESSION_ENV, AOS_TRUST_CLIENT_ACTOR=1 (local)
 # Ports: hub API (default 8090)
 
 set -euo pipefail

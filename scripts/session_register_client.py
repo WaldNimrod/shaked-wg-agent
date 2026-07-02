@@ -15,7 +15,7 @@ from pathlib import Path
 def _api_base() -> str:
     return (
         os.environ.get("AOS_API_BASE")
-        or os.environ.get("AOS_V3_PUBLIC_API_BASE")
+        or os.environ.get("AOS_PUBLIC_API_BASE")
         or "http://127.0.0.1:8092"
     ).rstrip("/")
 
@@ -67,7 +67,7 @@ def _actor_headers() -> dict[str, str]:
     pid = (os.environ.get("AOS_PROJECT_ID") or "").strip()
     if pid:
         headers["X-Project-Id"] = pid
-    raw = os.environ.get("AOS_V3_ACTOR_KEYS", "").strip()
+    raw = os.environ.get("AOS_ACTOR_KEYS", "").strip()
     if raw:
         try:
             keys = json.loads(raw)
