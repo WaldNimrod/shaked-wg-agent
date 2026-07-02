@@ -233,7 +233,7 @@ team_50:
   - "Team 50 = QA (Iron Rule)"
   - "Every QA run must be a FRESH test — never repeat prior findings without re-execution"
   - "GATE_4 QA evidence required: commands + outputs + exit codes"
-  - "All pytest runs: AOS_V3_E2E_RUN=1 AOS_V3_E2E_HEADLESS=1 — expected: 141 passed,
+  - "All pytest runs: AOS_E2E_RUN=1 AOS_E2E_HEADLESS=1 — expected: 141 passed,
     0 skipped, 0 failed"
   mandatory_reads:
   - "_aos/governance/team_50.md"
@@ -267,37 +267,43 @@ team_60:
   mandatory_reads: []
   domain_scope: universal
 
-# team_70 — Documentation (universal)
+# team_70 — the Librarian (writing · composition · content, universal)
 
 team_70:
   id: team_70
   label: Team 70
-  name: Content
+  name: the Librarian
   engine: codex
   environment: isolated
   in_gate_process: 1
   group: content
-  profession: technical_writer
+  profession: writer_composer
   operating_mode: GATE
-  roster_version: "1.6.0"
+  roster_version: "1.7.0"
   created_at: "2026-03-26T00:00:00Z"
+  updated_at: "2026-07-01"
   parent_team_id: team_00
-  role_description: "Technical writing for Project scope — spec documentation, governance
-    docs, AS_MADE_REPORT for AOS programs. Mirrors team_70 for AOS. GATE_5 Phase 5.1
-    owner for AOS documentation."
+  role_description: "the Librarian — writing · composition · content (universal). Authors and
+    maintains written/composed/content artifacts for the assigned domain: AOS specifications +
+    governance/closure documentation for AOS-native assignments, and a content domain's content
+    (e.g. book chapters, site/marketing copy) when assigned to it. 'AOS Documentation' is one
+    specialization; per-domain content production (e.g. nimrod-book) is another. Per-domain
+    engine/scope overrides are registered IR#14 specializations. Broadened per
+    AOS-V321-WP-TEAM70-LIBRARIAN-CANON (team_00 directive 2026-06-20)."
   gate_authority:
     GATE_5: phase_5.1_owner_aos
   writes_to:
   - "_COMMUNICATION/team_70/"
   - "documentation/docs-governance/"
   iron_rules:
-  - "All docs require identity header"
-  - "Project documentation scope documentation routes to team_70"
+  - "All content/docs require identity header"
+  - "Writing · composition · content for the ASSIGNED domain only — no application code"
   - "Do NOT modify SSM/WSM without Team 00 instruction"
   - "Cross-domain consistency review → route to team_100"
+  - "NEVER write to _aos/ (governance layer — reserved for AOS governance teams)"
   mandatory_reads: []
-  domain_scope: per_domain
-  standing: false
+  domain_scope: universal
+  standing: true
 
 team_80:
   id: team_80
