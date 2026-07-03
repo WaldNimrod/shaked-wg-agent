@@ -77,7 +77,7 @@ GET {HUB_API_BASE}/api/prompts/generate
     &next_gate={gate_name}                 (optional, used when gate_state=gate_done)
 ```
 
-`HUB_API_BASE` defaults to `http://127.0.0.1:8090` for local dev; override via `AOS_API_BASE` env var when hub runs on waldhomeserver (V321).
+`HUB_API_BASE` defaults to `http://127.0.0.1:8092` for local dev; override via `AOS_API_BASE` env var when hub runs on waldhomeserver (V321).
 
 **Response (JSON):**
 - `artifact_markdown` — write verbatim to `_COMMUNICATION/team_{ID}/{suggested_filename}`
