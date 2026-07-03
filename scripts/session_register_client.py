@@ -243,7 +243,7 @@ def _fib_parse_fm(path: Path) -> dict:
 def cmd_file_inbox(args: argparse.Namespace) -> int:
     """T3 (AOS-V5-WP-MAIL-SURFACE-UNIFORMITY) — local file-channel sweep (no DB / no API).
 
-    Self-contained mirror of agents_os_v3.modules.management.messages.list_file_inbox_pending so it runs
+    Self-contained mirror of agents_os.modules.management.messages.list_file_inbox_pending so it runs
     on spokes (which have no core/). Scans _COMMUNICATION/<team>/INBOX/ + ~/Documents/_agent_comm/
     {inbox,outbox}/ for MSG-*.md addressed `to: <team>` and unacked (no sibling *-RESPONSE.md, not under
     processed/). Same JSON shape as `inbox`. Keep in sync with the messages.py canonical version."""
@@ -366,7 +366,7 @@ def cmd_detect(args: argparse.Namespace) -> int:
     # (Check 12) forbids on spokes, so the propagated client stays clean. cmd_detect is a hub-only path
     # (spokes have no core/); on a spoke this raises ModuleNotFoundError, exactly as the eager import did.
     import importlib
-    _sr = importlib.import_module("agents_os_v3.modules.management.session_register")
+    _sr = importlib.import_module("agents_os.modules.management.session_register")
     out = _sr.map_list_to_detect_json(
         rows,
         repo_root=repo_root,
