@@ -29,7 +29,21 @@ mandate: MANDATE_SWG_CLOSURE_BACKFILL_v1.0.md
 
 | Former path (before archive) | Archived path |
 |------------------------------|---------------|
-| — | — |
+| `_aos/work_packages/S002-P002-WP002/LOD300_S002-P002-WP002.md` | `_archive/S002-P002-WP002/LOD300_S002-P002-WP002.md` (copy) |
+| `_aos/work_packages/S002-P002-WP002/LOD400_S002-P002-WP002.md` | `_archive/S002-P002-WP002/LOD400_S002-P002-WP002.md` (copy) |
+| `_aos/work_packages/S002-P002-WP002/LOD500_asbuilt.md` | `_archive/S002-P002-WP002/LOD500_asbuilt.md` (copy) |
+| `_aos/work_packages/S002-P002-WP002/MOCKUP_S002-P002-WP002.md` | `_archive/S002-P002-WP002/MOCKUP_S002-P002-WP002.md` (copy) |
+| `_aos/work_packages/S002-P002-WP002/mockup_html/auth_flow.html` | `_archive/S002-P002-WP002/mockup_html/auth_flow.html` (copy) |
+| `_aos/work_packages/S002-P002-WP002/mockup_html/index.html` | `_archive/S002-P002-WP002/mockup_html/index.html` (copy) |
+| `_aos/work_packages/S002-P002-WP002/mockup_html/key_rejected.html` | `_archive/S002-P002-WP002/mockup_html/key_rejected.html` (copy) |
+| `_aos/work_packages/S002-P002-WP002/mockup_html/key_valid.html` | `_archive/S002-P002-WP002/mockup_html/key_valid.html` (copy) |
+
+**Note (2026-07-08 completion, Fleet Version-Hygiene Sweep Phase B):** the 2026-04-24 backfill **copied** these
+files into `_archive/` rather than moving them — all source files still live under
+`_aos/work_packages/S002-P002-WP002/` (verified present 2026-07-08). Per this sweep's mandate the
+`_aos/work_packages/<WP-ID>/` metadata dir is kept in place (domain convention), so the duplicates are **not**
+removed by this sweep. No `_COMMUNICATION/` artifacts remain for this WP (verified 2026-07-08) — comm-side
+archival is complete.
 
 ## Misplaced Artifacts
 
