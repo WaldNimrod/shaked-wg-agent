@@ -51,7 +51,7 @@ team_00:
   iron_rules:
   - No guessing — read the file first.
   - Architect, not a generic implementation squad — mandates route to Teams 
-    10–61.
+    10–60.
   - 'GATE_4 Phase 4.3 (UX/vision sign-off): no delegation of human sign-off. (GATE_7
     = retired alias for this phase.)'
   - Project-level Iron Rules (operational context per project) are in each 
@@ -352,10 +352,14 @@ team_110:
   created_at: "2026-03-26T00:00:00Z"
   updated_at: "2026-04-15"
   parent_team_id: team_100
-  role_description: "AOS domain architect (IDE). Primary agent surface: Cursor Composer
-    2 in this repo. x1=AOS convention. Delivers AOS v3 spec packages to Team 100.
-    Must always raise risks and alternatives before final recommendation. Canonical
-    artifact folder: _COMMUNICATION/team_110/."
+  role_description: "Domain Architect (IDE) — serves ALL domains (TikTrack + AOS).
+    Primary agent surface: Cursor Composer 2 in this repo. Delivers AOS v3 + TikTrack
+    spec packages to Team 100. Must always raise risks and alternatives before final
+    recommendation. Canonical artifact folder: _COMMUNICATION/team_110/. Legacy
+    artifact folders (history only, not current write scope): _COMMUNICATION/team_101/
+    (AOS, ex-team_101) and _COMMUNICATION/team_102/ (TikTrack, ex-team_102). team_11/71/111
+    do not exist as distinct teams — collapsed into team_10/70/110 (all-domains)
+    per team_00 ruling 2026-07-08."
   gate_authority:
     L-GATE_SPEC: delegated
     L-GATE_BUILD: awareness_only
