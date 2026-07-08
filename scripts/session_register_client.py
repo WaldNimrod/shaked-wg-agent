@@ -8,6 +8,7 @@ import json
 import os
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -59,6 +60,12 @@ def _team_id() -> str:
     ).strip()
 
 
+# AOS-V5-M11-WP-MAIL-HYGIENE-RETENTION D2: mirrors dashboard_routes.py's _MAIL_SCOPE_UNIVERSAL_TEAMS
+# (kept as an independently-defined literal, not an import, since this client also runs on spokes
+# with no core/ on the path — see cmd_file_inbox's identical rationale).
+_MAIL_SCOPE_UNIVERSAL_TEAMS = {"team_00", "team_100", "team_120"}
+
+
 def _actor_headers() -> dict[str, str]:
     team = _team_id()
     headers = {"X-Actor-Team-Id": team, "Content-Type": "application/json"}
@@ -81,12 +88,18 @@ def _actor_headers() -> dict[str, str]:
     return headers
 
 
-def _request(method: str, path: str, body: dict | None = None, timeout: float = 3.0) -> tuple[int, dict | list | None]:
+def _request(method: str, path: str, body: dict | None = None, timeout: float = 3.0,
+             omit_project_header: bool = False) -> tuple[int, dict | list | None]:
     url = f"{_api_base()}{path}"
     data = None
     if body is not None:
         data = json.dumps(body).encode("utf-8")
-    req = urllib.request.Request(url, data=data, headers=_actor_headers(), method=method)
+    headers = _actor_headers()
+    if omit_project_header:
+        # C3 --all-domains: suppress the automatic X-Project-Id so a domain session's own scope
+        # doesn't leak in as an unintended default on THIS call only (other call sites unaffected).
+        headers.pop("X-Project-Id", None)
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             raw = resp.read().decode("utf-8")
@@ -188,14 +201,26 @@ def cmd_capture(args: argparse.Namespace) -> int:
 
 
 def cmd_inbox(args: argparse.Namespace) -> int:
-    """W4 inbox poll: GET /messaging/v2/inbox (read-only; degrade => empty on non-200)."""
+    """W4 inbox poll: GET /messaging/v2/inbox (read-only; degrade => empty on non-200).
+
+    AOS-V5-M11-WP-MAIL-HYGIENE-RETENTION C3 domain-default: a non-universal team passes its own
+    $AOS_PROJECT_ID as project_id by default (belt-and-suspenders with the server's C2 X-Project-Id
+    fallback); --all-domains / AOS_MAIL_ALL_DOMAINS=1 omits it (and suppresses the X-Project-Id
+    header too, so the server-side default can't silently re-apply it). Universal teams (D2) are
+    already fleet-wide server-side and need no client-side opt-out."""
+    all_domains = bool(getattr(args, "all_domains", False)) or os.environ.get("AOS_MAIL_ALL_DOMAINS") == "1"
+    universal = _team_id() in _MAIL_SCOPE_UNIVERSAL_TEAMS
     q = [
         f"recipient_kind={args.recipient_kind}",
         f"recipient={args.recipient}",
         f"status={args.status}",
         f"limit={args.limit}",
     ]
-    code, payload = _request("GET", "/api/messaging/v2/inbox?" + "&".join(q), timeout=float(args.timeout))
+    pid = (os.environ.get("AOS_PROJECT_ID") or "").strip()
+    if pid and not all_domains and not universal:
+        q.append(f"project_id={urllib.parse.quote(pid)}")
+    code, payload = _request("GET", "/api/messaging/v2/inbox?" + "&".join(q), timeout=float(args.timeout),
+                             omit_project_header=all_domains)
     if code != 200:
         print(json.dumps({"degrade": True, "code": code, "count": 0, "messages": []}))
         return 2
@@ -205,6 +230,29 @@ def cmd_inbox(args: argparse.Namespace) -> int:
 
 def cmd_read(args: argparse.Namespace) -> int:
     code, payload = _request("POST", "/api/messaging/v2/read", {"msg_id": args.msg_id}, timeout=float(args.timeout))
+    if code != 200:
+        print(json.dumps({"ok": False, "code": code, "detail": payload}), file=sys.stderr)
+        return 1
+    print(json.dumps(payload))
+    return 0
+
+
+def cmd_archive(args: argparse.Namespace) -> int:
+    """AOS-V5-M11-WP-MAIL-HYGIENE-RETENTION C3 archive-on-present: `check` calls this directly for
+    terminal kinds (verdict/handoff) right after the read flip — reversible via POST /v2/unarchive."""
+    code, payload = _request("POST", "/api/messaging/v2/archive", {"msg_id": args.msg_id}, timeout=float(args.timeout))
+    if code != 200:
+        print(json.dumps({"ok": False, "code": code, "detail": payload}), file=sys.stderr)
+        return 1
+    print(json.dumps(payload))
+    return 0
+
+
+def cmd_archive_read_older_than(args: argparse.Namespace) -> int:
+    """AOS-V5-M11-WP-MAIL-HYGIENE-RETENTION C3 `--archive-read-older-than N`: thin client over
+    POST /messaging/v2/archive-read-older-than, self-scoped server-side to the caller's own mailbox."""
+    code, payload = _request("POST", "/api/messaging/v2/archive-read-older-than",
+                             {"read_max_age_days": int(args.days)}, timeout=float(args.timeout))
     if code != 200:
         print(json.dumps({"ok": False, "code": code, "detail": payload}), file=sys.stderr)
         return 1
@@ -444,10 +492,20 @@ def main() -> int:
     p_ibx.add_argument("--status", default="pending")
     p_ibx.add_argument("--limit", default="20")
     p_ibx.add_argument("--timeout", default="3")
+    p_ibx.add_argument("--all-domains", action="store_true",
+                       help="C3: fleet-wide poll — omit the default $AOS_PROJECT_ID scope (default: $AOS_MAIL_ALL_DOMAINS)")
 
     p_rd = sub.add_parser("read")
     p_rd.add_argument("--msg-id", required=True)
     p_rd.add_argument("--timeout", default="3")
+
+    p_arc = sub.add_parser("archive")
+    p_arc.add_argument("--msg-id", required=True)
+    p_arc.add_argument("--timeout", default="3")
+
+    p_arot = sub.add_parser("archive-read-older-than")
+    p_arot.add_argument("--days", required=True, help="C3: archive own read mail older than N days")
+    p_arot.add_argument("--timeout", default="3")
 
     p_fib = sub.add_parser("file-inbox")   # T3 — local file-channel sweep (no API)
     p_fib.add_argument("--recipient", required=True)
@@ -465,6 +523,8 @@ def main() -> int:
         "capture": cmd_capture,
         "inbox": cmd_inbox,
         "read": cmd_read,
+        "archive": cmd_archive,
+        "archive-read-older-than": cmd_archive_read_older_than,
         "file-inbox": cmd_file_inbox,
     }
     return handlers[args.cmd](args)

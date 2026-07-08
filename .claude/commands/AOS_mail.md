@@ -25,6 +25,10 @@ via the old `/AOS_mail`-era `/api/messaging/inbox` and `_COMMUNICATION/team_*/MS
 `TEAM=${AOS_SESSION_TEAM_ID:-${AOS_ACTOR_TEAM_ID:-team_100}}`, `ENV=${AOS_SESSION_ENV:-local-mac}`,
 `SID=$(bash scripts/aos_session_ctl.sh session-id)`.
 
+`check` accepts two additional hygiene flags in the remainder of `$ARGUMENTS` (AOS-V5-M11-WP-MAIL-HYGIENE-RETENTION C3):
+- `--all-domains` (or `AOS_MAIL_ALL_DOMAINS=1`) — fleet-wide poll, opts out of the domain-default below. Parse into `ALL_DOMAINS=1` when either is present, else unset.
+- `--archive-read-older-than N` — additionally sweep the caller's own read mail older than N days (see end of this section). Parse the following token into `ARCHIVE_OLDER_THAN_DAYS`.
+
 ---
 
 ## Verb: check (default) — on-turn auto-read (F3, AC4/AC11)
@@ -32,11 +36,17 @@ via the old `/AOS_mail`-era `/api/messaging/inbox` and `_COMMUNICATION/team_*/MS
 Read pending mail addressed to self across all three recipient kinds (team + session + environment), render
 the inbox view, then flip each row `pending→read` so it is presented **exactly once** (loop-guard).
 
+**Domain-default (C3):** a non-universal team's poll is scoped to its own domain by default — the client
+passes `$AOS_PROJECT_ID` and the server independently defaults from the `X-Project-Id` header (C2) as a
+second line of defense. Universal teams (`team_00`/`team_100`/`team_120`, D2) stay fleet-wide with no flag
+needed. Pass `--all-domains` to opt out for one run.
+
 ```bash
 for pair in "team:$TEAM" "session:$SID" "environment:$ENV"; do
   rk="${pair%%:*}"; rv="${pair#*:}"; [ -z "$rv" ] && continue
   python3 scripts/session_register_client.py inbox \
-    --recipient-kind "$rk" --recipient "$rv" --status pending --limit 20
+    --recipient-kind "$rk" --recipient "$rv" --status pending --limit 20 \
+    $([ -n "$ALL_DOMAINS" ] && echo --all-domains)
 done
 ```
 
@@ -56,6 +66,18 @@ For each pending message (oldest first):
 1. `python3 scripts/session_register_client.py read --msg-id "$MSG"` — flips `pending→read` (loop-guard).
 2. If `body_ref` present → fetch + present the artifact to the operator.
 3. If `kind ∈ {verdict, handoff}` → surface a **next-action hint only** (e.g. `gate PASS — advance via /AOS_gate-status`). Never auto-advance.
+4. **Archive-on-present (C3, FA-4):** if `kind ∈ {verdict, handoff}` (terminal), immediately after presenting it
+   run `python3 scripts/session_register_client.py archive --msg-id "$MSG"` so it self-clears from the pending
+   view — reversible any time via `POST /messaging/v2/unarchive` (C4). Do **NOT** `ack()`-then-rely-on-the-sweep:
+   `sweep_retention` only scans `read`/`pending`, so an acked row would never be swept — archive directly instead.
+   Non-terminal kinds (e.g. `note`, sent via the `send` verb) are only read-flipped here; they age out later via
+   the daily retention sweep (or `--archive-read-older-than`, next), never auto-archived on present.
+
+**`--archive-read-older-than N` (C3):** when `$ARCHIVE_OLDER_THAN_DAYS` was parsed in Phase 0, after the poll
+loop above run `python3 scripts/session_register_client.py archive-read-older-than --days "$ARCHIVE_OLDER_THAN_DAYS"`
+— a thin call to `POST /messaging/v2/archive-read-older-than` that self-scopes server-side to the caller's own
+domain (same universal-team/X-Project-Id resolution as the inbox poll; the caller cannot name another team's
+scope) and archives its own `read` mail older than N days. Reversible via `unarchive`; never deletes.
 
 **COMM-06 (v5 ENV) — one unified inbox across ALL THREE transports** (so no handoff is missed because it
 arrived on a file surface). After the DB v2 rows, ALSO surface unacked file messages:
@@ -99,7 +121,7 @@ curl -s -X POST "$AOS_API_BASE/api/messaging/v2/send" \
 
 ## Verb: handoff — generate HANDOFF_TO_NEXT + capture (AC3, §A.4c — dogfoods W4)
 
-1. Generate the handoff artifact (server-assembled): `GET {AOS_API_BASE}/api/prompts/generate?mode=handoff&team_id={next_team}&wp_id={next_wp}` → write to `_COMMUNICATION/team_{next_team}/`.
+1. Generate the handoff artifact (server-assembled): `GET {AOS_API_BASE}/api/prompts/generate?mode=handoff&type=onboard_agent&team_id={next_team}&wp_id={next_wp}` → write to `_COMMUNICATION/team_{next_team}/`. **`type` is REQUIRED** (query param — `dashboard_routes.py` `type: str = Query(...)`); omitting it returns HTTP 422 (MSG-140 GCR fix, 2026-07-04). Valid values: `onboard_agent` (default for handoff), `context_refresh`, `governance_sync`, `add_skill`.
 2. Capture a `handoff` notice into the next WP's owning-team inbox (degrade-safe, one thin call):
 
 ```bash
@@ -144,6 +166,8 @@ renders both (one unified view) so nothing is missed during the window.
 
 ## References
 
-- `core/modules/management/messages.py` (send/capture/inbox/read/ack/archive — all logic)
-- `core/db/migrations/012_messages.sql` (schema) · LOD300 §6 (flow) / §8 (mockup)
+- `core/modules/management/messages.py` (send/capture/inbox/read/ack/archive/unarchive/sweep_retention — all logic)
+- `core/db/migrations/012_messages.sql` (schema) · `034_messages_retention.sql` (archived_at/pre_archive_status) · LOD300 §6 (flow) / §8 (mockup)
 - `scripts/aos_session_ctl.sh` (`capture` / `inbox-check` / `resolve-orchestrator` helpers)
+- `scripts/session_register_client.py` (`inbox --all-domains` / `archive` / `archive-read-older-than` verbs — AOS-V5-M11-WP-MAIL-HYGIENE-RETENTION C3)
+- `scripts/aos_retention_sweep.py` (daily fleet-wide sweep, systemd timer — C1.4/C1.5)
