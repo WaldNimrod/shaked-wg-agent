@@ -27,6 +27,7 @@ dev = [
     "mypy>=1.10",
     "types-requests>=2.31",
     "types-beautifulsoup4>=4.12",
+    "httpx>=0.28",
 ]
 
 [tool.setuptools.packages.find]
