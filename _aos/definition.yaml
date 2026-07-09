@@ -253,9 +253,19 @@ team_60:
   operating_mode: GATE
   roster_version: "1.6.0"
   created_at: "2026-03-26T00:00:00Z"
+  updated_at: "2026-07-09"
   parent_team_id: team_10
   role_description: "Infrastructure, runtimes, CI/CD, platform readiness. Does NOT
-    implement application logic or UI — that is team_10 (application implementation)."
+    implement application logic or UI — that is team_10 (application implementation).
+    ALSO the per-domain cursor-cloud operator (session-overridable — see cloud_agent_mode
+    below): when a session sets AOS_SESSION_ENV=cursor-cloud, team_60 takes on the
+    'Cloud Agent / DevOps Automation' capability and operates under the team_200
+    discipline (OUT_OF_GATE_ISOLATED / ISOLATED_BRANCH, cursor/* PR, self-QA per WP,
+    team_90 validates before merge). This is an ADDITIVE session-time override, not a
+    change to team_60's default identity above (still `engine: cursor` / `environment:
+    ide` / operating_mode: GATE by default). Added AOS-V5-M11-WP-CURSOR-CLOUD-ENVIRONMENT
+    (team_100 reconciliation 2026-07-09; roster v1.6.5 eliminated team_61 — team_60 is
+    the sole AOS-domain DevOps/cloud operator, no per-domain '+1' team variant)."
   gate_authority: {}
   writes_to:
   - "_COMMUNICATION/team_60/"
@@ -266,6 +276,21 @@ team_60:
   - "Submit completed infrastructure work to Team 50 for validation"
   mandatory_reads: []
   domain_scope: universal
+  # cloud_agent_mode — ADDITIVE (AOS-V5-M11-WP-CURSOR-CLOUD-ENVIRONMENT). NOT the default identity
+  # above; this block documents the session-overridable attributes team_60 takes on ONLY when a
+  # session is explicitly invoked with AOS_SESSION_ENV=cursor-cloud (per team_00 ruling
+  # RULING_team_120_CURSOR_CLOUD_ENV_CANON_2026-07-05 + team_100 reconciliation 2026-07-09). No
+  # schema precedent existed for "session-overridable" attributes prior to this WP — this shape
+  # (a nested cloud_agent_mode dict, rather than duplicate top-level engine:/environment: keys,
+  # which YAML cannot express on one mapping) is a new convention; flagged for team_100 review.
+  cloud_agent_mode:
+    engine: cursor-cloud-agent          # overrides default `engine: cursor` for that session only
+    environment: cursor-cloud           # overrides default `environment: ide` for that session only
+    capability: "Cloud Agent / DevOps Automation"
+    operating_model: ISOLATED_BRANCH    # team_200 discipline borrowed (NOT team_200's engine/activation)
+    gate_participation: OUT_OF_GATE_ISOLATED
+    canonical_validator: team_90        # decisive gate before merge (cross-engine, IR#1)
+    branch_pattern: "cursor/*"          # see /.git-branch-allowlist
 
 # team_70 — the Librarian (writing · composition · content, universal)
 
