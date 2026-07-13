@@ -1,21 +1,23 @@
 ---
 type: COWORK_CONTEXT
 title: "AOS — Cowork Session Context"
-version: "1.2.0"
+version: "1.3.0"
 authored_by: team_200
-date: "2026-05-02"
+date: "2026-07-09"
 status: ACTIVE
 usage: "Read at the start of every Cowork session — hub or spoke. Propagated to all spoke _COMMUNICATION/team_200/ via aos_sync_all.sh."
-current_release: "v4.0.0 'Autonomous' — tagged 2026-05-02"
+current_release: "v5.1.0 (tag v5.1.0) — active milestone AOS-V5-M11"
 ---
 
-> **🚀 CURRENT RELEASE: AOS v4.0.0 'Autonomous' (tagged 2026-05-02)**
+> **🚀 CURRENT RELEASE: AOS v5.1.0 (tag `v5.1.0`)**
 >
-> Milestone AOS-V4-MS001 complete. 11/11 WPs LOD500_LOCKED. 159/159 ACs verified. Hub `validate_aos.sh` extended to **45 checks** (W7 added 39–44; W11 added Check 45 WAN dual-stack `[SKIP:WARN]`). New: **Iron Rule #15** (IPv6-only WAN compatibility), **ADR048**, lean-kit WAN canon + probe.
+> The v5 line is canonical on `origin/main`. Active milestone: **AOS-V5-M11**. The 14-team roster, DB v2 messaging
+> bus (`:8092`), cockpit, and **cross-engine autonomous validation** are live on the v5 line.
 >
-> 9 spokes received the propagation; spoke team_99 sessions have 14 days from pull (deadline 2026-05-16) to run `wan_dual_stack_probe.sh` and reply with status per `MSG-HUB-20260502-005`.
+> Historical: AOS v4.0.0 "Autonomous" (milestone AOS-V4-MS001) shipped 2026-05-02 and is **superseded** by the v5
+> line — its Track Model (6 tracks + HOTFIX modifier, ADR044) remains the binding WP classifier under v5.
 >
-> Master closure: `_COMMUNICATION/team_00/MASTER_CLOSURE_V4_0_0_v1.0.0.md`.
+> Master closure (v4.0.0, historical record): `_COMMUNICATION/team_00/MASTER_CLOSURE_V4_0_0_v1.0.0.md`.
 
 # AOS — Cowork Session Context
 
@@ -75,7 +77,7 @@ agents-os (Hub)
 | **L0** | Lean/Manual | lean-kit בלבד, אין DB, ניהול קבצים ידני |
 | **L2** | AOS v3 / Dashboard | מנוע FastAPI + PostgreSQL, API mutations חובה |
 | **L2.5** | Managed Agent Pipeline | ל-WPs מורכבים (≥2 צוותים, MEDIUM/HIGH risk) |
-| **L3** | AOS v4 "Autonomous" | ✅ **שוחרר 2026-05-02** (tag `v4.0.0`). Track Model + Engine Matrix + MSG infrastructure + AUTO-ACTIVATION dryrun + validate_aos.sh 45 checks + IR#15 IPv6-only WAN compatibility |
+| **L3** | AOS Autonomous (v5 line) | ✅ **חי על קו ה-v5** (tag `v5.1.0`, milestone AOS-V5-M11). Track Model (ADR044, 6 tracks + HOTFIX) + Engine Matrix + MSG bus v2 (`:8092`) + cockpit + **cross-engine autonomous validation** פעילים על כל הצי; L3 הוא יכולת התקנה (install-tier) — **לא** מאפיין WP |
 
 בחירת פרופיל: `lean-kit/PROFILE_SELECTION_GUIDE.md`
 
@@ -205,4 +207,5 @@ python3 -c "from agents_os_v3.modules.management.db import probe_database; print
 
 ---
 
-*עודכן: 2026-04-23 | Team 200 — AOS Cowork Bundle Execution*
+*עודכן: 2026-07-09 (v5.1.0 / AOS-V5-M11 version-marker refresh — surgical; the "מצב עבודה נוכחי" WP table below is
+still dated 2026-04-23 and was out of scope for this pass) | Team 200 — AOS Cowork Bundle Execution*

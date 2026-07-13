@@ -10,7 +10,7 @@ Delegates to `scripts/aos_session_ctl.sh`, `scripts/start_worktree.sh`, `scripts
 
 **Invocation:** `/AOS_session [--worktree <wp>] [--status] [--list] [--reap] [--force] [--close]`
 
-Env: `AOS_SESSION_ENV` (default `local-mac`). Exempt: `cowork`, `claude-design`, `web-research`, `home-server`.
+Env: `AOS_SESSION_ENV` (default `local-mac`). Exempt: `cowork`, `claude-design`, `web-research`, `home-server`, `cursor-cloud`.
 
 ## Phase 0 — Parse flags (default: `--status`)
 
