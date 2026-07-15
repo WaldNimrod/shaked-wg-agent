@@ -2,7 +2,7 @@
 # run_cross_engine_validation.sh — drive a cross-engine validator HEADLESS (no human paste).
 #
 # Thin wrapper over agents_os.modules.management.cross_engine_validation_cli (Iron Rule #13).
-# Canon: methodology/AOS_CROSS_ENGINE_AUTONOMOUS_VALIDATION_v1.0.0.md
+# Canon: methodology/AOS_CROSS_ENGINE_AUTONOMOUS_VALIDATION_v1.1.0.md
 #
 # Usage:
 #   scripts/run_cross_engine_validation.sh <validator_team> <workspace> <mandate_path> [--dry-run]

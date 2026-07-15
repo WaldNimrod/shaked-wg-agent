@@ -13,7 +13,7 @@ Arguments: `{to_team} {task_description} [--wp {WP_ID}] [--scenario canary|gate|
 
 Minimal: `/AOS_dispatch team_90 "validate D1-D4"`
 
-**Default:** `--exec` is ON — drives the validator engine headless via `POST /api/validation/cross-engine/exec` (canon: `methodology/AOS_CROSS_ENGINE_AUTONOMOUS_VALIDATION_v1.0.0.md`). Use `--paste` / `--no-exec` only for engines with no headless CLI (v4 fallback).
+**Default:** `--exec` is ON — drives the validator engine headless via `POST /api/validation/cross-engine/exec` (canon: `methodology/AOS_CROSS_ENGINE_AUTONOMOUS_VALIDATION_v1.1.0.md`). Use `--paste` / `--no-exec` only for engines with no headless CLI (v4 fallback).
 
 ---
 
