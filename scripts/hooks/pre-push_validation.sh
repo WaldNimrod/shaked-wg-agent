@@ -287,7 +287,7 @@ VALIDATE=""
 for cand in \
   "$REPO_ROOT/validate_aos.sh" \
   "$REPO_ROOT/_aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh" \
-  "$REPO_ROOT/lean-kit/modules/validation-quality/scripts/validate_aos.sh"; do
+  "$REPO_ROOT/core/modules/validation-quality/scripts/validate_aos.sh"; do
   if [ -f "$cand" ]; then VALIDATE="$cand"; break; fi
 done
 
