@@ -46,6 +46,22 @@ set -euo pipefail
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$REPO_ROOT"
 
+# ── Git-Solo fast path (team_00 ruling 2026-07-22 — AOS_STRATEGY_TWO_HORIZONS §3b) ──
+# The FULL gate (pytest + validate) runs only at REAL MOMENTS:
+#   • release-train tag  → AOS_PUSH_FULL_GATE=1 git push …
+#   • deploy attestation → AOS_PREPUSH_WRITE_ATTESTATION=1 (attestation MUST mean a real green
+#     gate — never fast-pathed)
+#   • nightly cron       → invokes this script with AOS_PUSH_FULL_GATE=1
+# Routine pushes exit fast here. main is NOT prod: prod is protected by the train gate + DV-1
+# state-verify (Iron Rule #16). Standalone CLI entry points (--emit-attestation/--dual-push)
+# are dispatched below and are unaffected: they never reach this guard's routine-push branch.
+if [ "${1:-}" != "--emit-attestation" ] && [ "${1:-}" != "--dual-push" ] \
+   && [ "${AOS_PUSH_FULL_GATE:-0}" != "1" ] && [ "${AOS_PREPUSH_WRITE_ATTESTATION:-0}" != "1" ]; then
+  log() { printf '[pre-push] %s\n' "$1" >&2; }
+  log "Git-Solo fast path: full gate deferred to train/deploy/nightly (AOS_PUSH_FULL_GATE=1 to force)."
+  exit 0
+fi
+
 # Git env hygiene: when invoked as a git hook, git exports GIT_DIR / GIT_WORK_TREE /
 # GIT_INDEX_FILE pointing at THIS repo. Child processes (validate_aos.sh, the pytest suite)
 # inherit them, so their git subcommands operate on this repo instead of their own fixtures —

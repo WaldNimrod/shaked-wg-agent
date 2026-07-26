@@ -1,0 +1,15 @@
+{
+  "PreToolUse": [
+    {
+      "hooks": [
+        {
+          "command": "bash \"$(git rev-parse --show-toplevel)/scripts/hooks/gh_merge_guard.sh\"",
+          "if": "Bash(gh pr merge:*)",
+          "timeout": 30,
+          "type": "command"
+        }
+      ],
+      "matcher": "Bash"
+    }
+  ]
+}
