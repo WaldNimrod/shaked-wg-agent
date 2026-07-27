@@ -1,0 +1,19 @@
+# aos-mail-retention.service — AOS-V5-M11-WP-MAIL-HYGIENE-RETENTION C1.5 (daily mail bus retention sweep).
+# Deploy on waldhomeserver (canonical mail host — the DB v2 bus lives there): render {{REPO_ROOT}},
+# copy to /etc/systemd/system/, pair with aos-mail-retention.timer (OnCalendar=daily). This unit is
+# invoked BY the timer (Type=oneshot) — do not `enable` this .service directly; enable the .timer.
+# NOT a listener — no port, nothing to register in port-registry.yaml (Team 60 SSoT covers listeners only).
+# Archive-only + reversible (messages.sweep_retention / unarchive) — NEVER deletes a message row.
+[Unit]
+Description=AOS mail bus retention sweep (AOS-V5-M11-WP-MAIL-HYGIENE-RETENTION, archive-only)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 {{REPO_ROOT}}/scripts/aos_retention_sweep.py
+Environment=AOS_RETENTION_READ_DAYS=14
+Environment=AOS_RETENTION_PENDING_DAYS=30
+Environment=AOS_RETENTION_HEARTBEAT_FILE=/run/aos/retention.heartbeat
+# AOS_DATABASE_URL supplied via an EnvironmentFile (never committed) — same API env as the dispatcher.
+# EnvironmentFile=/etc/aos/dispatcher.env

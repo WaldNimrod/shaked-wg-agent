@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "cursor-ide-browser": {},
+    "postgres": {},
+    "filesystem": {},
+    "git": {},
+    "github": {}
+  }
+}

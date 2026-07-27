@@ -1,0 +1,40 @@
+name: AOS CI (minimal — local-first per ADR051)
+# Minimal free-tier Linux parity check for repos that deploy to the Linux home server.
+# The AUTHORITATIVE gate is the LOCAL pre-push hook (validate_aos.sh) — this cloud job is a
+# thin Mac→Linux parity safety net only. NO cron, NO matrix, NO service container → stays in
+# the GitHub Free tier ($0). PR-to-main (+ push to main) only.
+#
+# SSoT template: hub lean-kit/modules/project-governance/templates/aos-ci-minimal.yml.template
+# Rendered into KEEP-MINIMAL spokes by scripts/aos_sync_all.sh (Step 2d). IR#11: do NOT hand-edit
+# the rendered spoke copy — it is a read-only snapshot; change the hub template + re-sync.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: AOS governance validation (Linux parity)
+        # Model B (ADR054): _aos/lean-kit/ is a GIT-IGNORED cache, absent on a fresh CI checkout.
+        # Prefer the committed SSoT path (lean-kit/, present on the hub). On a spoke (no source
+        # lean-kit/ at root), hydrate the cache first via bootstrap, then use the _aos/ path.
+        run: |
+          # Set up a realistic environment for the parity check on a fresh CI checkout:
+          #  - install git hooks (Check 40 expects the pre-commit hook; hooks are per-clone, never committed)
+          #  - hydrate the git-ignored governance cache only if the committed SSoT path is absent (spoke)
+          bash scripts/install_hooks.sh || true
+          V="lean-kit/modules/validation-quality/scripts/validate_aos.sh"
+          if [ ! -f "$V" ]; then
+            bash scripts/aos_governance_bootstrap.sh --repo . || true
+            V="_aos/lean-kit/modules/validation-quality/scripts/validate_aos.sh"
+          fi
+          if [ ! -f "$V" ]; then
+            echo "::warning::AOS governance cache unavailable on this CI runner — Linux parity check SKIPPED; the authoritative gate is the LOCAL pre-push hook (ADR051). Hub CI still validates for real."
+            exit 0
+          fi
+          bash "$V" .

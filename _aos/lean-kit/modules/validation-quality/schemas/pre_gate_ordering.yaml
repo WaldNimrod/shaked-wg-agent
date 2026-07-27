@@ -1,0 +1,93 @@
+schema_version: "1.0.0"
+source: "lean-kit/modules/validation-quality/GATE_REGISTRY.md §Prerequisite Chain"
+
+aliases:
+  L-GATE_E: L-GATE_ELIGIBILITY
+  L-GATE_C: L-GATE_CONCEPT
+  L-GATE_S: L-GATE_SPEC
+  L-GATE_B: L-GATE_BUILD
+  L-GATE_V: L-GATE_VALIDATE
+
+tracks:
+  L0_TRACK_A:
+    sequence:
+      - gate: L-GATE_ELIGIBILITY
+        prerequisites: []
+        lod_required: LOD100
+      - gate: L-GATE_SPEC
+        prerequisites: [L-GATE_ELIGIBILITY]
+        lod_required: LOD400
+      - gate: L-GATE_BUILD
+        prerequisites: [L-GATE_SPEC]
+        lod_required: LOD400
+      - gate: L-GATE_VALIDATE
+        prerequisites: [L-GATE_BUILD]
+        lod_required: LOD400
+
+  L0_TRACK_B:
+    sequence:
+      - gate: L-GATE_ELIGIBILITY
+        prerequisites: []
+        lod_required: LOD100
+      - gate: L-GATE_CONCEPT
+        prerequisites: [L-GATE_ELIGIBILITY]
+        lod_required: LOD200
+      - gate: L-GATE_SPEC
+        prerequisites: [L-GATE_CONCEPT]
+        lod_required: LOD400
+      - gate: L-GATE_BUILD
+        prerequisites: [L-GATE_SPEC]
+        lod_required: LOD400
+      - gate: L-GATE_VALIDATE
+        prerequisites: [L-GATE_BUILD]
+        lod_required: LOD400
+
+  L2:
+    sequence:
+      - gate: GATE_0
+        prerequisites: []
+        lod_required: LOD100
+      - gate: GATE_1
+        prerequisites: [GATE_0]
+        lod_required: LOD200
+      - gate: GATE_2
+        prerequisites: [GATE_1]
+        lod_required: LOD400
+      - gate: GATE_3
+        prerequisites: [GATE_2]
+        lod_required: null
+      - gate: GATE_4
+        prerequisites: [GATE_3]
+        lod_required: LOD400
+      - gate: GATE_5
+        prerequisites: [GATE_4]
+        lod_required: LOD500
+
+  L2_5:
+    sequence:
+      - gate: EXT-CP1
+        prerequisites: []
+      - gate: PH1
+        prerequisites: [EXT-CP1]
+      - gate: PH2A
+        prerequisites: [PH1]
+      - gate: PH2B
+        prerequisites: [PH2A]
+      - gate: PH3
+        prerequisites: [PH2B]
+      - gate: PH4A
+        prerequisites: [PH3]
+      - gate: EXT-CP2
+        prerequisites: [PH4A]
+      - gate: PH4B
+        prerequisites: [EXT-CP2]
+      - gate: PH4C
+        prerequisites: [PH4B]
+      - gate: PH4D
+        prerequisites: [PH4C]
+      - gate: PH4E
+        prerequisites: [PH4D]
+      - gate: PH5
+        prerequisites: [PH4E]
+      - gate: PH6
+        prerequisites: [PH5]

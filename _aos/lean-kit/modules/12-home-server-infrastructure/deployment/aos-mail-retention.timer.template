@@ -1,0 +1,14 @@
+# aos-mail-retention.timer — AOS-V5-M11-WP-MAIL-HYGIENE-RETENTION C1.5 (daily mail bus retention sweep).
+# Deploy on waldhomeserver alongside aos-mail-retention.service.template (same directory, no rendering
+# needed for this file — no {{REPO_ROOT}} placeholder here). `systemctl enable --now aos-mail-retention.timer`
+# (team_60 enables on the server per WP notes) — do NOT enable the paired .service directly.
+[Unit]
+Description=Daily timer for AOS mail bus retention sweep (archive-only, reversible)
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+Unit=aos-mail-retention.service
+
+[Install]
+WantedBy=timers.target

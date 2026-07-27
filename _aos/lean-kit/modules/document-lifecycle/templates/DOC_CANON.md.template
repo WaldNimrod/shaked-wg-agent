@@ -1,0 +1,44 @@
+# DOC_CANON — {PROJECT_NAME}
+
+The project's **running documentation canon** — the cumulative, locked record of what each closed WP
+delivered. It is built forward (never retroactively): at every **CLOSE gate**, the closing WP's LOD500 is
+distilled into a one-line entry appended below. This is the L26 **DOC-close obligation**: a WP cannot reach
+CLOSE until this file reflects its LOD500 (P9 — no after-the-fact documentation). The Ambassador
+(`core.modules.management.governance_audit`) audits this across spokes; the builder/architect writes it.
+
+Detector: `validate_aos` **Check 59** (`python3 -m core.modules.management.doc_canon --check`) — advisory in a
+standalone `validate_aos .` run, **HARD at the CLOSE gate / in cold-integration CI** (`AOS_DOC_CLOSE_GATE=1`;
+with `AOS_DOC_WP=<wp_id>` the closing WP must appear below). This project holds its own
+`_aos/context/DOC_CANON.md` (propagated structure, project-local entries). This file was bootstrapped from
+the lean-kit template `DOC_CANON.md.template`; replace every `{…}` placeholder before first use.
+
+## Structure
+Each locked entry is a single bullet under **Locked LOD500 entries**, newest last:
+`- <WP_ID> — <YYYY-MM-DD> — <one-line: what shipped + the decisive gate that locked it>`.
+Group by milestone with a `### <milestone>` sub-header. No prose beyond the one-liner — depth lives in the
+WP's own `SPEC_LOD*` + gate verdicts. The four sections below (Structure / Quality / Procedure / Locked LOD500
+entries) are required and are what Check 59 validates for well-formedness.
+
+## Quality
+- One line per WP, factual, present-tense; name the artifact and the gate that locked it (e.g. "VALIDATE
+  cross-engine PASS").
+- Cite governance with qualified references (`[<project-label> _aos/context/CODE_STANDARDS.md CS-N]`, ADR ids).
+- Never edit a locked entry's meaning after the fact; corrections are appended, not rewritten.
+- Keep it scannable: a reader should reconstruct *what the project is now* from this file alone.
+
+## Procedure (DOC-close obligation · L26)
+1. At a WP's **CLOSE** gate (HG-2 / team_00), distill its LOD500 into one entry and append it below.
+2. Run `AOS_DOC_CLOSE_GATE=1 AOS_DOC_WP=<wp_id> bash …/validate_aos.sh .` — Check 59 must be **0 FAIL**
+   (it blocks CLOSE if `<wp_id>` is not yet reflected here).
+3. Commit the DOC_CANON update **with** the LOD500 lock (same CLOSE commit), then flip metadata → `LOD500_LOCKED`.
+4. Standalone `validate_aos .` stays advisory (0 FAIL) so clones/CI of in-flight branches are never blocked.
+
+> **Backfill note (LOD_STANDARD_v5 §5.6).** A backfilled LOD500 (as-built for code that shipped before its
+> LOD ladder existed) is distilled into exactly one entry here, the same as a build-time LOD500. Author the
+> backfill LOD500 with the `ASBUILT_LOD500_AUTHORING_RUNBOOK_v5` runbook — **no retro LOD300/400 is created**.
+
+## Locked LOD500 entries
+
+### {MILESTONE} — work packages (per-WP LOD500, appended at CLOSE)
+<!-- Append one line per WP at its CLOSE gate (see Procedure). Newest last. Example row: -->
+<!-- - {WP_ID} — {YYYY-MM-DD} — what shipped + the decisive gate that locked it (e.g. "VALIDATE cross-engine PASS"). -->

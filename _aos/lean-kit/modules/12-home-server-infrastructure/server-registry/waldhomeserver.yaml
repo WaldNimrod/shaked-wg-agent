@@ -1,0 +1,207 @@
+---
+# Server Identity Card — AOS Module 12
+# Canonical reference for waldhomeserver configuration
+server:
+  hostname: waldhomeserver
+  purpose: "AOS staging, agent dispatch, scheduled tasks, database"
+  owner: "Nimrod (Team 00)"
+  created: 2026-04-18
+
+network:
+  tailscale_ip: "100.125.98.56"
+  lan_ip: "10.100.102.2"
+  ssh_user: "nimrodw"
+  ssh_auth_method: "github_key"
+  ssh_port: 22
+
+  tailscale:
+    enabled: true
+    tailnet: "home-nimrod"
+    dns_name: "waldhomeserver.home-nimrod.ts.net"
+
+hardware:
+  cpu:
+    cores: 4
+    model: "Intel Core i5"
+
+  ram_gb: 8
+
+  storage:
+    - device: "/dev/sda"
+      type: "SSD"
+      size_gb: 256
+      mount: "/"
+      purpose: "system"
+
+    - device: "/dev/sdb"
+      type: "SSD"
+      size_gb: 1024
+      mount: "/data"
+      purpose: "projects, databases, backups"
+
+os:
+  name: "Ubuntu"
+  version: "24.04.4 LTS"
+  kernel: "6.8.0-111-generic" # active after next reboot (installed 2026-04-30)
+  patch_management:
+    auto_updates: true
+    daemon: "unattended-upgrades"
+    allowed_origins:
+      - "${distro_id}:${distro_codename}"
+      - "${distro_id}:${distro_codename}-security"
+      - "${distro_id}:${distro_codename}-updates"
+      - "${distro_id}ESMApps:${distro_codename}-apps-security"
+      - "${distro_id}ESM:${distro_codename}-infra-security"
+    excluded_origins:
+      - "noble-proposed"
+      - "noble-backports"
+      - "docker.com" # Docker patched manually during planned windows
+    auto_reboot: true
+    auto_reboot_time: "04:00"
+    runbook: "lean-kit/modules/12-home-server-infrastructure/runbooks/OS_PATCH_MANAGEMENT_v1.0.0.md"
+    last_full_patch: "2026-04-30"
+
+software:
+  python: "3.12"
+  node: "20.x"
+  docker:
+    enabled: true
+    version: "latest"
+    data_root: "/data/docker-volumes"
+    compose_version: "2.x"
+
+  tailscale:
+    enabled: true
+    version: "latest"
+
+  nginx:
+    enabled: false
+    purpose: "future reverse proxy"
+
+  ssh_server:
+    enabled: true
+    version: "OpenSSH 8.9"
+    key_auth: true
+
+shell:
+  default: "/bin/bash"
+  root_shell: "/bin/bash"
+
+services:
+  always_on:
+    - "sshd"
+    - "tailscaled"
+    - "docker"
+    - "aos-api" # FastAPI on port 8090
+
+  systemd:
+    - "aos-dispatch-bot" # Telegram bot
+
+  cron:
+    - "periodic maintenance jobs"
+    - "backup jobs"
+
+  # Family Minecraft inventory (Module 12 — NOT an AOS product spoke; no _aos/projects.yaml entry).
+  # Canon: port-registry project_id minecraft-home-forge — ACTIVE (Phase C playable, reality-diffed 2026-07-21).
+  # IPv6-ONLY WAN BINDING (team_00, ENVIRONMENT_HOME_NETWORK_IPV6_ONLY_BINDING_2026-07-21.md): Bezeq
+  # ISP router has no working public IPv4; canonical play/reachability path is the home global IPv6
+  # address [2a06:c701:4910:c300:428d:5cff:fe48:b9fd]:25565. Tailscale/LAN IPv4 are OPS-only (SSH/admin),
+  # NEVER the documented game join path. online-mode=false + enforce-whitelist=true is the environment's
+  # approved mitigation (Mojang/Microsoft session auth needs IPv4 egress this WAN lacks) — a deliberate
+  # decision, not a security lapse.
+  minecraft:
+    - name: "minecraft-forge"
+      role: "Game server — itzg/minecraft-server TYPE=FORGE under /data/minecraft compose"
+      ports: "game 0.0.0.0:25565 and [::]:25565 — canonical join is IPv6 only, see binding note above"
+      docker_network: "minecraft_net"  # dedicated; MUST NOT join agents-os_default / tiktrack_default / smallfarmsagents_default
+    - name: "minecraft-crafty"
+      role: "Crafty Controller admin UI"
+      ports: "admin 127.0.0.1:8443 (Tailscale/SSH tunnel only — never WAN, never cloudflared)"
+    - name: "minecraft-playit"
+      role: "playit.gg outbound agent (external player path) — H2 OPEN_OPTIONAL, WAIVED for closure"
+      ports: "outbound-only — NOT a listener; NOT port-registered under R9 unless a host listener is observed post-install"
+      note: "Loaded but stopped pending team_00 PLAYIT_SECRET_KEY; not required for home play over IPv6"
+
+directories:
+  projects: "/data/projects"
+  backups: "/data/backups"
+  minecraft: "/data/minecraft"  # sibling of /data/projects — NOT inside it; world backups at /data/minecraft/backups/ (NOT via aos-backup.sh)
+  agent_comm_inbox: "$HOME/agent_comm/inbox"
+  agent_comm_outbox: "$HOME/agent_comm/outbox"
+  docker_volumes: "/data/docker-volumes"
+
+databases:
+  postgresql:
+    enabled: true
+    version: "15"
+    host: "localhost"
+    port: 5434
+    data_directory: "/data/postgres"
+    purpose: "agents-os and managed projects"
+
+access_control:
+  ssh:
+    - method: "github_key"
+      user: "nimrodw"
+      key_type: "ed25519"
+      key_source: "GitHub @nimrodw"
+      expires: "never"
+
+  tailscale:
+    - method: "tailnet_auth"
+      users: ["Nimrod"]
+      device: "this server"
+
+health_checks:
+  disk_free_warning_gb: 50
+  disk_free_critical_gb: 10
+  cpu_load_warning: 8
+  memory_free_warning_gb: 2
+  memory_notes: >-
+    Keep the 2 GB available-memory warning threshold. Minecraft Home Forge is capped at
+    MEMORY=4G / mem_limit=4.5G and co-tenants TikTrack staging + AOS v5 on this 8 GB host.
+
+monitoring:
+  enabled: false
+  notes: "Future Module 13 (Monitoring & Alerting)"
+
+backup:
+  strategy: "daily snapshots"
+  retention_days: 30
+  location: "/data/backups"
+
+notes: |
+  waldhomeserver is the primary development/staging server for all AOS-managed projects.
+  It runs:
+  - AOS API (port 8090)
+  - PostgreSQL (port 5434)
+  - Telegram Dispatch Bot (systemd service)
+  - Agent communication protocol (inbox/outbox directories)
+  - Minecraft Home Forge (inventory project minecraft-home-forge): compose under /data/minecraft
+    on dedicated Docker network minecraft_net (no membership in agents-os_default /
+    tiktrack_default / smallfarmsagents_default). ACTIVE + playable since 2026-07-21; canonical
+    join path is the home global IPv6 address (Bezeq WAN is IPv6-only, no working public IPv4 —
+    see ENVIRONMENT_HOME_NETWORK_IPV6_ONLY_v1.0.0.md), not Tailscale/LAN. External players via
+    playit.gg (outbound, optional, WAIVED for closure); Crafty admin localhost-only. Cloudflare
+    Tunnel inventory is untouched — no Minecraft hostname.
+
+  All deployments for agents-os, TikTrack, SmallFarmsAgents, etc. target this server
+  when deployed from the home network.
+
+known_issues: |
+  [Team 50 QA audit 2026-04-18]
+  - TikTrack PostgreSQL: docker container binding to 5435 (check docker port mapping vs registry 5432)
+  - Verify with: docker ps | grep postgres
+  - If discrepancy exists, update registry after confirming docker-compose.yml mapping
+
+  [Minecraft Home Forge — RAM co-tenancy 2026-07-21 / MCF-05]
+  - Host has 8 GB RAM. Minecraft capped MEMORY=4G / mem_limit=4.5G alongside TikTrack staging + AOS v5.
+  - 8+ concurrent players against TikTrack staging can push available memory below the 2 GB warning
+    threshold. Operational target 6–8 players; hard cap 10.
+
+---
+metadata:
+  created_by: "Team 60 (AOS DevOps & Platform)"
+  created_date: "2026-04-18"
+  last_verified: "2026-07-21"
+  verification_method: "manual ssh + physical inspection"

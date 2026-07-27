@@ -1,0 +1,23 @@
+# aos-server-dispatcher.service — M7-P2-WP1 S3 (event-gated server wake).
+# Deploy on waldhomeserver: render paths, copy to /etc/systemd/system/, `systemctl enable --now`.
+# NO inbound port (AC-20): all comms are OUTBOUND (HTTP COUNT to the hub API + ssh-local wake).
+# The dispatcher injects ONLY `/AOS_mail check` (BR-W5) and NEVER advances a gate / merges (BR-G3).
+[Unit]
+Description=AOS server dispatcher (M7-P2-WP1 — event-gated server wake, NON-LLM COUNT)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Bounded session-per-work-item; the COUNT is pure HTTP->SQL (zero model tokens) until an event fires.
+ExecStart=/usr/bin/python3 {{REPO_ROOT}}/scripts/aos_server_dispatcher.py
+Restart=always
+RestartSec=10
+Environment=AOS_API_BASE=http://127.0.0.1:8092
+Environment=AOS_DISPATCH_INTERVAL_SEC=20
+Environment=AOS_DISPATCH_SSH_TARGET=localhost
+# AOS_ACTOR_API_KEY supplied via an EnvironmentFile (never committed) for the COUNT auth header.
+# EnvironmentFile=/etc/aos/dispatcher.env
+
+[Install]
+WantedBy=multi-user.target
