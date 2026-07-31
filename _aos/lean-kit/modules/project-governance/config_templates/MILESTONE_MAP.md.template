@@ -1,9 +1,0 @@
-# Milestone Map — {{PROJECT_DISPLAY_NAME}}
-<!-- Populated by Team 100 at LOD200. Update as milestones are defined. -->
-
-| Milestone | Description | Target | Status |
-|-----------|-------------|--------|--------|
-| S001 | Initial domain research and environment bootstrap | {{DATE}} | ACTIVE |
-
-<!-- Add rows per milestone: S002, S003, etc. -->
-<!-- Status values: PLANNED | ACTIVE | COMPLETE | DEFERRED -->

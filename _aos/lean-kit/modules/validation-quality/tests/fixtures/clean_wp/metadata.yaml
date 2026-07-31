@@ -1,8 +1,0 @@
-# Test fixture — AC-15: Check 42 PASS case
-# This WP has sprint_count: 2 (within 3-sprint cap) and status: ACTIVE.
-# Also valid for AC-20 (Check 44 PASS) — has valid track: and effort: fields.
-wp_id: CLEAN_TEST_WP
-track: STANDARD
-effort: NORMAL
-sprint_count: 2
-status: ACTIVE

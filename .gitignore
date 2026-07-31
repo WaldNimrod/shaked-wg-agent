@@ -38,3 +38,8 @@ data/runs.json
 # Defensive: credential backup files must never be trackable (gap found 2026-07-18)
 .env.bak*
 *.env.bak*
+
+# Model B (ADR054) — hub-composed governance caches are git-ignored (M13 v5.4.0 compliance fix)
+/_aos/lean-kit/
+/_aos/governance/
+/_aos/methodology/
